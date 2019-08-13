@@ -1,15 +1,18 @@
+package com.hedera.services.exchange;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.List;
 import java.util.Timer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.*;
+
 
 public class ExchangeRateTool {
 
     // logger object to write logs into
-    private static final Logger log = LogManager.getLogger(ExchangeRateTool.class.getName());
+    private static final Logger log = LogManager.getLogger(ExchangeRateTool.class);
 
     // member variables
     private String m_privateKey;
@@ -27,9 +30,9 @@ public class ExchangeRateTool {
 
         // using the frequency read from the config file, spawn a thread that does the functions.
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate( new ERTproc(m_privateKey, m_exchangeAPIList, m_mainNetAPI, m_pricingDBAPI,
-                m_maxDelta, m_prevMedian, m_currMedian, m_hederaFileIdentifier),
-                0, m_frequency, Timer.Seconds);
+//        service.scheduleAtFixedRate( new ERTproc(m_privateKey, m_exchangeAPIList, m_mainNetAPI, m_pricingDBAPI,
+//                m_maxDelta, m_prevMedian, m_currMedian, m_hederaFileIdentifier),
+//                0, m_frequency, Timer.Seconds);
 
         // we wait a while for the thread to finish executing and fetch the details the ERTproc writes to the
         // database and update prev and curr medians so that we can send them to the new thread.
