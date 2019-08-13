@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class BitrexTestCases {
 
@@ -14,6 +16,10 @@ public class BitrexTestCases {
 		final Bitrex bitrex = Bitrex.load();
 		bitrex.isSuccess();
 		final List<Exchange> exchanges = new ArrayList<>();
-		exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
+		final List<Exchange> sortedExchanges = exchanges.stream()
+				.filter(x -> Objects.nonNull(bitrex.getHBarValue()))
+				.sorted(Comparator.comparingDouble(Exchange::getHBarValue))
+				.collect(Collectors.toList());
+
 	}
 }
