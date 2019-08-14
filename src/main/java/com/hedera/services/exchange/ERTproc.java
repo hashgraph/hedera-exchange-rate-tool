@@ -9,14 +9,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * This class implements the methods that we perform periodically to generate Exchange rate
  */
-public class ERTproc implements Runnable {
-    // logger object to write logs into
+public class ERTproc implements Callable<Double> {
+
     private static final Logger log = LogManager.getLogger(ERTproc.class);
 
     private String privateKey;
@@ -50,7 +53,7 @@ public class ERTproc implements Runnable {
 
     // now that we have all the data/APIs required, add methods to perform the functions
     @Override
-    public void run() {
+    public Double call() {
         // we call the methods in the order of execution logic
         log.log(Level.INFO, "Start of ERT Logic");
 
@@ -62,9 +65,11 @@ public class ERTproc implements Runnable {
             // walk through each exchange object and calculate the median exchange rate
             Double medianExRate = calculateMedianRate();
 
+            return medianExRate;
             //
         } catch (IOException e) {
             e.printStackTrace();
+            return 0.0;
         }
 
     }
