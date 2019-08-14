@@ -1,5 +1,7 @@
 package com.hedera.services.exchange.exchanges;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -22,14 +24,14 @@ public class Bitrex implements Exchange {
 			return null;
 		}
 
-		return this.result.Last;
+		return this.result.getLast();
 	}
 
 	public boolean isSuccess() {
 		return success;
 	}
 
-	public void setSuccess(boolean success) {
+	public void setSuccess(final boolean success) {
 		this.success = success;
 	}
 
@@ -37,7 +39,7 @@ public class Bitrex implements Exchange {
 		return message;
 	}
 
-	public void setMessage(String message) {
+	public void setMessage(final String message) {
 		this.message = message;
 	}
 
@@ -45,18 +47,18 @@ public class Bitrex implements Exchange {
 		return result;
 	}
 
-	public void setResult(Result result) {
+	public void setResult(final Result result) {
 		this.result = result;
 	}
 
 	public static Bitrex load() throws IOException {
-		URL obj = new URL(BITREX_URL);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		final URL obj = new URL(BITREX_URL);
+		final HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
 		// optional default is GET
 		con.setRequestMethod("GET");
 
-		int responseCode = con.getResponseCode();
+		final int responseCode = con.getResponseCode();
 
 
 		final Bitrex bitrex =  OBJECT_MAPPER.readValue(con.getInputStream(), Bitrex.class);
@@ -65,14 +67,16 @@ public class Bitrex implements Exchange {
 	}
 
 	public static class Result {
-		private Double Last;
+
+		@JsonProperty("Last")
+		private Double last;
 
 		public Double getLast() {
-			return Last;
+			return last;
 		}
 
-		public void setLast(Double last) {
-			Last = last;
+		public void setLast(final Double last) {
+			this.last = last;
 		}
 	}
 }
