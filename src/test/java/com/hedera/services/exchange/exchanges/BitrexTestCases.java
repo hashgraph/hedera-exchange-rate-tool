@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -17,7 +19,7 @@ import static org.mockito.Mockito.when;
 public class BitrexTestCases {
 
 	@Test
-	public void testRetrieveBitrexData() throws IOException {
+	public void fetchBitrexTest() throws IOException {
 		final String result = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.00753996," +
 				"\"Last\":0.00954162}}";
 		final InputStream json = new ByteArrayInputStream(result.getBytes());
@@ -34,5 +36,24 @@ public class BitrexTestCases {
 		assertTrue(bitrex.isSuccess());
 		assertEquals(0.00954162, bitrex.getHBarValue());
 		assertEquals("Data Sent", bitrex.getMessage());
+	}
+
+	@Test
+	public void fetchBitrexWithNullResultTest() throws IOException {
+		final String result = "{\"success\":false,\"message\":\"INVALID_MARKET\",\"result\": null}";
+		final InputStream json = new ByteArrayInputStream(result.getBytes());
+		final HttpURLConnection connection = mock(HttpURLConnection.class);
+		when(connection.getInputStream()).thenReturn(json);
+		new MockUp<Bitrex>() {
+			@Mock
+			HttpURLConnection getConnection() {
+				return connection;
+			}
+		};
+
+		final Bitrex bitrex = Bitrex.load();
+		assertFalse(bitrex.isSuccess());
+		assertNull(bitrex.getHBarValue());
+		assertNull(bitrex.getResult());
 	}
 }
