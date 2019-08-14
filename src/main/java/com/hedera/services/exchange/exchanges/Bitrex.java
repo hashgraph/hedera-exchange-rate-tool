@@ -1,15 +1,14 @@
 package com.hedera.services.exchange.exchanges;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 
 public class Bitrex implements Exchange {
 
-	private static final String BITREX_URL = "https://api.bittrex.com/api/v1.1/public/getmarkethistory?market=USD-HBAR";
+	// TODO update to the exact URL that we need
+	private static final String BITREX_URL = "https://api.bittrex.com/api/v1.1/public/getmarkethistory?market=USD-BTC";
 
 	private boolean success;
 
@@ -23,7 +22,7 @@ public class Bitrex implements Exchange {
 			return null;
 		}
 
-		return this.result.Last;
+		return this.result.Price;
 	}
 
 	public boolean isSuccess() {
@@ -66,14 +65,14 @@ public class Bitrex implements Exchange {
 	}
 
 	public static class Result {
-		private Double Last;
+		private Double Price;
 
-		public Double getLast() {
-			return Last;
+		public Double getPrice() {
+			return Price;
 		}
 
-		public void setLast(Double last) {
-			Last = last;
+		public void setPrice(Double price) {
+			Price = price;
 		}
 	}
 }
