@@ -1,5 +1,7 @@
 package com.hedera.services.exchange.exchanges;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -10,21 +12,22 @@ public class Coinbase implements Exchange{
 
     // TODO to test this we can change this or add another variable BTC to see the data
     // TODO right now there is no HBAR.
-    private Double HBAR;
+    @JsonProperty("HBAR")
+    private Double hbar;
 
     @Override
     public Double getHBarValue() {
-        if(HBAR == null)
+        if(hbar == null)
             return null;
-        return this.HBAR;
+        return this.hbar;
     }
 
-    public Double getHBAR() {
-        return HBAR;
+    public Double getHbar() {
+        return hbar;
     }
 
-    public void setHBAR(Double HBAR) {
-        this.HBAR = HBAR;
+    public void setHbar(Double hbar) {
+        this.hbar = hbar;
     }
 
     public static Coinbase load() throws IOException {
