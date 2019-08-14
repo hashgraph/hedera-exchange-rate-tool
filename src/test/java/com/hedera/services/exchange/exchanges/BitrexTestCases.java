@@ -1,25 +1,38 @@
 package com.hedera.services.exchange.exchanges;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class BitrexTestCases {
 
 	@Test
-	public void retrieveBitrexDataTest() throws IOException {
-		final Bitrex bitrex = Bitrex.load();
-		bitrex.isSuccess();
-		final List<Exchange> exchanges = new ArrayList<>();
-		final List<Exchange> sortedExchanges = exchanges.stream()
-				.filter(x -> Objects.nonNull(bitrex.getHBarValue()))
-				.sorted(Comparator.comparingDouble(Exchange::getHBarValue))
-				.collect(Collectors.toList());
+	public void testRetrieveBitrexData() throws IOException {
+		final String result = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.00753996," +
+				"\"Last\":0.00954162}}";
+		final InputStream json = new ByteArrayInputStream(result.getBytes());
+		final HttpURLConnection connection = mock(HttpURLConnection.class);
+		when(connection.getInputStream()).thenReturn(json);
+		new MockUp<Bitrex>() {
+			@Mock
+			HttpURLConnection getConnection() {
+				return connection;
+			}
+		};
 
+		final Bitrex bitrex = Bitrex.load();
+		assertTrue(bitrex.isSuccess());
+		assertEquals(0.00954162, bitrex.getHBarValue());
+		assertEquals("Data Sent", bitrex.getMessage());
 	}
 }

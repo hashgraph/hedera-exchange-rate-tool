@@ -9,7 +9,6 @@ import java.net.URL;
 
 public class Bitrex implements Exchange {
 
-	// TODO update to the exact URL that we need
 	private static final String BITREX_URL = "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC";
 
 	private boolean success;
@@ -52,18 +51,15 @@ public class Bitrex implements Exchange {
 	}
 
 	public static Bitrex load() throws IOException {
-		final URL obj = new URL(BITREX_URL);
-		final HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-		// optional default is GET
-		con.setRequestMethod("GET");
-
-		final int responseCode = con.getResponseCode();
-
-
+		final HttpURLConnection con = getConnection();
 		final Bitrex bitrex =  OBJECT_MAPPER.readValue(con.getInputStream(), Bitrex.class);
 		con.disconnect();
 		return bitrex;
+	}
+
+	static HttpURLConnection getConnection() throws IOException {
+		final URL url = new URL(BITREX_URL);
+		return (HttpURLConnection) url.openConnection();
 	}
 
 	public static class Result {
