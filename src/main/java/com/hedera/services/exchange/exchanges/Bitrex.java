@@ -8,7 +8,7 @@ import java.net.URL;
 public class Bitrex implements Exchange {
 
 	// TODO update to the exact URL that we need
-	private static final String BITREX_URL = "https://api.bittrex.com/api/v1.1/public/getmarkethistory?market=USD-BTC";
+	private static final String BITREX_URL = "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC";
 
 	private boolean success;
 
@@ -22,7 +22,7 @@ public class Bitrex implements Exchange {
 			return null;
 		}
 
-		return this.result.Price;
+		return this.result.Last;
 	}
 
 	public boolean isSuccess() {
@@ -65,14 +65,14 @@ public class Bitrex implements Exchange {
 	}
 
 	public static class Result {
-		private Double Price;
+		private Double Last;
 
-		public Double getPrice() {
-			return Price;
+		public Double getLast() {
+			return Last;
 		}
 
-		public void setPrice(Double price) {
-			Price = price;
+		public void setLast(Double last) {
+			Last = last;
 		}
 	}
 }
