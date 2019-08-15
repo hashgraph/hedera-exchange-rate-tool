@@ -17,7 +17,7 @@ public class CoinbaseTestCases {
 
     @Test
     public void retrieveCoinbaseDataTest() throws IOException {
-        final String result = "";
+        final String result = "{\"data\":{\"currency\":\"USD\", \"rates\":{\"HBAR\":\"0.0098\"}}}";
         final InputStream json = new ByteArrayInputStream(result.getBytes());
         final HttpURLConnection connection = mock(HttpURLConnection.class);
         when(connection.getInputStream()).thenReturn(json);
@@ -28,7 +28,8 @@ public class CoinbaseTestCases {
             }
         };
 
-        final Exchange coinbase = Coinbase.load();
-        assertEquals(0.009, coinbase.getHBarValue());
+        final Coinbase coinbase = Coinbase.load();
+        assertEquals("USD", coinbase.getCurrency());
+        assertEquals(0.0098, coinbase.getHBarValue());
     }
 }

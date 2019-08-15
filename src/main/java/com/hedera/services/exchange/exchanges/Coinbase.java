@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 public class Coinbase implements Exchange {
 
@@ -23,28 +25,20 @@ public class Coinbase implements Exchange {
         }
     }
 
-    // TODO to test this we can change this or add another variable BTC to see the data
-    // TODO right now there is no HBAR.
-    @JsonProperty("HBAR")
-    private Double hbar;
-
+    @JsonProperty("data")
     private Data data;
 
     @Override
     public Double getHBarValue() {
-        if (hbar == null) {
+        if (this.data == null || this.data.rates == null || !this.data.rates.containsKey("HBAR")) {
             return null;
         }
 
-        return this.hbar;
+        return Double.valueOf(this.data.rates.get("HBAR"));
     }
 
-    public Double getHbar() {
-        return hbar;
-    }
-
-    public void setHbar(Double hbar) {
-        this.hbar = hbar;
+    String getCurrency() {
+        return this.data.currency;
     }
 
     public static Coinbase load() {
@@ -63,5 +57,11 @@ public class Coinbase implements Exchange {
     }
 
     private static class Data {
+
+        @JsonProperty("currency")
+        private String currency;
+
+        @JsonProperty("rates")
+        private Map<String, String> rates;
     }
 }
