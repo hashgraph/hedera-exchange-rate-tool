@@ -1,6 +1,5 @@
 package com.hedera.services.exchange;
 
-import com.hedera.services.exchange.ERTproc;
 import com.hedera.services.exchange.exchanges.Bitrex;
 import com.hedera.services.exchange.exchanges.Coinbase;
 import com.hedera.services.exchange.exchanges.Liquid;
