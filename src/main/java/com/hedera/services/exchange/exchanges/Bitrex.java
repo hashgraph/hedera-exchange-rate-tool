@@ -11,6 +11,8 @@ public class Bitrex implements Exchange {
 
 	private static final String BITREX_URL = "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC";
 
+	private static final Bitrex DEFAULT = new Bitrex();
+
 	private boolean success;
 
 	private String message;
@@ -50,19 +52,23 @@ public class Bitrex implements Exchange {
 		this.result = result;
 	}
 
-	public static Bitrex load() throws IOException {
-		final HttpURLConnection con = getConnection();
-		final Bitrex bitrex =  OBJECT_MAPPER.readValue(con.getInputStream(), Bitrex.class);
-		con.disconnect();
-		return bitrex;
+	public static Bitrex load() {
+		try {
+			final HttpURLConnection con = getConnection();
+			final Bitrex bitrex =  OBJECT_MAPPER.readValue(con.getInputStream(), Bitrex.class);
+			con.disconnect();
+			return bitrex;
+		} catch (final Exception exception) {
+			return DEFAULT;
+		}
 	}
 
-	static HttpURLConnection getConnection() throws IOException {
+	private static HttpURLConnection getConnection() throws IOException {
 		final URL url = new URL(BITREX_URL);
 		return (HttpURLConnection) url.openConnection();
 	}
 
-	public static class Result {
+	private static class Result {
 
 		@JsonProperty("Last")
 		private Double last;

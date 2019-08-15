@@ -10,6 +10,6 @@ public class ERTprocTestCases {
 
     @Test
     public void testMedian(){
-        ertProcess.run();
+        ertProcess.call();
     }
 }

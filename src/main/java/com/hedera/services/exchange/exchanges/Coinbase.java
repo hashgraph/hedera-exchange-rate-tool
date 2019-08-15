@@ -8,7 +8,9 @@ import java.net.URL;
 
 public class Coinbase implements Exchange{
 
-    private static final String COINBASE_URL = "https://api.coinbase.com/v2/exchange-rates ";
+    private static final String COINBASE_URL = "https://api.coinbase.com/v2/exchange-rates";
+
+    private static final Coinbase DEFAULT = new Coinbase();
 
     // TODO to test this we can change this or add another variable BTC to see the data
     // TODO right now there is no HBAR.
@@ -17,8 +19,10 @@ public class Coinbase implements Exchange{
 
     @Override
     public Double getHBarValue() {
-        if(hbar == null)
+        if( hbar == null) {
             return null;
+        }
+
         return this.hbar;
     }
 
@@ -30,17 +34,20 @@ public class Coinbase implements Exchange{
         this.hbar = hbar;
     }
 
-    public static Coinbase load() throws IOException {
-        URL obj = new URL(COINBASE_URL);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-        // optional default is GET
-        con.setRequestMethod("GET");
-
-        int responseCode = con.getResponseCode();
-
-        final Coinbase coinbase =  OBJECT_MAPPER.readValue(con.getInputStream(), Coinbase.class);
-        con.disconnect();
-        return coinbase;
+    public static Coinbase load() {
+        try {
+            final HttpURLConnection con = getConnection();
+            final Coinbase coinbase =  OBJECT_MAPPER.readValue(con.getInputStream(), Coinbase.class);
+            con.disconnect();
+            return coinbase;
+        } catch (final Exception exception) {
+            return DEFAULT;
+        }
     }
+
+    static HttpURLConnection getConnection() throws IOException {
+        final URL url = new URL(COINBASE_URL);
+        return (HttpURLConnection) url.openConnection();
+    }
+
 }
