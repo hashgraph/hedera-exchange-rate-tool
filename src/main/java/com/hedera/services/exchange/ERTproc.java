@@ -68,7 +68,7 @@ public class ERTproc implements Callable<Double> {
             Rate currentRate = new Rate("CurrentRate", 1, erNow, tE);
             Rate nextRate = new Rate("NextRate", 1, medianExRate, tE+3600);
 
-            ERF exchangeRateFileObject = new ERF(currentRate, nextRate);
+            final ERF exchangeRateFileObject = new ERF(currentRate, nextRate);
 
             // Check delta
             // sign the file accordingly
