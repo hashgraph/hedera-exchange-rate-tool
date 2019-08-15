@@ -2,6 +2,7 @@ package com.hedera.services.exchange.exchanges;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class Liquid implements Exchange {
@@ -10,6 +11,16 @@ public class Liquid implements Exchange {
 	private static final String LIQUID_URL = "https://api.liquid.com/products/5";
 
 	private static final Liquid DEFAULT = new Liquid();
+
+	private static final URL url;
+
+	static {
+		try {
+			url = new URL(LIQUID_URL);
+		} catch (MalformedURLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
 
 	private Double exchange_rate;
 
@@ -32,13 +43,16 @@ public class Liquid implements Exchange {
 
 	public static Liquid load() {
 		try {
-			final URL obj = new URL(LIQUID_URL);
-			final HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+			final HttpURLConnection con = getConnection();
 			final Liquid liquid =  OBJECT_MAPPER.readValue(con.getInputStream(), Liquid.class);
 			con.disconnect();
 			return liquid;
 		} catch (final Exception exception) {
 			return DEFAULT;
 		}
+	}
+
+	private static HttpURLConnection getConnection() throws IOException {
+		return (HttpURLConnection) url.openConnection();
 	}
 }

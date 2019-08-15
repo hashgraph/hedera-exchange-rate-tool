@@ -17,8 +17,7 @@ public class CoinbaseTestCases {
 
     @Test
     public void retrieveCoinbaseDataTest() throws IOException {
-        final String result = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.00753996," +
-                "\"Last\":0.00954162}}";
+        final String result = "";
         final InputStream json = new ByteArrayInputStream(result.getBytes());
         final HttpURLConnection connection = mock(HttpURLConnection.class);
         when(connection.getInputStream()).thenReturn(json);
