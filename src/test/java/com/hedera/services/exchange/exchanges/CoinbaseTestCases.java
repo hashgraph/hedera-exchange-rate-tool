@@ -1,15 +1,35 @@
 package com.hedera.services.exchange.exchanges;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CoinbaseTestCases {
 
     @Test
     public void retrieveCoinbaseDataTest() throws IOException {
-        Coinbase coinbase = Coinbase.load();
+        final String result = "{\"data\":{\"currency\":\"USD\", \"rates\":{\"HBAR\":\"0.0098\"}}}";
+        final InputStream json = new ByteArrayInputStream(result.getBytes());
+        final HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(connection.getInputStream()).thenReturn(json);
+        new MockUp<Coinbase>() {
+            @Mock
+            HttpURLConnection getConnection() {
+                return connection;
+            }
+        };
 
-        // TODO
+        final Coinbase coinbase = Coinbase.load();
+        assertEquals("USD", coinbase.getCurrency());
+        assertEquals(0.0098, coinbase.getHBarValue());
     }
 }

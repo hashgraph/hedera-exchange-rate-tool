@@ -1,16 +1,36 @@
 package com.hedera.services.exchange.exchanges;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class LiquidTestCases {
 
     @Test
     public void retrieveLiquidDataTest() throws IOException {
-        final Liquid liquid = Liquid.load();
+        final String result = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", \"exchange_rate\": 0.0093}";
+        final InputStream json = new ByteArrayInputStream(result.getBytes());
+        final HttpURLConnection connection = mock(HttpURLConnection.class);
+        when(connection.getInputStream()).thenReturn(json);
+        new MockUp<Liquid>() {
+            @Mock
+            HttpURLConnection getConnection() {
+                return connection;
+            }
+        };
 
-        // TODO
-        return;
+        final Liquid liquid = Liquid.load();
+        assertEquals(0.0093, liquid.getHBarValue());
+        assertEquals("CurrencyPair", liquid.getProductType());
+        assertEquals("CASH", liquid.getCode());
     }
 }

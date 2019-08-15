@@ -4,18 +4,33 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 
 public class Bitrex implements Exchange {
 
-	// TODO update to the exact URL that we need
 	private static final String BITREX_URL = "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC";
 
+	private static final Bitrex DEFAULT = new Bitrex();
+
+	private static final URL url;
+
+	static {
+		try {
+			url = new URL(BITREX_URL);
+		} catch (MalformedURLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	@JsonProperty("success")
 	private boolean success;
 
+	@JsonProperty("message")
 	private String message;
 
+	@JsonProperty("result")
 	private Result result;
 
 	@Override
@@ -24,59 +39,39 @@ public class Bitrex implements Exchange {
 			return null;
 		}
 
-		return this.result.getLast();
+		return this.result.last;
 	}
 
-	public boolean isSuccess() {
+	boolean isSuccess() {
 		return success;
 	}
 
-	public void setSuccess(final boolean success) {
-		this.success = success;
-	}
-
-	public String getMessage() {
+	String getMessage() {
 		return message;
 	}
 
-	public void setMessage(final String message) {
-		this.message = message;
-	}
-
-	public Result getResult() {
+	Result getResult() {
 		return result;
 	}
 
-	public void setResult(final Result result) {
-		this.result = result;
+	public static Bitrex load() {
+		try {
+			final HttpURLConnection con = getConnection();
+			final Bitrex bitrex =  OBJECT_MAPPER.readValue(con.getInputStream(), Bitrex.class);
+			con.disconnect();
+			return bitrex;
+		} catch (final Exception exception) {
+			return DEFAULT;
+		}
 	}
 
-	public static Bitrex load() throws IOException {
-		final URL obj = new URL(BITREX_URL);
-		final HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-		// optional default is GET
-		con.setRequestMethod("GET");
-
-		final int responseCode = con.getResponseCode();
-
-
-		final Bitrex bitrex =  OBJECT_MAPPER.readValue(con.getInputStream(), Bitrex.class);
-		con.disconnect();
-		return bitrex;
+	private static HttpURLConnection getConnection() throws IOException {
+		return (HttpURLConnection) url.openConnection();
 	}
 
-	public static class Result {
+	private static class Result {
 
 		@JsonProperty("Last")
 		private Double last;
-
-		public Double getLast() {
-			return last;
-		}
-
-		public void setLast(final Double last) {
-			this.last = last;
-		}
 	}
 }

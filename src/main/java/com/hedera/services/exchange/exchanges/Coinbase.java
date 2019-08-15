@@ -4,43 +4,64 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
-public class Coinbase implements Exchange{
+public class Coinbase implements Exchange {
 
-    private static final String COINBASE_URL = "https://api.coinbase.com/v2/exchange-rates ";
+    private static final String COINBASE_URL = "https://api.coinbase.com/v2/exchange-rates";
 
-    // TODO to test this we can change this or add another variable BTC to see the data
-    // TODO right now there is no HBAR.
-    @JsonProperty("HBAR")
-    private Double hbar;
+    private static final Coinbase DEFAULT = new Coinbase();
+
+    private static final URL url;
+
+    static {
+        try {
+            url = new URL(COINBASE_URL);
+        } catch (MalformedURLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @JsonProperty("data")
+    private Data data;
 
     @Override
     public Double getHBarValue() {
-        if(hbar == null)
+        if (this.data == null || this.data.rates == null || !this.data.rates.containsKey("HBAR")) {
             return null;
-        return this.hbar;
+        }
+
+        return Double.valueOf(this.data.rates.get("HBAR"));
     }
 
-    public Double getHbar() {
-        return hbar;
+    String getCurrency() {
+        return this.data.currency;
     }
 
-    public void setHbar(Double hbar) {
-        this.hbar = hbar;
+    public static Coinbase load() {
+        try {
+            final HttpURLConnection con = getConnection();
+            final Coinbase coinbase =  OBJECT_MAPPER.readValue(con.getInputStream(), Coinbase.class);
+            con.disconnect();
+            return coinbase;
+        } catch (final Exception exception) {
+            return DEFAULT;
+        }
     }
 
-    public static Coinbase load() throws IOException {
-        URL obj = new URL(COINBASE_URL);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+    private static HttpURLConnection getConnection() throws IOException {
+        return (HttpURLConnection) url.openConnection();
+    }
 
-        // optional default is GET
-        con.setRequestMethod("GET");
+    private static class Data {
 
-        int responseCode = con.getResponseCode();
+        @JsonProperty("currency")
+        private String currency;
 
-        final Coinbase coinbase =  OBJECT_MAPPER.readValue(con.getInputStream(), Coinbase.class);
-        con.disconnect();
-        return coinbase;
+        @JsonProperty("rates")
+        private Map<String, String> rates;
     }
 }

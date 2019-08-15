@@ -7,20 +7,23 @@ import com.hedera.services.exchange.exchanges.Liquid;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.util.Supplier;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 /**
  * This class implements the methods that we perform periodically to generate Exchange rate
  */
-public class ERTproc implements Runnable {
-    // logger object to write logs into
+public class ERTproc implements Callable<Double> {
+
     private static final Logger log = LogManager.getLogger(ERTproc.class);
+
+    private static final List<Supplier<Exchange>> EXCHANGE_SUPPLIERS = Arrays.asList(Bitrex::load, Liquid::load, Coinbase::load);
 
     private String privateKey;
     private List<String> exchangeAPIList;
-    private List<Exchange> exchangeList;
     private String mainNetAPI;
     private String pricingDBAPI;
     private Double maxDelta;
@@ -39,7 +42,6 @@ public class ERTproc implements Runnable {
             final String hederaFileIdentifier) {
         this.privateKey = privateKey;
         this.exchangeAPIList = exchangeAPIList;
-        this.exchangeList = new ArrayList<>();
         this.mainNetAPI = mainNetAPI;
         this.pricingDBAPI = pricingDBAPI;
         this.maxDelta = maxDelta;
@@ -50,17 +52,17 @@ public class ERTproc implements Runnable {
 
     // now that we have all the data/APIs required, add methods to perform the functions
     @Override
-    public void run() {
+    public Double call() {
         // we call the methods in the order of execution logic
         log.log(Level.INFO, "Start of ERT Logic");
 
         // Make a list of exchanges
         try {
             log.log(Level.INFO, "generating exchange objects");
-            this.exchangeList = generateExchanges();
+            final List<Exchange> exchanges = generateExchanges();
 
             log.log(Level.INFO, "Calculating median");
-            Double medianExRate = calculateMedianRate();
+            Double medianExRate = calculateMedianRate(exchanges);
             log.log(Level.DEBUG, "Median calculated : " + medianExRate);
 
             Rate currentRate = new Rate("CurrentRate", 1, erNow, tE);
@@ -71,48 +73,40 @@ public class ERTproc implements Runnable {
             // Check delta
             // sign the file accordingly
             // POST it to the network and Pricing DB
+            return  medianExRate;
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            return 0.0;
         }
-
     }
 
-    private Double calculateMedianRate() {
-        Double median = 0.0;
+    private Double calculateMedianRate(final List<Exchange> exchanges) {
         log.log(Level.INFO, "sort the exchange list according to the exchange rate");
 
-        exchangeList.removeIf(x -> x.getHBarValue() == null || x.getHBarValue() == 0);
+        exchanges.removeIf(x -> x.getHBarValue() == null || x.getHBarValue() == 0);
 
         // sort the exchange list on the basis of their exchange rate
-        Collections.sort(exchangeList, Comparator.comparingDouble(Exchange::getHBarValue));
+        exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
 
         log.log(Level.INFO, "find the median");
-        if ( exchangeList.size() %2 == 0 ) {
-            median = (exchangeList.get(exchangeList.size() / 2).getHBarValue() + exchangeList.get(exchangeList.size() / 2 - 1).getHBarValue()) / 2;
+        if (exchanges.size() % 2 == 0 ) {
+            return (exchanges.get(exchanges.size() / 2).getHBarValue() + exchanges.get(exchanges.size() / 2 - 1).getHBarValue()) / 2;
         }
         else {
-            median = exchangeList.get(exchangeList.size() / 2).getHBarValue();
+            return exchanges.get(exchanges.size() / 2).getHBarValue();
         }
-
-        return median;
     }
 
-    private List<Exchange> generateExchanges() throws IOException {
+    private List<Exchange> generateExchanges() {
         // since we have fixed exchanges, we create an object for each exchange type ,
         // retrieve the exchange rate and add it to the list.
-        List<Exchange> exchangeList = new ArrayList<Exchange>();
-        log.log(Level.INFO, "Adding Bitrex");
-        Bitrex birex = Bitrex.load();
-        exchangeList.add(birex);
-        log.log(Level.INFO, "Adding Liquid");
-        Liquid liquid = Liquid.load();
-        exchangeList.add(liquid);
-        log.log(Level.INFO, "Adding Coinbase");
-        Coinbase coinbase = Coinbase.load();
-        exchangeList.add(coinbase);
+        final List<Exchange> exchanges = new ArrayList<>();
+        for (final Supplier<Exchange> exchangeSupplier : EXCHANGE_SUPPLIERS) {
+            exchanges.add(exchangeSupplier.get());
+        }
 
-        return exchangeList;
+        return exchanges;
     }
 
 
