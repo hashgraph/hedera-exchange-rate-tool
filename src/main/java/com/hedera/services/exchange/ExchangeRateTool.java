@@ -4,9 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
-import java.util.Timer;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 
 public class ExchangeRateTool {
@@ -20,8 +17,9 @@ public class ExchangeRateTool {
     private String mainNetAPI;
     private String pricingDBAPI;
     private Double maxDelta;
-    private Double prevMedian;
-    private Double currMedian;
+    private Double erNow;
+    private Double tE;
+    private Double tO;
     private String hederaFileIdentifier;
     private Double frequency;
 
@@ -80,20 +78,20 @@ public class ExchangeRateTool {
         this.maxDelta = maxDelta;
     }
 
-    public Double getPrevMedian() {
-        return prevMedian;
+    public Double getErNow() {
+        return erNow;
     }
 
-    public void setPrevMedian(Double prevMedian) {
-        this.prevMedian = prevMedian;
+    public void setErNow(Double erNow) {
+        this.erNow = erNow;
     }
 
-    public Double getCurrMedian() {
-        return currMedian;
+    public Double gettE() {
+        return tE;
     }
 
-    public void setCurrMedian(Double currMedian) {
-        this.currMedian = currMedian;
+    public void settE(Double tE) {
+        this.tE = tE;
     }
 
     public String getHederaFileIdentifier() {
@@ -110,5 +108,13 @@ public class ExchangeRateTool {
 
     public void setFrequency(Double frequency) {
         this.frequency = frequency;
+    }
+
+    public Double gettO() {
+        return tO;
+    }
+
+    public void settO(Double tO) {
+        this.tO = tO;
     }
 }

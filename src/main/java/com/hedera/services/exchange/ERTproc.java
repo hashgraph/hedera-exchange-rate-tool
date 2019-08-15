@@ -10,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This class implements the methods that we perform periodically to generate Exchange rate
@@ -25,8 +24,9 @@ public class ERTproc implements Runnable {
     private String mainNetAPI;
     private String pricingDBAPI;
     private Double maxDelta;
-    private Double prevMedian;
-    private Double currMedian;
+    private Double erNow;
+    private Double erNew;
+    private Double tE;
     private String hederaFileIdentifier;
 
     public ERTproc(final String privateKey,
@@ -34,8 +34,8 @@ public class ERTproc implements Runnable {
             final String mainNetAPI,
             final String pricingDBAPI,
             final Double maxDelta,
-            final Double prevMedian,
-            final Double currMedian,
+            final Double erNow,
+            final Double tE,
             final String hederaFileIdentifier) {
         this.privateKey = privateKey;
         this.exchangeAPIList = exchangeAPIList;
@@ -43,8 +43,8 @@ public class ERTproc implements Runnable {
         this.mainNetAPI = mainNetAPI;
         this.pricingDBAPI = pricingDBAPI;
         this.maxDelta = maxDelta;
-        this.prevMedian = prevMedian;
-        this.currMedian = currMedian;
+        this.erNow = erNow;
+        this.tE = tE;
         this.hederaFileIdentifier = hederaFileIdentifier;
     }
 
@@ -59,10 +59,19 @@ public class ERTproc implements Runnable {
             log.log(Level.INFO, "generating exchange objects");
             this.exchangeList = generateExchanges();
 
-            // walk through each exchange object and calculate the median exchange rate
+            log.log(Level.INFO, "Calculating median");
             Double medianExRate = calculateMedianRate();
+            log.log(Level.DEBUG, "Median calculated : " + medianExRate);
 
-            //
+            Rate currentRate = new Rate("CurrentRate", 1, erNow, tE);
+            Rate nextRate = new Rate("NextRate", 1, medianExRate, tE+3600);
+
+            ERF exchangeRateFileObject = new ERF(currentRate, nextRate);
+
+            // Check delta
+            // sign the file accordingly
+            // POST it to the network and Pricing DB
+
         } catch (IOException e) {
             e.printStackTrace();
         }
