@@ -24,10 +24,13 @@ public class Bitrex implements Exchange {
 		}
 	}
 
+	@JsonProperty("success")
 	private boolean success;
 
+	@JsonProperty("message")
 	private String message;
 
+	@JsonProperty("result")
 	private Result result;
 
 	@Override
@@ -39,15 +42,15 @@ public class Bitrex implements Exchange {
 		return this.result.last;
 	}
 
-	public boolean isSuccess() {
+	boolean isSuccess() {
 		return success;
 	}
 
-	public String getMessage() {
+	String getMessage() {
 		return message;
 	}
 
-	public Result getResult() {
+	Result getResult() {
 		return result;
 	}
 
