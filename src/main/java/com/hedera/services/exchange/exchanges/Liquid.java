@@ -1,5 +1,7 @@
 package com.hedera.services.exchange.exchanges;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -22,23 +24,26 @@ public class Liquid implements Exchange {
 		}
 	}
 
-	private Double exchange_rate;
+	@JsonProperty("exchange_rate")
+	private Double exchangeRate;
+
+	@JsonProperty("product_type")
+	private String productType;
+
+	@JsonProperty("code")
+	private String code;
 
 	@Override
 	public Double getHBarValue() {
-		if(exchange_rate == null) {
-			return null;
-		}
-
-		return this.exchange_rate;
+		return this.exchangeRate;
 	}
 
-	public Double getExchange_rate() {
-		return exchange_rate;
+	String getProductType() {
+		return this.productType;
 	}
 
-	public void setExchange_rate(Double exchange_rate) {
-		this.exchange_rate = exchange_rate;
+	String getCode() {
+		return this.code;
 	}
 
 	public static Liquid load() {
