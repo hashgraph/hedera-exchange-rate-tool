@@ -9,8 +9,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -110,14 +112,35 @@ public class ERTproc implements Callable<Double> {
     }
 
     public static void main (String ... args) {
-        final ERTproc proc = new ERTproc("0",
-                null,
-                "0",
-                "0",
-                0.0,
-                0.0,
-                0.0,
-                "0");
-        proc.call();
+        try {
+            final ERTproc proc = new ERTproc("0",
+                    null,
+                    "0",
+                    "0",
+                    0.0,
+                    0.0,
+                    0.0,
+                    "0");
+            proc.call();
+        } catch (final Exception ex) {
+            log.error("Error whiile running ERTPROC {}", ex);
+        }
+    }
+
+    public static Double execute(final String ... input) {
+        try {
+            final ERTproc proc = new ERTproc("0",
+                    null,
+                    "0",
+                    "0",
+                    0.0,
+                    0.0,
+                    0.0,
+                    "0");
+            return proc.call();
+        } catch (final Exception ex) {
+            log.error("Error whiile running ERTPROC {}", ex);
+            return -1.0;
+        }
     }
 }
