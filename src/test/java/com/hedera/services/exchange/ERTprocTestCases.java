@@ -19,14 +19,15 @@ import static org.mockito.Mockito.when;
 
 public class ERTprocTestCases {
 
-    public ERTproc ertProcess = new ERTproc("0", null, "0", "0", 0.0,
-            0.0, 0.0, "0");
+    public ERTproc ertProcess = new ERTproc("0", null, "0", "0", 5.0,
+            0.0090600, 2600.0, "0");
 
     @Test
     public void testMedian() throws IOException {
         this.setExchanges();
         final double median = ertProcess.call();
         assertEquals(0.00954162, median);
+
     }
 
     private void setExchanges() throws IOException {

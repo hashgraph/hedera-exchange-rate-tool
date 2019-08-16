@@ -31,6 +31,7 @@ public class ERTproc implements Callable<Double> {
     private Double erNew;
     private Double tE;
     private String hederaFileIdentifier;
+    // private Double frequency;
 
     public ERTproc(final String privateKey,
             final List<String> exchangeAPIList,
@@ -64,15 +65,40 @@ public class ERTproc implements Callable<Double> {
             log.log(Level.INFO, "Calculating median");
             Double medianExRate = calculateMedianRate(exchanges);
             log.log(Level.DEBUG, "Median calculated : " + medianExRate);
+            if ( medianExRate == 0.0 ){
+                return medianExRate;
+            }
 
-            Rate currentRate = new Rate("CurrentRate", 1, erNow, tE);
-            Rate nextRate = new Rate("NextRate", 1, medianExRate, tE+3600);
+            // Check delta
+            log.log(Level.INFO, "validate the median");
+            final boolean isValid = validateERMedian(medianExRate);
+
+            if (!isValid){
+                // limit the value
+                if (medianExRate < erNow){
+                    medianExRate = getMinER();
+                }
+                else{
+                    medianExRate = getMaxER();
+                }
+            }
+
+            tE = getCurrentExpirationTime() / 1000;
+            Rate currentRate = new Rate(1, erNow, tE);
+            Rate nextRate = new Rate(1, medianExRate, tE+3600);
 
             final ERF exchangeRateFileObject = new ERF(currentRate, nextRate);
 
-            // Check delta
+            // build the ER File
             // sign the file accordingly
-            // POST it to the network and Pricing DB
+            if (isValid){
+                //follow the automatic process
+            }
+            else{
+                //follow the manual process
+            }
+            // create a transaction for the network
+            // POST it to the Pricing DB
             return  medianExRate;
 
         } catch (Exception e) {
@@ -81,12 +107,53 @@ public class ERTproc implements Callable<Double> {
         }
     }
 
+    private Double getCurrentExpirationTime() {
+        long currentTime = System.currentTimeMillis();
+        long nextHour = ( currentTime - (currentTime % 3600000) ) + 3600000;
+        return (double) nextHour;
+    }
+
+    private boolean validateERMedian(Double medianExRate) {
+        boolean isValid = false;
+        // convert to tinyCents
+        final long erNowNumTinyCents = convertToTinyCents(erNow);
+        final long erNewNumTinyCents = convertToTinyCents(medianExRate);
+        
+        long difference = Math.abs(erNewNumTinyCents - erNowNumTinyCents);
+        double calculatedDelta = ( (double)difference / erNowNumTinyCents ) * 100;
+        if ( calculatedDelta <= maxDelta ){
+            log.log(Level.DEBUG, "Median is Valid");
+            isValid = true;
+        }
+        else{
+            log.log(Level.ERROR, "Median is Invalid. Out of accepted Delta range.");
+        }
+        return isValid;
+    }
+
+    private Double getMaxER() {
+        return erNow * ( 1 + ( (double)maxDelta / 100 ));
+    }
+
+    private Double getMinER() {
+        return erNow * ( 1 - ( (double)maxDelta / 100 ));
+    }
+
+    private long convertToTinyCents(final Double exchangeRate) {
+        long numTinyBars = 1_000_000_000;
+        long numTinyCents = (long)(exchangeRate * 100 * numTinyBars);
+        return  numTinyCents;
+    }
+
     private Double calculateMedianRate(final List<Exchange> exchanges) {
         log.log(Level.INFO, "sort the exchange list according to the exchange rate");
 
-        exchanges.removeIf(x -> x.getHBarValue() == null || x.getHBarValue() == 0);
+        exchanges.removeIf(x -> x.getHBarValue() == null || x.getHBarValue() == 0.0);
 
-        // sort the exchange list on the basis of their exchange rate
+        if (exchanges.size() == 0){
+            log.log(Level.ERROR, "No valid exchange rates retrieved.");
+            return 0.0;
+        }
         exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
 
         log.log(Level.INFO, "find the median");
