@@ -109,5 +109,15 @@ public class ERTproc implements Callable<Double> {
         return exchanges;
     }
 
-
+    public static void main (String ... args) {
+        final ERTproc proc = new ERTproc("0",
+                null,
+                "0",
+                "0",
+                0.0,
+                0.0,
+                0.0,
+                "0");
+        proc.call();
+    }
 }
