@@ -6,7 +6,7 @@
 		"coinbase": "https://api.coinbase.com/v2/exchange-rates"
 	},
 	"maxDelta": "5.0",
-	"privateKeyLocation": "path",
+	"privateKeyPath": "path",
 	"Nodes": {
 		"id1": "ipaddress",
 		"id2": "ipaddress"
