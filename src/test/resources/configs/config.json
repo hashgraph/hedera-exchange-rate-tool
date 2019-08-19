@@ -1,0 +1,17 @@
+{
+	"exchanges": {
+		"bitrex": "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC",
+		"liquid": "https://api.liquid.com/products/5",
+		"upbit": "https://api.upbit.com/v1/ticker?markets=USD-HBAR",
+		"coinbase": "https://api.coinbase.com/v2/exchange-rates"
+	},
+	"maxDelta": "5.0",
+	"privateKeyPath": "path",
+	"Nodes": {
+		"id1": "ipaddress",
+		"id2": "ipaddress"
+	},
+	"payAccount": "0.0.57",
+	"fileIdentifier": "0.0.112",
+	"frequencyInSeconds": "3600"
+}
