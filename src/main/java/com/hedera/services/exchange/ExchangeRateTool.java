@@ -1,9 +1,19 @@
 package com.hedera.services.exchange;
 
+import com.hedera.hashgraph.sdk.Client;
+import com.hedera.hashgraph.sdk.HederaException;
+import com.hedera.hashgraph.sdk.TransactionId;
+import com.hedera.hashgraph.sdk.account.AccountId;
+import com.hedera.hashgraph.sdk.crypto.Key;
+import com.hedera.hashgraph.sdk.file.FileId;
+import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class ExchangeRateTool {
@@ -23,7 +33,7 @@ public class ExchangeRateTool {
     private String hederaFileIdentifier;
     private Double frequency;
 
-    public static void main(String args[]){
+    public static void main(String args[]) throws HederaException {
         // TODO : read the config file and save the parameters.
 
         // using the frequency read from the config file, spawn a thread that does the functions.
@@ -35,6 +45,30 @@ public class ExchangeRateTool {
         // we wait a while for the thread to finish executing and fetch the details the ERTproc writes to the
         // database and update prev and curr medians so that we can send them to the new thread.
 
+        final ERTproc proc = new ERTproc("0",
+                null,
+                "0",
+                "0",
+                0.0,
+                0.0,
+                0l,
+                "0");
+        final ExchangeRate exchangeRate = proc.call();
+
+        final AccountId accountId = new AccountId(3);
+        final String address = "0.testnet.hedera.com:50211";
+        final Map<AccountId, String> nodes = new HashMap<>();
+        nodes.put(accountId, address);
+
+        final Key operatorKey = null;
+        final Client client = new Client(nodes).setMaxTransactionFee(100_000_000_000L);
+        final TransactionId transaction = new FileUpdateTransaction(client)
+                .setFileId(FileId.fromString("0.0.112"))
+                .setContents(exchangeRate.toExchangeRateSet().toByteArray())
+                .addKey(operatorKey)
+                .execute();
+
+        final Instant validStart = transaction.getValidStart();
     }
 
     public String getPrivateKey() {
