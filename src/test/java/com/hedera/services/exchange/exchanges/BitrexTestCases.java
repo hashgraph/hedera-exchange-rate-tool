@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -27,12 +28,12 @@ public class BitrexTestCases {
 		when(connection.getInputStream()).thenReturn(json);
 		new MockUp<Bitrex>() {
 			@Mock
-			HttpURLConnection getConnection() {
+			HttpURLConnection getConnection(final URL url) {
 				return connection;
 			}
 		};
 
-		final Bitrex bitrex = Bitrex.load();
+		final Bitrex bitrex = Bitrex.load(Bitrex.BITREX_URL);
 		assertTrue(bitrex.isSuccess());
 		assertEquals(0.00954162, bitrex.getHBarValue());
 		assertEquals("Data Sent", bitrex.getMessage());
@@ -46,12 +47,12 @@ public class BitrexTestCases {
 		when(connection.getInputStream()).thenReturn(json);
 		new MockUp<Bitrex>() {
 			@Mock
-			HttpURLConnection getConnection() {
+			HttpURLConnection getConnection(final URL url) {
 				return connection;
 			}
 		};
 
-		final Bitrex bitrex = Bitrex.load();
+		final Bitrex bitrex = Bitrex.load(Bitrex.BITREX_URL);
 		assertFalse(bitrex.isSuccess());
 		assertNull(bitrex.getHBarValue());
 		assertNull(bitrex.getResult());

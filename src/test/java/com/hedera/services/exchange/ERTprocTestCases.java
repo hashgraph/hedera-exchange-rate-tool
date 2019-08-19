@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -44,7 +45,7 @@ public class ERTprocTestCases {
         when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
         new MockUp<Bitrex>() {
             @Mock
-            HttpURLConnection getConnection() {
+            HttpURLConnection getConnection(final URL url) {
                 return bitrexConnection;
             }
         };
@@ -55,7 +56,7 @@ public class ERTprocTestCases {
         when(coinbaseConnection.getInputStream()).thenReturn(coinbaseJson);
         new MockUp<Coinbase>() {
             @Mock
-            HttpURLConnection getConnection() {
+            HttpURLConnection getConnection(final URL url) {
                 return coinbaseConnection;
             }
         };
@@ -66,7 +67,7 @@ public class ERTprocTestCases {
         when(liquidConnection.getInputStream()).thenReturn(liquidJson);
         new MockUp<Liquid>() {
             @Mock
-            HttpURLConnection getConnection() {
+            HttpURLConnection getConnection(final URL url) {
                 return liquidConnection;
             }
         };

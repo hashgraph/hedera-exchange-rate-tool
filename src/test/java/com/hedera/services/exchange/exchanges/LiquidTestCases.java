@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -23,12 +24,12 @@ public class LiquidTestCases {
         when(connection.getInputStream()).thenReturn(json);
         new MockUp<Liquid>() {
             @Mock
-            HttpURLConnection getConnection() {
+            HttpURLConnection getConnection(final URL url) {
                 return connection;
             }
         };
 
-        final Liquid liquid = Liquid.load();
+        final Liquid liquid = Liquid.load(Liquid.LIQUID_URL);
         assertEquals(0.0093, liquid.getHBarValue());
         assertEquals("CurrencyPair", liquid.getProductType());
         assertEquals("CASH", liquid.getCode());

@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -23,12 +24,12 @@ public class CoinbaseTestCases {
         when(connection.getInputStream()).thenReturn(json);
         new MockUp<Coinbase>() {
             @Mock
-            HttpURLConnection getConnection() {
+            HttpURLConnection getConnection(final URL url) {
                 return connection;
             }
         };
 
-        final Coinbase coinbase = Coinbase.load();
+        final Coinbase coinbase = Coinbase.load(Coinbase.COINBASE_URL);
         assertEquals("USD", coinbase.getCurrency());
         assertEquals(0.0098, coinbase.getHBarValue());
     }

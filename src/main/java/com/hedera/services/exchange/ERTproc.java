@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * This class implements the methods that we perform periodically to generate Exchange rate
@@ -21,7 +22,7 @@ public class ERTproc {
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
 
-    private static final List<Supplier<Exchange>> EXCHANGE_SUPPLIERS = Arrays.asList(Bitrex::load, Liquid::load, Coinbase::load);
+    private static final List<Function<String, Exchange>> EXCHANGE_SUPPLIERS = Arrays.asList(Bitrex::load, Liquid::load, Coinbase::load);
 
     private String privateKey;
     private List<String> exchangeAPIList;
@@ -64,7 +65,7 @@ public class ERTproc {
             LOGGER.log(Level.INFO, "Calculating median");
             Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.log(Level.DEBUG, "Median calculated : " + medianExRate);
-            if ( medianExRate == null ){
+            if (medianExRate == null){
                 return null;
             }
 
@@ -143,8 +144,8 @@ public class ERTproc {
         // since we have fixed exchanges, we create an object for each exchange type ,
         // retrieve the exchange rate and add it to the list.
         final List<Exchange> exchanges = new ArrayList<>();
-        for (final Supplier<Exchange> exchangeSupplier : EXCHANGE_SUPPLIERS) {
-            exchanges.add(exchangeSupplier.get());
+        for (final Function<String, Exchange> exchange : EXCHANGE_SUPPLIERS) {
+            // exchanges.add(exchangeSupplier.get());
         }
 
         return exchanges;
