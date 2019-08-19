@@ -18,7 +18,7 @@ import java.util.concurrent.Callable;
 /**
  * This class implements the methods that we perform periodically to generate Exchange rate
  */
-public class ERTproc implements Callable<Double> {
+public class ERTproc {
 
     private static final Logger log = LogManager.getLogger(ERTproc.class);
 
@@ -31,7 +31,7 @@ public class ERTproc implements Callable<Double> {
     private Double maxDelta;
     private Double erNow;
     private Double erNew;
-    private Double tE;
+    private Long tE;
     private String hederaFileIdentifier;
 
     public ERTproc(final String privateKey,
@@ -40,7 +40,7 @@ public class ERTproc implements Callable<Double> {
             final String pricingDBAPI,
             final Double maxDelta,
             final Double erNow,
-            final Double tE,
+            final Long tE,
             final String hederaFileIdentifier) {
         this.privateKey = privateKey;
         this.exchangeAPIList = exchangeAPIList;
@@ -53,8 +53,7 @@ public class ERTproc implements Callable<Double> {
     }
 
     // now that we have all the data/APIs required, add methods to perform the functions
-    @Override
-    public Double call() {
+    public ExchangeRate call() {
         // we call the methods in the order of execution logic
         log.log(Level.INFO, "Start of ERT Logic");
 
@@ -67,19 +66,19 @@ public class ERTproc implements Callable<Double> {
             Double medianExRate = calculateMedianRate(exchanges);
             log.log(Level.DEBUG, "Median calculated : " + medianExRate);
 
-            Rate currentRate = new Rate("CurrentRate", 1, erNow, tE);
-            Rate nextRate = new Rate("NextRate", 1, medianExRate, tE+3600);
+            final Rate currentRate = new Rate(erNow, tE);
+            final Rate nextRate = new Rate(medianExRate, tE + 3600);
 
-            final ERF exchangeRateFileObject = new ERF(currentRate, nextRate);
+            final ExchangeRate exchangeRate = new ExchangeRate(currentRate, nextRate);
 
             // Check delta
             // sign the file accordingly
             // POST it to the network and Pricing DB
-            return  medianExRate;
+            return  exchangeRate;
 
         } catch (Exception e) {
             e.printStackTrace();
-            return 0.0;
+            return null;
         }
     }
 
@@ -119,7 +118,7 @@ public class ERTproc implements Callable<Double> {
                     "0",
                     0.0,
                     0.0,
-                    0.0,
+                    0l,
                     "0");
             proc.call();
         } catch (final Exception ex) {
@@ -127,7 +126,7 @@ public class ERTproc implements Callable<Double> {
         }
     }
 
-    public static Double execute(final String ... input) {
+    public static ExchangeRate execute(final String ... input) {
         try {
             final ERTproc proc = new ERTproc("0",
                     null,
@@ -135,12 +134,12 @@ public class ERTproc implements Callable<Double> {
                     "0",
                     0.0,
                     0.0,
-                    0.0,
+                    0l,
                     "0");
             return proc.call();
         } catch (final Exception ex) {
             log.error("Error whiile running ERTPROC {}", ex);
-            return -1.0;
+            return null;
         }
     }
 }
