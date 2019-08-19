@@ -24,6 +24,8 @@ public class ExchangeRateTool {
 
     private static final String OPERATOR_KEY = "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137";
 
+    private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates weren't updated successfully";
+
     // logger object to write logs into
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
 
@@ -40,16 +42,7 @@ public class ExchangeRateTool {
     private Double frequency;
 
     public static void main(String args[]) throws HederaException {
-        // TODO : read the config file and save the parameters.
-
-        // using the frequency read from the config file, spawn a thread that does the functions.
-     //   ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-     //   service.scheduleAtFixedRate( new ERTproc(privateKey, exchangeAPIList, mainNetAPI,
-     //   pricingDBAPI, maxDelta, prevMedian, currMedian, hederaFileIdentifier),
-     //           0, frequency, Timer.Seconds);
-
-        // we wait a while for the thread to finish executing and fetch the details the ERTproc writes to the
-        // database and update prev and curr medians so that we can send them to the new thread.
+        LOGGER.info("Starting ExchangeRateTool");
 
         final ERTproc proc = new ERTproc("0",
                 null,
@@ -73,21 +66,23 @@ public class ExchangeRateTool {
         final Client client = new Client(nodes)
                 .setMaxTransactionFee(1_000_000_000L)
                 .setOperator(operatorId, operatorKey);
+        
         final FileUpdateTransaction fileUpdateTransaction = new FileUpdateTransaction(client)
                 .setFileId(fileId)
                 .setContents(exchangeRateAsBytes)
                 .addKey(operatorKey.getPublicKey());
 
-        final TransactionId transactionId = fileUpdateTransaction.execute();
-        final Instant validStart = transactionId.getValidStart();
-
+        fileUpdateTransaction.execute();
 
         final FileGetContentsResponse contentsResponse = new FileContentsQuery(client).setFileId(fileId).execute();
 
         final byte[] contentsRetrieved = contentsResponse.getFileContents().getContents().toByteArray();
         if (Arrays.areEqual(exchangeRateAsBytes, contentsRetrieved)) {
-            throw new RuntimeException("The ExchangeRates weren't updated successfully");
+            LOGGER.error(UPDATE_ERROR_MESSAGE);
+            throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
+
+        LOGGER.info("The Exchange Rates were successfully updated");
     }
 
     public String getPrivateKey() {
