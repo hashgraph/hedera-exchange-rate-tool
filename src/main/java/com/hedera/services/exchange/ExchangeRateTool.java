@@ -35,7 +35,6 @@ public class ExchangeRateTool {
         // we wait a while for the thread to finish executing and fetch the details the ERTproc writes to the
         // database and update prev and curr medians so that we can send them to the new thread.
 
-
     }
 
     public String getPrivateKey() {

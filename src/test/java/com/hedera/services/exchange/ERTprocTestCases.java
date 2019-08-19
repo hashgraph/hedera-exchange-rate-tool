@@ -1,6 +1,6 @@
 package com.hedera.services.exchange;
 
-import com.hedera.services.exchange.ERTproc;
+import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.services.exchange.exchanges.Bitrex;
 import com.hedera.services.exchange.exchanges.Coinbase;
 import com.hedera.services.exchange.exchanges.Liquid;
@@ -20,14 +20,20 @@ import static org.mockito.Mockito.when;
 public class ERTprocTestCases {
 
     public ERTproc ertProcess = new ERTproc("0", null, "0", "0", 5.0,
-            0.0090600, 2600, "0");
+            0.0091600, 2600, "0");
 
     @Test
     public void testMedian() throws IOException {
         this.setExchanges();
-        final double median = ertProcess.call();
-        assertEquals(0.00954162, median);
 
+        final ExchangeRate exchangeRate = ertProcess.call();
+        final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
+        assertEquals(954, exchangeRateSet.getNextRate().getCentEquiv());
+        assertEquals(100_000, exchangeRateSet.getNextRate().getHbarEquiv());
+        assertEquals("{\"currentRate\":{\"expirationTimeInSeconds\":1566237600,\"hbarEquiv\":100000,\"centEquiv\":0," +
+                "\"expirationTime\":{\"seconds\":0}}," +
+                "\"nextRate\":{\"expirationTimeInSeconds\":3600," +
+                "\"hbarEquiv\":100000,\"centEquiv\":954,\"expirationTime\":{\"seconds\":3600}}}", exchangeRate.toJson());
     }
 
     private void setExchanges() throws IOException {

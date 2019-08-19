@@ -9,16 +9,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.Callable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * This class implements the methods that we perform periodically to generate Exchange rate
  */
-public class ERTproc implements Callable<Double> {
+public class ERTproc {
 
-    private static final Logger log = LogManager.getLogger(ERTproc.class);
+    private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
 
     private static final List<Supplier<Exchange>> EXCHANGE_SUPPLIERS = Arrays.asList(Bitrex::load, Liquid::load, Coinbase::load);
 
@@ -26,9 +27,9 @@ public class ERTproc implements Callable<Double> {
     private List<String> exchangeAPIList;
     private String mainNetAPI;
     private String pricingDBAPI;
-    private Double maxDelta;
-    private Double erNow;
-    private Double erNew;
+    private double maxDelta;
+    private double erNow;
+    private double erNew;
     private long tE;
     private String hederaFileIdentifier;
 
@@ -36,8 +37,8 @@ public class ERTproc implements Callable<Double> {
             final List<String> exchangeAPIList,
             final String mainNetAPI,
             final String pricingDBAPI,
-            final Double maxDelta,
-            final Double erNow,
+            final double maxDelta,
+            final double erNow,
             final long tE,
             final String hederaFileIdentifier) {
         this.privateKey = privateKey;
@@ -51,26 +52,28 @@ public class ERTproc implements Callable<Double> {
     }
 
     // now that we have all the data/APIs required, add methods to perform the functions
-    @Override
-    public Double call() {
+    public ExchangeRate call() {
         // we call the methods in the order of execution logic
-        log.log(Level.INFO, "Start of ERT Logic");
+        LOGGER.log(Level.INFO, "Start of ERT Logic");
 
         // Make a list of exchanges
         try {
-            log.log(Level.INFO, "generating exchange objects");
+            LOGGER.log(Level.INFO, "generating exchange objects");
             final List<Exchange> exchanges = generateExchanges();
 
-            log.log(Level.INFO, "Calculating median");
+            LOGGER.log(Level.INFO, "Calculating median");
             Double medianExRate = calculateMedianRate(exchanges);
-            log.log(Level.DEBUG, "Median calculated : " + medianExRate);
+            LOGGER.log(Level.DEBUG, "Median calculated : " + medianExRate);
             if ( medianExRate == null ){
                 return null;
             }
 
-            // Check delta
-            log.log(Level.INFO, "validate the median");
-            final boolean isValid = validateERMedian(medianExRate);
+            tE = getCurrentExpirationTime() / 1000;
+            final Rate currentRate = new Rate(erNow, tE);
+            Rate nextRate = new Rate(medianExRate, tE + 3600);
+
+            LOGGER.log(Level.INFO, "validate the median");
+            final boolean isValid = currentRate.isValid(maxDelta, nextRate);
 
             if (!isValid){
                 // limit the value
@@ -80,13 +83,9 @@ public class ERTproc implements Callable<Double> {
                 else{
                     medianExRate = getMaxER();
                 }
+                nextRate = new Rate(medianExRate, tE + 3600);
             }
-
-            tE = getCurrentExpirationTime() / 1000;
-            Rate currentRate = new Rate(1, erNow, tE);
-            Rate nextRate = new Rate(1, medianExRate, tE+3600);
-
-            final ERF exchangeRateFileObject = new ERF(currentRate, nextRate);
+            final ExchangeRate exchangeRate = new ExchangeRate(currentRate, nextRate);
 
             // build the ER File
             // sign the file accordingly
@@ -97,8 +96,8 @@ public class ERTproc implements Callable<Double> {
                 //follow the manual process
             }
             // create a transaction for the network
-            // POST it to the Pricing DB
-            return  medianExRate;
+            // POST it to the network and Pricing DB
+            return  exchangeRate;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,22 +111,6 @@ public class ERTproc implements Callable<Double> {
         return nextHour;
     }
 
-    private boolean validateERMedian(Double medianExRate) {
-        final long erNowNumTinyCents = convertToTinyCents(erNow);
-        final long erNewNumTinyCents = convertToTinyCents(medianExRate);
-        
-        long difference = Math.abs(erNewNumTinyCents - erNowNumTinyCents);
-        double calculatedDelta = ( (double)difference / erNowNumTinyCents ) * 100;
-        if ( calculatedDelta <= maxDelta ){
-            log.log(Level.DEBUG, "Median is Valid");
-            return true;
-        }
-        else{
-            log.log(Level.ERROR, "Median is Invalid. Out of accepted Delta range.");
-            return false;
-        }
-    }
-
     private double getMaxER() {
         return erNow * ( 1 + ( (double)maxDelta / 100 ));
     }
@@ -136,24 +119,18 @@ public class ERTproc implements Callable<Double> {
         return erNow * ( 1 - ( (double)maxDelta / 100 ));
     }
 
-    private long convertToTinyCents(final Double exchangeRate) {
-        long numTinyBars = 1_000_000_000;
-        long numTinyCents = (long)(exchangeRate * 100 * numTinyBars);
-        return  numTinyCents;
-    }
-
     private Double calculateMedianRate(final List<Exchange> exchanges) {
-        log.log(Level.INFO, "sort the exchange list according to the exchange rate");
+        LOGGER.log(Level.INFO, "sort the exchange list according to the exchange rate");
 
         exchanges.removeIf(x -> x.getHBarValue() == null || x.getHBarValue() == 0.0);
 
         if (exchanges.size() == 0){
-            log.log(Level.ERROR, "No valid exchange rates retrieved.");
+            LOGGER.log(Level.ERROR, "No valid exchange rates retrieved.");
             return null;
         }
         exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
 
-        log.log(Level.INFO, "find the median");
+        LOGGER.log(Level.INFO, "find the median");
         if (exchanges.size() % 2 == 0 ) {
             return (exchanges.get(exchanges.size() / 2).getHBarValue() + exchanges.get(exchanges.size() / 2 - 1).getHBarValue()) / 2;
         }
@@ -173,5 +150,36 @@ public class ERTproc implements Callable<Double> {
         return exchanges;
     }
 
+    public static void main (String ... args) {
+        try {
+            final ERTproc proc = new ERTproc("0",
+                    null,
+                    "0",
+                    "0",
+                    0.0,
+                    0.0,
+                    0l,
+                    "0");
+            proc.call();
+        } catch (final Exception ex) {
+            LOGGER.error("Error whiile running ERTPROC {}", ex);
+        }
+    }
 
+    public static ExchangeRate execute(final String ... input) {
+        try {
+            final ERTproc proc = new ERTproc("0",
+                    null,
+                    "0",
+                    "0",
+                    0.0,
+                    0.0,
+                    0l,
+                    "0");
+            return proc.call();
+        } catch (final Exception ex) {
+            LOGGER.error("Error whiile running ERTPROC {}", ex);
+            return null;
+        }
+    }
 }

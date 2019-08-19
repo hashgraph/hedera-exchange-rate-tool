@@ -54,12 +54,6 @@
             <version>5.5.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>5.5.0</version>
-            <scope>provided</scope>
-        </dependency>
 
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -67,34 +61,68 @@
 			<version>2.23.4</version>
 			<scope>test</scope>
 		</dependency>
+
+        <dependency>
+            <groupId>com.hedera.hashgraph</groupId>
+            <artifactId>sdk</artifactId>
+            <version>0.5.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-core</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
                 <configuration>
-                    <source>10</source>
-                    <target>10</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
 
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.1</version>
+                <version>2.22.2</version>
                 <configuration>
                     <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
-                    <failIfNoTests>true</failIfNoTests>
+                    <failIfNoTests>false</failIfNoTests>
                     <forkCount>0</forkCount>
                     <reuseForks>true</reuseForks>
-                    <excludes>
-                    </excludes>
                     <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/test/resources</directory>
+            </testResource>
+        </testResources>
     </build>
-
-
 </project>
