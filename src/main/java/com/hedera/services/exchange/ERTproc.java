@@ -29,9 +29,8 @@ public class ERTproc implements Callable<Double> {
     private Double maxDelta;
     private Double erNow;
     private Double erNew;
-    private Double tE;
+    private long tE;
     private String hederaFileIdentifier;
-    // private Double frequency;
 
     public ERTproc(final String privateKey,
             final List<String> exchangeAPIList,
@@ -39,7 +38,7 @@ public class ERTproc implements Callable<Double> {
             final String pricingDBAPI,
             final Double maxDelta,
             final Double erNow,
-            final Double tE,
+            final long tE,
             final String hederaFileIdentifier) {
         this.privateKey = privateKey;
         this.exchangeAPIList = exchangeAPIList;
@@ -65,8 +64,8 @@ public class ERTproc implements Callable<Double> {
             log.log(Level.INFO, "Calculating median");
             Double medianExRate = calculateMedianRate(exchanges);
             log.log(Level.DEBUG, "Median calculated : " + medianExRate);
-            if ( medianExRate == 0.0 ){
-                return medianExRate;
+            if ( medianExRate == null ){
+                return null;
             }
 
             // Check delta
@@ -103,19 +102,17 @@ public class ERTproc implements Callable<Double> {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return 0.0;
+            return null;
         }
     }
 
-    private Double getCurrentExpirationTime() {
+    private long getCurrentExpirationTime() {
         long currentTime = System.currentTimeMillis();
         long nextHour = ( currentTime - (currentTime % 3600000) ) + 3600000;
-        return (double) nextHour;
+        return nextHour;
     }
 
     private boolean validateERMedian(Double medianExRate) {
-        boolean isValid = false;
-        // convert to tinyCents
         final long erNowNumTinyCents = convertToTinyCents(erNow);
         final long erNewNumTinyCents = convertToTinyCents(medianExRate);
         
@@ -123,19 +120,19 @@ public class ERTproc implements Callable<Double> {
         double calculatedDelta = ( (double)difference / erNowNumTinyCents ) * 100;
         if ( calculatedDelta <= maxDelta ){
             log.log(Level.DEBUG, "Median is Valid");
-            isValid = true;
+            return true;
         }
         else{
             log.log(Level.ERROR, "Median is Invalid. Out of accepted Delta range.");
+            return false;
         }
-        return isValid;
     }
 
-    private Double getMaxER() {
+    private double getMaxER() {
         return erNow * ( 1 + ( (double)maxDelta / 100 ));
     }
 
-    private Double getMinER() {
+    private double getMinER() {
         return erNow * ( 1 - ( (double)maxDelta / 100 ));
     }
 
@@ -152,7 +149,7 @@ public class ERTproc implements Callable<Double> {
 
         if (exchanges.size() == 0){
             log.log(Level.ERROR, "No valid exchange rates retrieved.");
-            return 0.0;
+            return null;
         }
         exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
 
