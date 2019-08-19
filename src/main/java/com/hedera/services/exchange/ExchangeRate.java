@@ -5,6 +5,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.hashgraph.sdk.proto.TimestampSeconds;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ExchangeRate {
 
@@ -46,5 +49,4 @@ public class ExchangeRate {
 
 		return ExchangeRateSet.newBuilder().setCurrentRate(currentRate).setNextRate(nextRate).build();
 	}
-
 }

@@ -10,6 +10,7 @@ import java.net.URL;
 
 public class Bitrex implements Exchange {
 
+	// TODO Update the URL
 	private static final String BITREX_URL = "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC";
 
 	private static final Bitrex DEFAULT = new Bitrex();
