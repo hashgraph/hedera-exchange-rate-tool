@@ -36,9 +36,9 @@ public class ERTprocTestCases {
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
         assertEquals(954, exchangeRateSet.getNextRate().getCentEquiv());
         assertEquals(100_000, exchangeRateSet.getNextRate().getHbarEquiv());
-        final String expectedJson = String.format("{" +
+        final String expectedJson = String.format("{\"exchangeRate\":{" +
                 "\"currentRate\":{\"hbarEquiv\":100000,\"centEquiv\":916,\"expirationTime\":{\"seconds\":%d}}," +
-                "\"nextRate\":{\"hbarEquiv\":100000,\"centEquiv\":954,\"expirationTime\":{\"seconds\":%d}}}",
+                "\"nextRate\":{\"hbarEquiv\":100000,\"centEquiv\":954,\"expirationTime\":{\"seconds\":%d}}}}",
                 exchangeRate.getCurrentExpiriationsTimeInSeconds(),
                 exchangeRate.getNextExpirationTimeInSeconds());
         assertEquals(expectedJson, exchangeRate.toJson());
