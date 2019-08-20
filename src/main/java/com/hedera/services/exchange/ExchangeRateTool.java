@@ -1,20 +1,16 @@
 package com.hedera.services.exchange;
 
 import com.hedera.hashgraph.sdk.Client;
-import com.hedera.hashgraph.sdk.HederaException;
-import com.hedera.hashgraph.sdk.TransactionId;
 import com.hedera.hashgraph.sdk.account.AccountId;
 import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
 import com.hedera.hashgraph.sdk.file.FileContentsQuery;
 import com.hedera.hashgraph.sdk.file.FileId;
 import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
-import com.hedera.hashgraph.sdk.proto.FileGetContentsQuery;
 import com.hedera.hashgraph.sdk.proto.FileGetContentsResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.Arrays;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,17 +50,13 @@ public class ExchangeRateTool {
                 "0");
         final ExchangeRate exchangeRate = proc.call();
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
-        final AccountId operatorId = AccountId.fromString("0.0.57");
+        final AccountId operatorId = AccountId.fromString(params.getOperatorId());
 
-        final AccountId nodeId = new AccountId(3);
-        final String address = "0.testnet.hedera.com:50211";
-        final Map<AccountId, String> nodes = new HashMap<>();
-        final FileId fileId = FileId.fromString("0.0.112");
-        nodes.put(nodeId, address);
+        final FileId fileId = FileId.fromString(params.getFileId());
 
         final Ed25519PrivateKey operatorKey =  Ed25519PrivateKey.fromString(OPERATOR_KEY);;
-        final Client client = new Client(nodes)
-                .setMaxTransactionFee(1_000_000_000L)
+        final Client client = new Client(params.getNodes())
+                .setMaxTransactionFee(params.getMaxTransactionFee())
                 .setOperator(operatorId, operatorKey);
         
         final FileUpdateTransaction fileUpdateTransaction = new FileUpdateTransaction(client)

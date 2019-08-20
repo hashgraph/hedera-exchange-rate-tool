@@ -6,11 +6,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import com.hedera.hashgraph.sdk.account.AccountId;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +43,15 @@ public class ERTParams {
     @JsonProperty("frequencyInSeconds")
     private String frequencyInSeconds;
 
+    @JsonProperty("maxTransactionFee")
+    private long maxTransactionFee;
+
+    @JsonProperty("fileId")
+    private String fileId;
+
+    @JsonProperty("operatorId")
+    private String operatorId;
+
     public static ERTParams readConfig() throws Exception {
 
         ObjectMapper OBJECT_MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
@@ -52,60 +63,53 @@ public class ERTParams {
         return ertParams;
     }
 
-
     public Map<String, String> getExchangeAPIList() {
         return exchanges;
-    }
-
-    public void setExchangeAPIList(Map<String, String> exchangeAPIList) {
-        this.exchanges = exchangeAPIList;
     }
 
     public double getMaxDelta() {
         return maxDelta;
     }
 
-    public void setMaxDelta(double maxDelta) {
-        this.maxDelta = maxDelta;
-    }
-
     public String getPrivateKeyPath() {
         return privateKeyPath;
-    }
-
-    public void setPrivateKeyPath(String privateKeyPath) {
-        this.privateKeyPath = privateKeyPath;
     }
 
     public Map<String, String> getNetworkNodes() {
         return nodes;
     }
 
-    public void setNetworkNodes(Map<String, String> nodes) {
-        this.nodes = nodes;
+    public Map<AccountId, String> getNodes() {
+        final Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
+        for (final Map.Entry<String, String> node : this.nodes.entrySet()) {
+            final AccountId nodeId = AccountId.fromString(node.getKey());
+            accountToNodeAddresses.put(nodeId, node.getValue());
+        }
+
+        return accountToNodeAddresses;
     }
 
     public String getPayAccount() {
         return payAccount;
     }
 
-    public void setPayAccount(String payAccount) {
-        this.payAccount = payAccount;
+    public long getMaxTransactionFee() {
+        return this.maxTransactionFee;
+    }
+
+    public String getFileId() {
+        return this.fileId;
+    }
+
+    public String getOperatorId() {
+        return this.operatorId;
     }
 
     public String getFileIdentifier() {
         return fileIdentifier;
     }
 
-    public void setFileIdentifier(String fileIdentifier) {
-        this.fileIdentifier = fileIdentifier;
-    }
-
     public String getFrequencyInSeconds() {
         return frequencyInSeconds;
-    }
-
-    public void setFrequencyInSeconds(String frequencyInSeconds) {
-        this.frequencyInSeconds = frequencyInSeconds;
     }
 }
