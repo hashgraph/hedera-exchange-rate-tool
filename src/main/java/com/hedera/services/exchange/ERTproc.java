@@ -7,12 +7,13 @@ import com.hedera.services.exchange.exchanges.Liquid;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.util.Supplier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -22,7 +23,13 @@ public class ERTproc {
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
 
-    private static final List<Function<String, Exchange>> EXCHANGE_SUPPLIERS = Arrays.asList(Bitrex::load, Liquid::load, Coinbase::load);
+    private static final Map<String, Function<String, Exchange>> EXCHANGES = new HashMap<>();
+
+    static {
+        EXCHANGES.put("bitrex", Bitrex::load);
+        EXCHANGES.put("liquid", Liquid::load);
+        EXCHANGES.put("coinbase", Coinbase::load);
+    }
 
     private String privateKey;
     private List<String> exchangeAPIList;
@@ -140,12 +147,19 @@ public class ERTproc {
         }
     }
 
-    private List<Exchange> generateExchanges() {
-        // since we have fixed exchanges, we create an object for each exchange type ,
-        // retrieve the exchange rate and add it to the list.
+    private List<Exchange> generateExchanges() throws Exception {
         final List<Exchange> exchanges = new ArrayList<>();
-        for (final Function<String, Exchange> exchange : EXCHANGE_SUPPLIERS) {
-            // exchanges.add(exchangeSupplier.get());
+
+        final ERTParams params = ERTParams.readConfig();
+        final Map<String, String> apis = params.getExchangeAPIList();
+        for (final Map.Entry<String, String> api : apis.entrySet()) {
+            final Function<String, Exchange> exchangeLoader = EXCHANGES.get(api.getKey());
+            if (exchangeLoader == null) {
+                LOGGER.error("API {} not found", api.getKey());
+                continue;
+            }
+
+            exchanges.add(exchangeLoader.apply(api.getValue()));
         }
 
         return exchanges;

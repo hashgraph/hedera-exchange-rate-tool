@@ -75,7 +75,8 @@ public class ExchangeRateTool {
         fileUpdateTransaction.execute();
 
         final FileGetContentsResponse contentsResponse = new FileContentsQuery(client).setFileId(fileId).execute();
-
+        final long costPerCheck = contentsResponse.getHeader().getCost();
+        LOGGER.info("Cost to validate file contents is {}", costPerCheck);
         final byte[] contentsRetrieved = contentsResponse.getFileContents().getContents().toByteArray();
         if (Arrays.areEqual(exchangeRateAsBytes, contentsRetrieved)) {
             LOGGER.error(UPDATE_ERROR_MESSAGE);
