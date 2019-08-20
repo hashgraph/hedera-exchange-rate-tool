@@ -5,7 +5,7 @@
 		"upbit": "https://api.upbit.com/v1/ticker?markets=USD-HBAR",
 		"coinbase": "https://api.coinbase.com/v2/exchange-rates"
 	},
-	"maxDelta": "5.0",
+	"maxDelta": "100.0",
 	"privateKeyPath": "path",
 	"Nodes": {
 		"id1": "ipaddress",

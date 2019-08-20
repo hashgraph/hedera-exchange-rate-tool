@@ -24,9 +24,13 @@ public class Rate {
         this(0.0, 0);
     }
 
-    public Rate(final Double centEquiv, final long expirationTimeInSeconds){
+    public Rate(final Double centEquiv, final long expirationTimeInSeconds) {
+        this((int) (HBARS_IN_CENTS * centEquiv), expirationTimeInSeconds);
+    }
+
+    public Rate(final int centEquiv, final long expirationTimeInSeconds) {
         this.hbarEquiv = HBARS_IN_CENTS;
-        this.centEquiv = (int) (this.hbarEquiv * centEquiv);
+        this.centEquiv = centEquiv;
         this.expirationTime = new ExpirationTime(expirationTimeInSeconds);
     }
 

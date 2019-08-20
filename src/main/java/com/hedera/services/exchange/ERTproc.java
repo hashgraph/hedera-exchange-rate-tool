@@ -9,7 +9,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -31,30 +30,26 @@ public class ERTproc {
         EXCHANGES.put("coinbase", Coinbase::load);
     }
 
-    private String privateKey;
-    private List<String> exchangeAPIList;
-    private String mainNetAPI;
-    private String pricingDBAPI;
-    private double maxDelta;
-    private double erNow;
-    private double erNew;
+    private final String privateKey;
+    private final Map<String, String> exchangeApis;
+    private final String mainNetAPI;
+    private final double maxDelta;
+    private final double currentExchangeRate;
     private long tE;
     private String hederaFileIdentifier;
 
     public ERTproc(final String privateKey,
-            final List<String> exchangeAPIList,
+            final Map<String, String> exchangeApis,
             final String mainNetAPI,
-            final String pricingDBAPI,
             final double maxDelta,
-            final double erNow,
+            final double currentExchangeRate,
             final long tE,
             final String hederaFileIdentifier) {
         this.privateKey = privateKey;
-        this.exchangeAPIList = exchangeAPIList;
+        this.exchangeApis = exchangeApis;
         this.mainNetAPI = mainNetAPI;
-        this.pricingDBAPI = pricingDBAPI;
         this.maxDelta = maxDelta;
-        this.erNow = erNow;
+        this.currentExchangeRate = currentExchangeRate;
         this.tE = tE;
         this.hederaFileIdentifier = hederaFileIdentifier;
     }
@@ -77,7 +72,7 @@ public class ERTproc {
             }
 
             tE = getCurrentExpirationTime() / 1000;
-            final Rate currentRate = new Rate(erNow, tE);
+            final Rate currentRate = new Rate(currentExchangeRate, tE);
             Rate nextRate = new Rate(medianExRate, tE + 3600);
 
             LOGGER.log(Level.INFO, "validate the median");
@@ -85,7 +80,7 @@ public class ERTproc {
 
             if (!isValid){
                 // limit the value
-                if (medianExRate < erNow){
+                if (medianExRate < currentExchangeRate){
                     medianExRate = getMinER();
                 }
                 else{
@@ -114,17 +109,16 @@ public class ERTproc {
     }
 
     private long getCurrentExpirationTime() {
-        long currentTime = System.currentTimeMillis();
-        long nextHour = ( currentTime - (currentTime % 3600000) ) + 3600000;
-        return nextHour;
+        final long currentTime = System.currentTimeMillis();
+        return ( currentTime - (currentTime % 3600000) ) + 3600000;
     }
 
     private double getMaxER() {
-        return erNow * ( 1 + ( (double)maxDelta / 100 ));
+        return currentExchangeRate * ( 1 + (maxDelta / 100.0));
     }
 
     private double getMinER() {
-        return erNow * ( 1 - ( (double)maxDelta / 100 ));
+        return currentExchangeRate * ( 1 - (maxDelta / 100.0));
     }
 
     private Double calculateMedianRate(final List<Exchange> exchanges) {
@@ -147,12 +141,10 @@ public class ERTproc {
         }
     }
 
-    private List<Exchange> generateExchanges() throws Exception {
+    private List<Exchange> generateExchanges() {
         final List<Exchange> exchanges = new ArrayList<>();
 
-        final ERTParams params = ERTParams.readConfig();
-        final Map<String, String> apis = params.getExchangeAPIList();
-        for (final Map.Entry<String, String> api : apis.entrySet()) {
+        for (final Map.Entry<String, String> api : this.exchangeApis.entrySet()) {
             final Function<String, Exchange> exchangeLoader = EXCHANGES.get(api.getKey());
             if (exchangeLoader == null) {
                 LOGGER.error("API {} not found", api.getKey());
@@ -163,38 +155,5 @@ public class ERTproc {
         }
 
         return exchanges;
-    }
-
-    public static void main (String ... args) {
-        try {
-            final ERTproc proc = new ERTproc("0",
-                    null,
-                    "0",
-                    "0",
-                    0.0,
-                    0.0,
-                    0l,
-                    "0");
-            proc.call();
-        } catch (final Exception ex) {
-            LOGGER.error("Error whiile running ERTPROC {}", ex);
-        }
-    }
-
-    public static ExchangeRate execute(final String ... input) {
-        try {
-            final ERTproc proc = new ERTproc("0",
-                    null,
-                    "0",
-                    "0",
-                    0.0,
-                    0.0,
-                    0l,
-                    "0");
-            return proc.call();
-        } catch (final Exception ex) {
-            LOGGER.error("Error whiile running ERTPROC {}", ex);
-            return null;
-        }
     }
 }

@@ -19,14 +19,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ERTprocTestCases {
-
-    public ERTproc ertProcess = new ERTproc("0", null, "0", "0", 5.0,
-            0.0091600, 2600, "0");
-
     @Test
-    public void testMedian() throws IOException {
+    public void testMedian() throws Exception {
         this.setExchanges();
 
+        final ERTParams params = ERTParams.readConfig();
+        final ERTproc ertProcess = new ERTproc("0",
+                params.getExchangeAPIList(),
+                "0",
+                params.getMaxDelta(),
+                0.0091600,
+                2600,
+                "0");
         final ExchangeRate exchangeRate = ertProcess.call();
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
         assertEquals(954, exchangeRateSet.getNextRate().getCentEquiv());

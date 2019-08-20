@@ -41,15 +41,15 @@ public class ExchangeRateTool {
     private String hederaFileIdentifier;
     private Double frequency;
 
-    public static void main(String args[]) throws HederaException {
+    public static void main(String args[]) throws Exception {
         LOGGER.info("Starting ExchangeRateTool");
+		final ERTParams params = ERTParams.readConfig();
 
         final ERTproc proc = new ERTproc("0",
-                null,
+                params.getExchangeAPIList(),
                 "0",
-                "0",
-                0.0,
-                0.0,
+                params.getMaxDelta(),
+                0.0070,
                 0l,
                 "0");
         final ExchangeRate exchangeRate = proc.call();
