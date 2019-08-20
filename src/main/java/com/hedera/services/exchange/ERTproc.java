@@ -1,9 +1,6 @@
 package com.hedera.services.exchange;
 
-import com.hedera.services.exchange.exchanges.Bitrex;
-import com.hedera.services.exchange.exchanges.Coinbase;
-import com.hedera.services.exchange.exchanges.Exchange;
-import com.hedera.services.exchange.exchanges.Liquid;
+import com.hedera.services.exchange.exchanges.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,32 +20,32 @@ public class ERTproc {
 
     private static final List<Supplier<Exchange>> EXCHANGE_SUPPLIERS = Arrays.asList(Bitrex::load, Liquid::load, Coinbase::load);
 
-    private String privateKey;
-    private List<String> exchangeAPIList;
+    private String privateKeyPath;
     private String mainNetAPI;
     private String pricingDBAPI;
     private double maxDelta;
+    private String payAccount;
     private double erNow;
     private double erNew;
     private long tE;
     private String hederaFileIdentifier;
 
-    public ERTproc(final String privateKey,
-            final List<String> exchangeAPIList,
+    public ERTproc(final String privateKeyPath,
             final String mainNetAPI,
             final String pricingDBAPI,
             final double maxDelta,
             final double erNow,
             final long tE,
-            final String hederaFileIdentifier) {
-        this.privateKey = privateKey;
-        this.exchangeAPIList = exchangeAPIList;
+            final String hederaFileIdentifier,
+            final String payAccount) {
+        this.privateKeyPath = privateKeyPath;
         this.mainNetAPI = mainNetAPI;
         this.pricingDBAPI = pricingDBAPI;
         this.maxDelta = maxDelta;
         this.erNow = erNow;
         this.tE = tE;
         this.hederaFileIdentifier = hederaFileIdentifier;
+        this.payAccount = payAccount;
     }
 
     // now that we have all the data/APIs required, add methods to perform the functions
@@ -58,6 +55,11 @@ public class ERTproc {
 
         // Make a list of exchanges
         try {
+
+            ERTParams configParams = ERTParams.readConfig("src/test/resources/configs/config.json");
+            LOGGER.log(Level.DEBUG, "config file contents : {}", configParams.toJson());
+            setValues(configParams);
+
             LOGGER.log(Level.INFO, "generating exchange objects");
             final List<Exchange> exchanges = generateExchanges();
 
@@ -102,6 +104,30 @@ public class ERTproc {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    private void setValues(ERTParams configParams) {
+        LOGGER.log(Level.INFO, "Setting the values read from config file to ERT");
+        this.maxDelta = configParams.getMaxDelta();
+        this.privateKeyPath = configParams.getPrivateKeyPath();
+        this.hederaFileIdentifier = configParams.getFileIdentifier();
+        this.payAccount = configParams.getPayAccount();
+
+        for(String exchange : configParams.getExchangeAPIList().keySet()){
+            String exchangeURL = configParams.getExchangeAPIList().get(exchange);
+            if(exchange == "bitrex"){
+                Bitrex.setBitrexUrl(exchangeURL);
+            }
+            else if(exchange == "liquid"){
+                Liquid.setLiquidUrl(exchangeURL);
+            }
+            else if(exchange == "coinbase"){
+                Coinbase.setCoinbaseUrl(exchangeURL);
+            }
+            else if(exchange == "upbit"){
+                UpBit.setUpbitUrl(exchangeURL);
+            }
         }
     }
 
@@ -153,28 +179,28 @@ public class ERTproc {
     public static void main (String ... args) {
         try {
             final ERTproc proc = new ERTproc("0",
-                    null,
                     "0",
                     "0",
                     0.0,
                     0.0,
                     0l,
+                    "0",
                     "0");
             proc.call();
         } catch (final Exception ex) {
-            LOGGER.error("Error whiile running ERTPROC {}", ex);
+            LOGGER.error("Error while running ERTPROC {}", ex);
         }
     }
 
     public static ExchangeRate execute(final String ... input) {
         try {
             final ERTproc proc = new ERTproc("0",
-                    null,
                     "0",
                     "0",
                     0.0,
                     0.0,
                     0l,
+                    "0",
                     "0");
             return proc.call();
         } catch (final Exception ex) {

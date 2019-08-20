@@ -11,7 +11,7 @@ import java.net.URL;
 public class Bitrex implements Exchange {
 
 	// TODO Update the URL
-	private static final String BITREX_URL = "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC";
+	private static String BITREX_URL = "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC";
 
 	private static final Bitrex DEFAULT = new Bitrex();
 
@@ -68,6 +68,14 @@ public class Bitrex implements Exchange {
 
 	private static HttpURLConnection getConnection() throws IOException {
 		return (HttpURLConnection) url.openConnection();
+	}
+
+	public static void setBitrexUrl(String bitrexUrl) {
+		BITREX_URL = bitrexUrl;
+	}
+
+	public static String getBitrexUrl() {
+		return BITREX_URL;
 	}
 
 	private static class Result {

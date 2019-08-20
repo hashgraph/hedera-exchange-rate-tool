@@ -19,8 +19,8 @@ import static org.mockito.Mockito.when;
 
 public class ERTprocTestCases {
 
-    public ERTproc ertProcess = new ERTproc("0", null, "0", "0", 5.0,
-            0.0091600, 2600, "0");
+    public ERTproc ertProcess = new ERTproc( "", "","", 5.0,
+            0.0091600, 2600, "", "" );
 
     @Test
     public void testMedian() throws IOException {

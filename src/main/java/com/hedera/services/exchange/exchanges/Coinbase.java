@@ -12,7 +12,7 @@ import java.util.Map;
 public class Coinbase implements Exchange {
 
     // TODO update the URL
-    private static final String COINBASE_URL = "https://api.coinbase.com/v2/exchange-rates";
+    private static String COINBASE_URL = "https://api.coinbase.com/v2/exchange-rates";
 
     private static final Coinbase DEFAULT = new Coinbase();
 
@@ -55,6 +55,14 @@ public class Coinbase implements Exchange {
 
     private static HttpURLConnection getConnection() throws IOException {
         return (HttpURLConnection) url.openConnection();
+    }
+
+    public static String getCoinbaseUrl() {
+        return COINBASE_URL;
+    }
+
+    public static void setCoinbaseUrl(String coinbaseUrl) {
+        COINBASE_URL = coinbaseUrl;
     }
 
     private static class Data {
