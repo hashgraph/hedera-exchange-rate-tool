@@ -1,5 +1,6 @@
 package com.hedera.services.exchange;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +23,16 @@ public class ExchangeRate {
 	public ExchangeRate(final Rate currentRate, final Rate nextRate) {
 		this.currentRate = currentRate;
 		this.nextRate = nextRate;
+	}
+
+	@JsonIgnore
+	public long getCurrentExpiriationsTimeInSeconds() {
+		return this.currentRate.getExpirationTimeInSeconds();
+	}
+
+	@JsonIgnore
+	public long getNextExpirationTimeInSeconds() {
+		return this.nextRate.getExpirationTimeInSeconds();
 	}
 
 	public String toJson() throws JsonProcessingException {

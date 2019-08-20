@@ -1,5 +1,6 @@
 package com.hedera.services.exchange;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -34,6 +35,7 @@ public class Rate {
         this.expirationTime = new ExpirationTime(expirationTimeInSeconds);
     }
 
+    @JsonIgnore
     public long getExpirationTimeInSeconds() {
         return this.expirationTime.seconds;
     }
