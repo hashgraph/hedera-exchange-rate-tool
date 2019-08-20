@@ -30,36 +30,24 @@ public class ERTproc {
         EXCHANGES.put("coinbase", Coinbase::load);
     }
 
-    private final String privateKey;
     private final Map<String, String> exchangeApis;
-    private final String mainNetAPI;
     private final double maxDelta;
     private final double currentExchangeRate;
     private long tE;
-    private String hederaFileIdentifier;
 
-    public ERTproc(final String privateKey,
-            final Map<String, String> exchangeApis,
-            final String mainNetAPI,
+    public ERTproc(final Map<String, String> exchangeApis,
             final double maxDelta,
             final double currentExchangeRate,
-            final long tE,
-            final String hederaFileIdentifier) {
-        this.privateKey = privateKey;
+            final long tE) {
         this.exchangeApis = exchangeApis;
-        this.mainNetAPI = mainNetAPI;
         this.maxDelta = maxDelta;
         this.currentExchangeRate = currentExchangeRate;
         this.tE = tE;
-        this.hederaFileIdentifier = hederaFileIdentifier;
     }
 
-    // now that we have all the data/APIs required, add methods to perform the functions
     public ExchangeRate call() {
-        // we call the methods in the order of execution logic
         LOGGER.log(Level.INFO, "Start of ERT Logic");
 
-        // Make a list of exchanges
         try {
             LOGGER.log(Level.INFO, "generating exchange objects");
             final List<Exchange> exchanges = generateExchanges();
@@ -81,10 +69,10 @@ public class ERTproc {
             if (!isValid){
                 // limit the value
                 if (medianExRate < currentExchangeRate){
-                    medianExRate = getMinER();
+                    medianExRate = getMinExchangeRate();
                 }
                 else{
-                    medianExRate = getMaxER();
+                    medianExRate = getMaxExchangeRate();
                 }
                 nextRate = new Rate(medianExRate, tE + 3600);
             }
@@ -113,11 +101,11 @@ public class ERTproc {
         return ( currentTime - (currentTime % 3600000) ) + 3600000;
     }
 
-    private double getMaxER() {
+    private double getMaxExchangeRate() {
         return currentExchangeRate * ( 1 + (maxDelta / 100.0));
     }
 
-    private double getMinER() {
+    private double getMinExchangeRate() {
         return currentExchangeRate * ( 1 - (maxDelta / 100.0));
     }
 

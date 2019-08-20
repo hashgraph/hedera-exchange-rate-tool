@@ -9,11 +9,11 @@
     "maxTransactionFee": 1000000000,
 	"maxDelta": "5.0",
     "operatorId": "0.0.57",
+    "operatorKey": "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
 	"privateKeyPath": "path",
 	"Nodes": {
 		"0.0.3": "0.testnet.hedera.com:50211"
 	},
 	"payAccount": "0.0.57",
-	"fileIdentifier": "0.0.112",
-	"frequencyInSeconds": "3600"
 }
+

@@ -1,19 +1,12 @@
 package com.hedera.services.exchange;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
 import com.hedera.hashgraph.sdk.account.AccountId;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,12 +30,6 @@ public class ERTParams {
     @JsonProperty("payAccount")
     private String payAccount;
 
-    @JsonProperty("fileIdentifier")
-    private String fileIdentifier;
-
-    @JsonProperty("frequencyInSeconds")
-    private String frequencyInSeconds;
-
     @JsonProperty("maxTransactionFee")
     private long maxTransactionFee;
 
@@ -51,6 +38,9 @@ public class ERTParams {
 
     @JsonProperty("operatorId")
     private String operatorId;
+
+    @JsonProperty("operatorKey")
+    private String operatorKey;
 
     public static ERTParams readConfig() throws Exception {
 
@@ -105,11 +95,7 @@ public class ERTParams {
         return this.operatorId;
     }
 
-    public String getFileIdentifier() {
-        return fileIdentifier;
-    }
-
-    public String getFrequencyInSeconds() {
-        return frequencyInSeconds;
+    public String getOperatorKey() {
+        return this.operatorKey;
     }
 }

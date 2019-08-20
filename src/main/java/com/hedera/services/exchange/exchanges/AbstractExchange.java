@@ -1,6 +1,5 @@
 package com.hedera.services.exchange.exchanges;
 
-import com.hedera.services.exchange.ERTproc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
