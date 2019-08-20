@@ -124,7 +124,7 @@ public class ERTproc {
     private Double calculateMedianRate(final List<Exchange> exchanges) {
         LOGGER.log(Level.INFO, "sort the exchange list according to the exchange rate");
 
-        exchanges.removeIf(x -> x.getHBarValue() == null || x.getHBarValue() == 0.0);
+        exchanges.removeIf(x -> x == null || x.getHBarValue() == null || x.getHBarValue() == 0.0);
 
         if (exchanges.size() == 0){
             LOGGER.log(Level.ERROR, "No valid exchange rates retrieved.");
@@ -151,7 +151,9 @@ public class ERTproc {
                 continue;
             }
 
-            exchanges.add(exchangeLoader.apply(api.getValue()));
+            final String endpoint = api.getValue();
+            final Exchange exchange = exchangeLoader.apply(endpoint);
+            exchanges.add(exchange);
         }
 
         return exchanges;
