@@ -2,9 +2,6 @@ package com.hedera.services.exchange;
 
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.services.exchange.exchanges.AbstractExchange;
-import com.hedera.services.exchange.exchanges.Bitrex;
-import com.hedera.services.exchange.exchanges.Coinbase;
-import com.hedera.services.exchange.exchanges.Liquid;
 import mockit.Mock;
 import mockit.MockUp;
 import org.junit.jupiter.api.Test;
@@ -25,13 +22,10 @@ public class ERTprocTestCases {
         this.setExchanges();
 
         final ERTParams params = ERTParams.readConfig();
-        final ERTproc ertProcess = new ERTproc("0",
-                params.getExchangeAPIList(),
-                "0",
+        final ERTproc ertProcess = new ERTproc(params.getExchangeAPIList(),
                 params.getMaxDelta(),
                 0.0091600,
-                2600,
-                "0");
+                2600);
         final ExchangeRate exchangeRate = ertProcess.call();
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
         assertEquals(954, exchangeRateSet.getNextRate().getCentEquiv());
