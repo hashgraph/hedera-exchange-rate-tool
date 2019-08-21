@@ -78,6 +78,12 @@
             <version>1.11.615</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-log4j2</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
