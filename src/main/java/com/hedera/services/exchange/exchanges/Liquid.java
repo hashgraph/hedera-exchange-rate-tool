@@ -10,7 +10,7 @@ import java.net.URL;
 public class Liquid implements Exchange {
 
 	// TODO update to the exact URL that we need.
-	private static final String LIQUID_URL = "https://api.liquid.com/products/5";
+	private static String LIQUID_URL = "https://api.liquid.com/products/5";
 
 	private static final Liquid DEFAULT = new Liquid();
 
@@ -55,6 +55,14 @@ public class Liquid implements Exchange {
 		} catch (final Exception exception) {
 			return DEFAULT;
 		}
+	}
+
+	public static String getLiquidUrl() {
+		return LIQUID_URL;
+	}
+
+	public static void setLiquidUrl(String liquidUrl) {
+		LIQUID_URL = liquidUrl;
 	}
 
 	private static HttpURLConnection getConnection() throws IOException {
