@@ -6,8 +6,8 @@
   "maxDelta": "5.0",
   "privateKeyPath": "path",
   "Nodes": {
-    "id1": "ipaddress",
-    "id2": "ipaddress"
+    "0.0.4": "1.testnet.hedera.com:71322",
+    "0.0.5": "1.testnet.hedera.com:71322"
   },
   "payAccount": "0.0.57"
 }
