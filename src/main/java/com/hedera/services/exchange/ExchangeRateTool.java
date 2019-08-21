@@ -19,7 +19,7 @@ public class ExchangeRateTool {
 
     public static void main(final String[] args) throws Exception {
         LOGGER.info("Starting ExchangeRateTool");
-		final ERTParams params = ERTParams.readConfig();
+		final ERTParams params = ERTParams.readConfig("src/resources/config.json");
 
         final ERTproc proc = new ERTproc(params.getExchangeAPIList(),
                 params.getMaxDelta(),

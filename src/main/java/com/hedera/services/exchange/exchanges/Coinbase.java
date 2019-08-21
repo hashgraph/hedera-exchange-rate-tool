@@ -6,11 +6,6 @@ import java.util.Map;
 
 public class Coinbase extends AbstractExchange{
 
-    // TODO update the URL
-    public static final String COINBASE_URL = "https://api.coinbase.com/v2/exchange-rates";
-
-    private static final Coinbase DEFAULT = new Coinbase();
-
     @JsonProperty("data")
     private Data data;
 

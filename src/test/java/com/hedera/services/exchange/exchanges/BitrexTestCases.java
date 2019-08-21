@@ -33,7 +33,7 @@ public class BitrexTestCases {
 			}
 		};
 
-		final Bitrex bitrex = Bitrex.load(Bitrex.BITREX_URL);
+		final Bitrex bitrex = Bitrex.load("https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC");
 		assertTrue(bitrex.isSuccess());
 		assertEquals(0.00954162, bitrex.getHBarValue());
 		assertEquals("Data Sent", bitrex.getMessage());
@@ -52,7 +52,7 @@ public class BitrexTestCases {
 			}
 		};
 
-		final Bitrex bitrex = Bitrex.load(Bitrex.BITREX_URL);
+		final Bitrex bitrex = Bitrex.load("https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC");
 		assertFalse(bitrex.isSuccess());
 		assertNull(bitrex.getHBarValue());
 		assertNull(bitrex.getResult());

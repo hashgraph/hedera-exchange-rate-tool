@@ -1,10 +1,16 @@
 package com.hedera.services.exchange;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedera.hashgraph.sdk.account.AccountId;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +20,13 @@ import java.util.Map;
  */
 
 public class ERTParams {
+
+    private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
+
+    private static final ERTParams DEFAULT = new ERTParams();
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+            false);
 
     @JsonProperty("exchanges")
     private Map<String, String> exchanges;
@@ -42,15 +55,30 @@ public class ERTParams {
     @JsonProperty("operatorKey")
     private String operatorKey;
 
-    public static ERTParams readConfig() throws Exception {
+    public static ERTParams readConfig(String configFilePath) {
 
-        ObjectMapper OBJECT_MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                false);
+        LOGGER.log(Level.INFO, "Reading config from {}", configFilePath);
 
-        FileReader configFile = new FileReader("src/main/resources/config.json");
-        final ERTParams ertParams = OBJECT_MAPPER.readValue(configFile, ERTParams.class);
+        try {
+            FileReader configFile = new FileReader(configFilePath);
+            final ERTParams ertParams = OBJECT_MAPPER.readValue(configFile, ERTParams.class);
 
-        return ertParams;
+            LOGGER.log(Level.INFO, "Config file is read successfully");
+
+            return ertParams;
+        }
+        catch (final FileNotFoundException e ) {
+            LOGGER.log(Level.ERROR, "Reading config from {} failed. FIle is not found ", configFilePath);
+            return DEFAULT;
+        }
+        catch (final Exception e){
+            LOGGER.log(Level.ERROR, "Mapping error : {}", e.getMessage());
+            return DEFAULT;
+        }
+    }
+
+    public String toJson() throws JsonProcessingException {
+        return OBJECT_MAPPER.writeValueAsString(this);
     }
 
     public Map<String, String> getExchangeAPIList() {

@@ -1,0 +1,13 @@
+{
+  "exchanges": {
+    "bitrex": "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC",
+    "coinbase": "https://api.coinbase.com/v2/exchange-rates"
+  },
+  "maxDelta": "5.0",
+  "privateKeyPath": "path",
+  "Nodes": {
+    "0.0.4": "1.testnet.hedera.com:71322",
+    "0.0.5": "1.testnet.hedera.com:71322"
+  },
+  "payAccount": "0.0.57"
+}

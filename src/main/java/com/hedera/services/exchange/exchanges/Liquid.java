@@ -4,11 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Liquid extends AbstractExchange {
 
-	// TODO update to the exact URL that we need.
-	public static final String LIQUID_URL = "https://api.liquid.com/products/5";
-
-	private static final Liquid DEFAULT = new Liquid();
-
 	@JsonProperty("exchange_rate")
 	private Double exchangeRate;
 

@@ -1,9 +1,6 @@
 package com.hedera.services.exchange;
 
-import com.hedera.services.exchange.exchanges.Bitrex;
-import com.hedera.services.exchange.exchanges.Coinbase;
-import com.hedera.services.exchange.exchanges.Exchange;
-import com.hedera.services.exchange.exchanges.Liquid;
+import com.hedera.services.exchange.exchanges.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +25,7 @@ public class ERTproc {
         EXCHANGES.put("bitrex", Bitrex::load);
         EXCHANGES.put("liquid", Liquid::load);
         EXCHANGES.put("coinbase", Coinbase::load);
+        EXCHANGES.put("upbit", UpBit::load);
     }
 
     private final Map<String, String> exchangeApis;
@@ -52,7 +50,6 @@ public class ERTproc {
             LOGGER.log(Level.INFO, "generating exchange objects");
             final List<Exchange> exchanges = generateExchanges();
 
-            LOGGER.log(Level.INFO, "Calculating median");
             Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.log(Level.DEBUG, "Median calculated : " + medianExRate);
             if (medianExRate == null){
@@ -95,7 +92,6 @@ public class ERTproc {
             return null;
         }
     }
-
     private long getCurrentExpirationTime() {
         final long currentTime = System.currentTimeMillis();
         return ( currentTime - (currentTime % 3600000) ) + 3600000;
@@ -110,7 +106,7 @@ public class ERTproc {
     }
 
     private Double calculateMedianRate(final List<Exchange> exchanges) {
-        LOGGER.log(Level.INFO, "sort the exchange list according to the exchange rate");
+        LOGGER.log(Level.INFO, "Computing median");
 
         exchanges.removeIf(x -> x == null || x.getHBarValue() == null || x.getHBarValue() == 0.0);
 
@@ -142,6 +138,7 @@ public class ERTproc {
             final String endpoint = api.getValue();
             final Exchange exchange = exchangeLoader.apply(endpoint);
             exchanges.add(exchange);
+
         }
 
         return exchanges;

@@ -17,11 +17,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ERTprocTestCases {
+
     @Test
     public void testMedian() throws Exception {
         this.setExchanges();
 
-        final ERTParams params = ERTParams.readConfig();
+        final ERTParams params = ERTParams.readConfig("src/test/resources/configs/config.json");
         final ERTproc ertProcess = new ERTproc(params.getExchangeAPIList(),
                 params.getMaxDelta(),
                 0.0091600,
