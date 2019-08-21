@@ -137,8 +137,12 @@ public class ERTproc {
 
             final String endpoint = api.getValue();
             final Exchange exchange = exchangeLoader.apply(endpoint);
-            exchanges.add(exchange);
+            if (exchange == null) {
+                LOGGER.error("API {} not loaded", api.getKey());
+                continue;
+            }
 
+            exchanges.add(exchange);
         }
 
         return exchanges;

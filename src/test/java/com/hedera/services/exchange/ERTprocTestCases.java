@@ -25,14 +25,14 @@ public class ERTprocTestCases {
         final ERTParams params = ERTParams.readConfig("src/test/resources/configs/config.json");
         final ERTproc ertProcess = new ERTproc(params.getExchangeAPIList(),
                 params.getMaxDelta(),
-                0.0091600,
+                0.0093600,
                 2600);
         final ExchangeRate exchangeRate = ertProcess.call();
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
         assertEquals(954, exchangeRateSet.getNextRate().getCentEquiv());
         assertEquals(100_000, exchangeRateSet.getNextRate().getHbarEquiv());
         final String expectedJson = String.format("{\"exchangeRate\":{" +
-                "\"currentRate\":{\"hbarEquiv\":100000,\"centEquiv\":916,\"expirationTime\":{\"seconds\":%d}}," +
+                "\"currentRate\":{\"hbarEquiv\":100000,\"centEquiv\":936,\"expirationTime\":{\"seconds\":%d}}," +
                 "\"nextRate\":{\"hbarEquiv\":100000,\"centEquiv\":954,\"expirationTime\":{\"seconds\":%d}}}}",
                 exchangeRate.getCurrentExpiriationsTimeInSeconds(),
                 exchangeRate.getNextExpirationTimeInSeconds());
@@ -68,7 +68,11 @@ public class ERTprocTestCases {
                     return liquidConnection;
                 }
 
-                return coinbaseConnection;
+                if (host.contains("coinbase")) {
+                    return coinbaseConnection;
+                }
+
+                return null;
             }
         };
     }
