@@ -19,6 +19,7 @@ public abstract class AbstractExchange implements Exchange {
 			con.disconnect();
 			return exchange;
 		} catch (final Exception exception) {
+			LOGGER.warn("Couldn't get exchange rate from exchange");
 			return null;
 		}
 	}

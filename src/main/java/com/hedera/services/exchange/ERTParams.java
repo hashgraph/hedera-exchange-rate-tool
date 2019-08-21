@@ -57,13 +57,13 @@ public class ERTParams {
 
     public static ERTParams readConfig(String configFilePath) {
 
-        LOGGER.log(Level.INFO, "Reading config from {}", configFilePath);
+        LOGGER.log(Level.DEBUG, "Reading config from {}", configFilePath);
 
         try {
             FileReader configFile = new FileReader(configFilePath);
             final ERTParams ertParams = OBJECT_MAPPER.readValue(configFile, ERTParams.class);
 
-            LOGGER.log(Level.INFO, "Config file is read successfully");
+            LOGGER.log(Level.DEBUG, "Config file is read successfully");
 
             return ertParams;
         }

@@ -1,8 +1,13 @@
 package com.hedera.services.exchange.exchanges;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hedera.services.exchange.ERTproc;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Bitrex extends AbstractExchange {
+
+	private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
 
 	@JsonProperty("success")
 	private boolean success;
@@ -35,6 +40,7 @@ public class Bitrex extends AbstractExchange {
 	}
 
 	public static Bitrex load(final String endpoint) {
+		LOGGER.debug("Loading exchange rate from Bitrex");
 		return load(endpoint, Bitrex.class);
 	}
 
