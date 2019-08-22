@@ -1,5 +1,11 @@
 package com.hedera.services.exchange;
 
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,7 +62,46 @@ public class ERTParams {
     @JsonProperty("operatorKey")
     private String operatorKey;
 
-    public static ERTParams readConfig(String configFilePath) {
+    public static ERTParams readConfig(final String[]  args) throws IOException {
+        if (args == null || args.length == 0) {
+            return readConfig("src/resources/config.json");
+        }
+
+        final String configurationPath = args[0];
+        LOGGER.info("Using configuration file: {}", configurationPath);
+
+        if (configurationPath.contains("s3.amazonaws.com/")) {
+            return readConfigFromAWSS3(configurationPath);
+        }
+
+        return readConfig(configurationPath);
+    }
+
+    private static ERTParams readConfigFromAWSS3(final String endpoint) throws IOException {
+        final String[] s3Params = endpoint.split("/");
+        if (s3Params.length < 3) {
+            throw new IllegalArgumentException("Not enough parameters to read from S3: " + endpoint);
+        }
+
+        final String key = s3Params[s3Params.length - 1];
+        final String bucketName = s3Params[s3Params.length - 2];
+        return readConfigFromAWSS3(bucketName, key);
+    }
+
+    private static ERTParams readConfigFromAWSS3(final String bucketName, final String key) throws IOException {
+        LOGGER.info("Reading configuration from S3 bucket: {} and key {}", bucketName, key);
+        final Regions clientRegion = Regions.DEFAULT_REGION;
+        final AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                    .withRegion(clientRegion)
+                    .withCredentials(new ProfileCredentialsProvider())
+                    .build();
+        try (final S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key))) {
+            final ERTParams ertParams = OBJECT_MAPPER.readValue(fullObject.getObjectContent(), ERTParams.class);
+            return ertParams;
+        }
+    }
+
+    public static ERTParams readConfig(final String configFilePath) {
 
         LOGGER.log(Level.INFO, "Reading config from {}", configFilePath);
 

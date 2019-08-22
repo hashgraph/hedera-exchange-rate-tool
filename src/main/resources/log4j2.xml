@@ -31,6 +31,11 @@
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %6r %t %msg%n</Pattern>
 			</PatternLayout>
 		</RandomAccessFile>
+		<Lambda name="Lambda">
+			<PatternLayout>
+				<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %X{AWSRequestId} %-5p %c{1}:%L - %m%n</pattern>
+			</PatternLayout>
+		</Lambda>
 		<!-- uncomment the following to write to a log with no buffer, but writing everything immediately -->
 		<!-- <File immediateFlush="true" bufferedIO="false" bufferSize="0" name="stepsLog" fileName="steps.log" append="false"> -->
 		<!-- <PatternLayout> -->
@@ -41,6 +46,7 @@
 	<Loggers>
 		<Root level="all">
 			<AppenderRef ref="fileLog"/>
+			<AppenderRef ref="Lambda" />
 			<!-- uncomment the following to also enable output to standard output -->
 			<!-- <AppenderRef ref="Console"/> -->
 
