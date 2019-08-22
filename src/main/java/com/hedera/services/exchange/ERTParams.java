@@ -90,11 +90,8 @@ public class ERTParams {
 
     private static ERTParams readConfigFromAWSS3(final String bucketName, final String key) throws IOException {
         LOGGER.info("Reading configuration from S3 bucket: {} and key {}", bucketName, key);
-        final Regions clientRegion = Regions.DEFAULT_REGION;
-        final AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                    .withRegion(clientRegion)
-                    .withCredentials(new ProfileCredentialsProvider())
-                    .build();
+        final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
+
         try (final S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key))) {
             final ERTParams ertParams = OBJECT_MAPPER.readValue(fullObject.getObjectContent(), ERTParams.class);
             return ertParams;
