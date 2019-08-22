@@ -16,7 +16,7 @@
   ~ DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
   -->
 
-<Configuration status="WARN">
+<Configuration status="WARN" packages="com.amazonaws.services.lambda.runtime.log4j2">
 
 	<Appenders>
 		<Console name="Console" target="SYSTEM_OUT">
@@ -26,7 +26,7 @@
 			</Filters>
 			<PatternLayout pattern="%d{HH:mm:ss.SSS} %6r %t %msg%n"/>
 		</Console>
-		<RandomAccessFile immediateFlush="true" name="fileLog" fileName="exchange.log" append="true">
+		<RandomAccessFile immediateFlush="true" name="fileLog" fileName="/tmp/exchange.log" append="true">
 			<PatternLayout>
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %6r %t %msg%n</Pattern>
 			</PatternLayout>
