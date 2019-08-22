@@ -1,14 +1,13 @@
 package com.hedera.services.exchange.exchanges;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hedera.services.exchange.ERTproc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 
 public class Coinbase extends AbstractExchange{
-    private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
+    private static final Logger LOGGER = LogManager.getLogger(Coinbase.class);
 
 
     @JsonProperty("data")

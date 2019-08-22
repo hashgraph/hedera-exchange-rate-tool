@@ -55,11 +55,11 @@ public class Rate {
         final long difference = Math.abs(erNewNumTinyCents - erNowNumTinyCents);
         final double calculatedDelta = ( (double)difference / erNowNumTinyCents ) * 100;
         if (calculatedDelta <= maxDelta){
-            LOGGER.log(Level.DEBUG, "Median is Valid");
+            LOGGER.debug("Median is Valid");
             return true;
         }
         else{
-            LOGGER.log(Level.ERROR, "Median is Invalid. Out of accepted Delta range. Accepted Delta : {},  calculated delta : {}", maxDelta, calculatedDelta);
+            LOGGER.error("Median is Invalid. Out of accepted Delta range. Accepted Delta : {},  calculated delta : {}", maxDelta, calculatedDelta);
             return false;
         }
     }

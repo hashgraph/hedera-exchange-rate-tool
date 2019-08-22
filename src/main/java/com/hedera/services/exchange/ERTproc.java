@@ -44,16 +44,16 @@ public class ERTproc {
     }
 
     public ExchangeRate call() {
-        LOGGER.log(Level.DEBUG, "Start of ERT Logic");
+        LOGGER.info("Start of ERT Logic");
 
         try {
-            LOGGER.log(Level.DEBUG, "generating exchange objects");
+            LOGGER.debug("generating exchange objects");
             final List<Exchange> exchanges = generateExchanges();
 
             Double medianExRate = calculateMedianRate(exchanges);
-            LOGGER.log(Level.DEBUG, "Median calculated : {}", medianExRate);
+            LOGGER.info("Median calculated : {}", medianExRate);
             if (medianExRate == null){
-                LOGGER.log(Level.WARN, "None of the exchanges returned a valid exchange rate");
+                LOGGER.warn("None of the exchanges returned a valid exchange rate");
                 return null;
             }
 
@@ -61,23 +61,23 @@ public class ERTproc {
             final Rate currentRate = new Rate(currentExchangeRate, tE);
             Rate nextRate = new Rate(medianExRate, tE + 3600);
 
-            LOGGER.log(Level.DEBUG, "validating the median");
+            LOGGER.debug("validating the median");
             final boolean isValid = currentRate.isValid(maxDelta, nextRate);
-            LOGGER.log(Level.DEBUG, "Median is Valid : {}", isValid);
+            LOGGER.info("Median is Valid : {}", isValid);
 
             if (!isValid){
                 // limit the value
-                LOGGER.log(Level.ERROR, "Median is not Valid");
-                LOGGER.log(Level.DEBUG, "Expected exchange rate should lie between {} and {}",
+                LOGGER.error("Median is not Valid");
+                LOGGER.debug("Expected exchange rate should lie between {} and {}",
                         this::getMaxExchangeRate, this::getMaxExchangeRate );
-                LOGGER.log(Level.DEBUG, "Exchange rate calculated : {}", medianExRate);
+                LOGGER.debug("Exchange rate calculated : {}", medianExRate);
 
                 if (medianExRate < currentExchangeRate){
-                    LOGGER.log(Level.DEBUG, "setting the new exchange rate as acceptable lower limit");
+                    LOGGER.info("setting the new exchange rate as acceptable lower limit");
                     medianExRate = getMinExchangeRate();
                 }
                 else{
-                    LOGGER.log(Level.DEBUG, "setting the new exchange rate as acceptable higher limit");
+                    LOGGER.info("setting the new exchange rate as acceptable higher limit");
                     medianExRate = getMaxExchangeRate();
                 }
                 nextRate = new Rate(medianExRate, tE + 3600);
@@ -115,17 +115,17 @@ public class ERTproc {
     }
 
     private Double calculateMedianRate(final List<Exchange> exchanges) {
-        LOGGER.log(Level.DEBUG, "Computing median");
+        LOGGER.info("Computing median");
 
         exchanges.removeIf(x -> x == null || x.getHBarValue() == null || x.getHBarValue() == 0.0);
 
         if (exchanges.size() == 0){
-            LOGGER.log(Level.WARN, "No valid exchange rates retrieved.");
+            LOGGER.warn("No valid exchange rates retrieved.");
             return null;
         }
         exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
 
-        LOGGER.log(Level.DEBUG, "finding the median");
+        LOGGER.debug("finding the median");
         if (exchanges.size() % 2 == 0 ) {
             return (exchanges.get(exchanges.size() / 2).getHBarValue() + exchanges.get(exchanges.size() / 2 - 1).getHBarValue()) / 2;
         }
@@ -140,7 +140,7 @@ public class ERTproc {
         for (final Map.Entry<String, String> api : this.exchangeApis.entrySet()) {
             final Function<String, Exchange> exchangeLoader = EXCHANGES.get(api.getKey());
             if (exchangeLoader == null) {
-                LOGGER.warn("API {} not found", api.getKey());
+                LOGGER.error("API {} not found", api.getKey());
                 continue;
             }
 

@@ -57,22 +57,22 @@ public class ERTParams {
 
     public static ERTParams readConfig(String configFilePath) {
 
-        LOGGER.log(Level.DEBUG, "Reading config from {}", configFilePath);
+        LOGGER.info("Reading config from {}", configFilePath);
 
         try {
             FileReader configFile = new FileReader(configFilePath);
             final ERTParams ertParams = OBJECT_MAPPER.readValue(configFile, ERTParams.class);
 
-            LOGGER.log(Level.DEBUG, "Config file is read successfully");
+            LOGGER.debug("Config file is read successfully");
 
             return ertParams;
         }
         catch (final FileNotFoundException e ) {
-            LOGGER.log(Level.ERROR, "Reading config from {} failed. FIle is not found ", configFilePath);
+            LOGGER.error("Reading config from {} failed. FIle is not found ", configFilePath);
             return DEFAULT;
         }
         catch (final Exception e){
-            LOGGER.log(Level.ERROR, "Mapping error : {}", e.getMessage());
+            LOGGER.error("Config file Mapping error : {}", e.getMessage());
             return DEFAULT;
         }
     }

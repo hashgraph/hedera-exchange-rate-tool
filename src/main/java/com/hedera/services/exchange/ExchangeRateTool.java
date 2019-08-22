@@ -18,7 +18,7 @@ public class ExchangeRateTool {
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
 
     public static void main(final String[] args) throws Exception {
-        LOGGER.debug("Starting ExchangeRateTool");
+        LOGGER.info("Starting ExchangeRateTool");
 		final ERTParams params = ERTParams.readConfig("src/resources/config.json");
 
         final ERTproc proc = new ERTproc(params.getExchangeAPIList(),
@@ -45,7 +45,7 @@ public class ExchangeRateTool {
 
         final FileGetContentsResponse contentsResponse = new FileContentsQuery(client).setFileId(fileId).execute();
         final long costPerCheck = contentsResponse.getHeader().getCost();
-        LOGGER.debug("Cost to validate file contents is {}", costPerCheck);
+        LOGGER.info("Cost to validate file contents is {}", costPerCheck);
         final byte[] contentsRetrieved = contentsResponse.getFileContents().getContents().toByteArray();
         if (Arrays.areEqual(exchangeRateAsBytes, contentsRetrieved)) {
             LOGGER.error(UPDATE_ERROR_MESSAGE);

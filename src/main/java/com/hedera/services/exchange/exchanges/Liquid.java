@@ -1,12 +1,11 @@
 package com.hedera.services.exchange.exchanges;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hedera.services.exchange.ERTproc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Liquid extends AbstractExchange {
-	private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
+	private static final Logger LOGGER = LogManager.getLogger(Liquid.class);
 
 
 	@JsonProperty("exchange_rate")
