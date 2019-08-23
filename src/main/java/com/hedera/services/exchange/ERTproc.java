@@ -30,24 +30,24 @@ public class ERTproc {
 
     private final Map<String, String> exchangeApis;
     private final double maxDelta;
-    private final double currentExchangeRate;
-    private long tE;
+    private final Rate currentExchangeRate;
+    private final int hbarEquiv;
 
-    public ERTproc(final Map<String, String> exchangeApis,
+    public ERTproc(final int hbarEquiv,
+            final Map<String, String> exchangeApis,
             final double maxDelta,
-            final double currentExchangeRate,
-            final long tE) {
+            final Rate currentExchangeRate) {
+        this.hbarEquiv = hbarEquiv;
         this.exchangeApis = exchangeApis;
         this.maxDelta = maxDelta;
         this.currentExchangeRate = currentExchangeRate;
-        this.tE = tE;
     }
 
     public ExchangeRate call() {
         LOGGER.log(Level.INFO, "Start of ERT Logic");
 
         try {
-            LOGGER.log(Level.INFO, "generating exchange objects");
+            LOGGER.log(Level.INFO, "Generating exchange objects");
             final List<Exchange> exchanges = generateExchanges();
 
             Double medianExRate = calculateMedianRate(exchanges);
@@ -56,53 +56,24 @@ public class ERTproc {
                 return null;
             }
 
-            tE = getCurrentExpirationTime() / 1000;
-            final Rate currentRate = new Rate(currentExchangeRate, tE);
-            Rate nextRate = new Rate(medianExRate, tE + 3600);
+            final long nextExpirationTimeInSeconds = currentExchangeRate.getExpirationTimeInSeconds() + 3_600;
+            Rate nextRate = new Rate(this.hbarEquiv, medianExRate, nextExpirationTimeInSeconds);
 
-            LOGGER.log(Level.INFO, "validate the median");
-            final boolean isValid = currentRate.isValid(maxDelta, nextRate);
-
-            if (!isValid){
-                // limit the value
-                if (medianExRate < currentExchangeRate){
-                    medianExRate = getMinExchangeRate();
+            if (!currentExchangeRate.isValid(maxDelta, nextRate)){
+                if (this.currentExchangeRate.compareTo(medianExRate) > 0) {
+                    medianExRate = this.currentExchangeRate.getMinExchangeRate(maxDelta);
+                } else {
+                    medianExRate = this.currentExchangeRate.getMaxExchangeRate(maxDelta);
                 }
-                else{
-                    medianExRate = getMaxExchangeRate();
-                }
-                nextRate = new Rate(medianExRate, tE + 3600);
-            }
-            final ExchangeRate exchangeRate = new ExchangeRate(currentRate, nextRate);
 
-            // build the ER File
-            // sign the file accordingly
-            if (isValid){
-                //follow the automatic process
+                nextRate = new Rate(this.hbarEquiv, medianExRate, nextExpirationTimeInSeconds);
             }
-            else{
-                //follow the manual process
-            }
-            // create a transaction for the network
-            // POST it to the network and Pricing DB
-            return  exchangeRate;
 
+            return new ExchangeRate(currentExchangeRate, nextRate);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-    }
-    private long getCurrentExpirationTime() {
-        final long currentTime = System.currentTimeMillis();
-        return ( currentTime - (currentTime % 3600000) ) + 3600000;
-    }
-
-    private double getMaxExchangeRate() {
-        return currentExchangeRate * ( 1 + (maxDelta / 100.0));
-    }
-
-    private double getMinExchangeRate() {
-        return currentExchangeRate * ( 1 - (maxDelta / 100.0));
     }
 
     private Double calculateMedianRate(final List<Exchange> exchanges) {

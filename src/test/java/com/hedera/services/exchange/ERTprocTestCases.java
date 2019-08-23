@@ -23,10 +23,10 @@ public class ERTprocTestCases {
         this.setExchanges();
 
         final ERTParams params = ERTParams.readConfig("src/test/resources/configs/config.json");
-        final ERTproc ertProcess = new ERTproc(params.getExchangeAPIList(),
+        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+                params.getExchangeAPIList(),
                 params.getMaxDelta(),
-                0.0093600,
-                2600);
+                params.getDefaultRate());
         final ExchangeRate exchangeRate = ertProcess.call();
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
         assertEquals(954, exchangeRateSet.getNextRate().getCentEquiv());

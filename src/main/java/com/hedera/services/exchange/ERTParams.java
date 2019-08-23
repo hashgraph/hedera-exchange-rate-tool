@@ -64,6 +64,12 @@ public class ERTParams {
     @JsonProperty("operatorId")
     private String operatorId;
 
+    @JsonProperty("defaultCentEquiv")
+    private int defaultCentEquiv;
+
+    @JsonProperty("defaultHbarEquiv")
+    private int defaultHbarEquiv;
+
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
             return readConfig("src/resources/config.json");
@@ -142,6 +148,10 @@ public class ERTParams {
         return nodes;
     }
 
+    public int getDefaultHbarEquiv() {
+        return this.defaultHbarEquiv;
+    }
+
     public Map<AccountId, String> getNodes() {
         final Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
         for (final Map.Entry<String, String> node : this.nodes.entrySet()) {
@@ -170,14 +180,21 @@ public class ERTParams {
 
     @JsonIgnore
     public String getOperatorKey() {
-        byte[] encryptedKey = Base64.decode(System.getenv("OPERATOR_KEY"));
+        final byte[] encryptedKey = Base64.decode(System.getenv("OPERATOR_KEY"));
 
-        AWSKMS client = AWSKMSClientBuilder.defaultClient();
+        final AWSKMS client = AWSKMSClientBuilder.defaultClient();
 
-        DecryptRequest request = new DecryptRequest()
-                .withCiphertextBlob(ByteBuffer.wrap(encryptedKey));
-
-        ByteBuffer plainTextKey = client.decrypt(request).getPlaintext();
+        final DecryptRequest request = new DecryptRequest().withCiphertextBlob(ByteBuffer.wrap(encryptedKey));
+        final ByteBuffer plainTextKey = client.decrypt(request).getPlaintext();
         return new String(plainTextKey.array(), Charset.forName("UTF-8"));
+    }
+
+    public Rate getDefaultRate() {
+        return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, this.getCurrentExpirationTime());
+    }
+
+    private long getCurrentExpirationTime() {
+        final long currentTime = System.currentTimeMillis();
+        return (currentTime - (currentTime % 3_600_000) ) + 3_600_000;
     }
 }

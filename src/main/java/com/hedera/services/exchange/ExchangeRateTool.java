@@ -22,10 +22,12 @@ public class ExchangeRateTool {
 
         final ERTParams params = ERTParams.readConfig(args);
 
-        final ERTproc proc = new ERTproc(params.getExchangeAPIList(),
+        final Rate currentRate = params.getDefaultRate();
+        final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
+                params.getExchangeAPIList(),
                 params.getMaxDelta(),
-                0.0070,
-                0L);
+                currentRate);
+
         final ExchangeRate exchangeRate = proc.call();
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
         final AccountId operatorId = AccountId.fromString(params.getOperatorId());
