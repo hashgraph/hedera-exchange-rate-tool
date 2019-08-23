@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -58,9 +59,6 @@ public class ERTParams {
 
     @JsonProperty("operatorId")
     private String operatorId;
-
-    @JsonProperty("operatorKey")
-    private String operatorKey;
 
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
@@ -166,7 +164,8 @@ public class ERTParams {
         return this.operatorId;
     }
 
+    @JsonIgnore
     public String getOperatorKey() {
-        return this.operatorKey;
+        return System.getenv("OPERATOR_KEY");
     }
 }
