@@ -1,11 +1,14 @@
 package com.hedera.services.exchange;
 
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.regions.Regions;
+import com.amazonaws.services.kms.AWSKMS;
+import com.amazonaws.services.kms.AWSKMSClientBuilder;
+import com.amazonaws.services.kms.model.DecryptRequest;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.util.Base64;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,6 +22,8 @@ import org.apache.logging.log4j.Logger;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,9 +63,6 @@ public class ERTParams {
 
     @JsonProperty("operatorId")
     private String operatorId;
-
-    @JsonProperty("operatorKey")
-    private String operatorKey;
 
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
@@ -166,7 +168,16 @@ public class ERTParams {
         return this.operatorId;
     }
 
+    @JsonIgnore
     public String getOperatorKey() {
-        return this.operatorKey;
+        byte[] encryptedKey = Base64.decode(System.getenv("OPERATOR_KEY"));
+
+        AWSKMS client = AWSKMSClientBuilder.defaultClient();
+
+        DecryptRequest request = new DecryptRequest()
+                .withCiphertextBlob(ByteBuffer.wrap(encryptedKey));
+
+        ByteBuffer plainTextKey = client.decrypt(request).getPlaintext();
+        return new String(plainTextKey.array(), Charset.forName("UTF-8"));
     }
 }

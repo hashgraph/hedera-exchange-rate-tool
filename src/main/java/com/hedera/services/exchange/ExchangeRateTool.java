@@ -32,15 +32,15 @@ public class ExchangeRateTool {
 
         final FileId fileId = FileId.fromString(params.getFileId());
 
-        final Ed25519PrivateKey operatorKey =  Ed25519PrivateKey.fromString(params.getOperatorKey());
+        final Ed25519PrivateKey privateOperatorKey =  Ed25519PrivateKey.fromString(params.getOperatorKey());
         final Client client = new Client(params.getNodes())
                 .setMaxTransactionFee(params.getMaxTransactionFee())
-                .setOperator(operatorId, operatorKey);
+                .setOperator(operatorId, privateOperatorKey);
         
         final FileUpdateTransaction fileUpdateTransaction = new FileUpdateTransaction(client)
                 .setFileId(fileId)
                 .setContents(exchangeRateAsBytes)
-                .addKey(operatorKey.getPublicKey());
+                .addKey(privateOperatorKey.getPublicKey());
 
         fileUpdateTransaction.execute();
 
