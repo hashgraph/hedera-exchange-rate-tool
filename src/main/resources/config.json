@@ -11,7 +11,6 @@
     "maxTransactionFee": 1000000000,
 	"maxDelta": "5.0",
     "operatorId": "0.0.57",
-	"privateKeyPath": "path",
 	"Nodes": {
 		"0.0.3": "0.testnet.hedera.com:50211"
 	},

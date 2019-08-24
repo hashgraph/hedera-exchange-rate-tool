@@ -5,6 +5,8 @@ import com.hedera.services.exchange.exchanges.AbstractExchange;
 import mockit.Mock;
 import mockit.MockUp;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,23 +20,28 @@ import static org.mockito.Mockito.when;
 
 public class ERTprocTestCases {
 
-    @Test
-    public void testMedian() throws Exception {
+    @ParameterizedTest
+    @CsvSource({"src/test/resources/configs/config.json,936,954",
+                "src/test/resources/configs/config1.json,780,818",
+                "src/test/resources/configs/config2.json,1200,1140"})
+    public void testMedian(final String configPath, final int currentCentEquiv, final int expectedCentEquiv) throws Exception {
         this.setExchanges();
 
-        final ERTParams params = ERTParams.readConfig("src/test/resources/configs/config.json");
+        final ERTParams params = ERTParams.readConfig(configPath);
         final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
                 params.getDefaultRate());
         final ExchangeRate exchangeRate = ertProcess.call();
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
-        assertEquals(954, exchangeRateSet.getNextRate().getCentEquiv());
+        assertEquals(expectedCentEquiv, exchangeRateSet.getNextRate().getCentEquiv());
         assertEquals(100_000, exchangeRateSet.getNextRate().getHbarEquiv());
         final String expectedJson = String.format("{\"exchangeRate\":{" +
-                "\"currentRate\":{\"hbarEquiv\":100000,\"centEquiv\":936,\"expirationTime\":{\"seconds\":%d}}," +
-                "\"nextRate\":{\"hbarEquiv\":100000,\"centEquiv\":954,\"expirationTime\":{\"seconds\":%d}}}}",
+                "\"currentRate\":{\"hbarEquiv\":100000,\"centEquiv\":%d,\"expirationTime\":{\"seconds\":%d}}," +
+                "\"nextRate\":{\"hbarEquiv\":100000,\"centEquiv\":%d,\"expirationTime\":{\"seconds\":%d}}}}",
+                currentCentEquiv,
                 exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                expectedCentEquiv,
                 exchangeRate.getNextExpirationTimeInSeconds());
         assertEquals(expectedJson, exchangeRate.toJson());
     }

@@ -46,9 +46,6 @@ public class ERTParams {
     @JsonProperty("maxDelta")
     private double maxDelta;
 
-    @JsonProperty("privateKeyPath")
-    private String privateKeyPath;
-
     @JsonProperty("Nodes")
     private Map<String, String> nodes;
 
@@ -138,10 +135,6 @@ public class ERTParams {
 
     public double getMaxDelta() {
         return maxDelta;
-    }
-
-    public String getPrivateKeyPath() {
-        return privateKeyPath;
     }
 
     public Map<String, String> getNetworkNodes() {
