@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class Rate {
+public class Rate implements Comparable<Double >{
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
 
@@ -21,16 +21,12 @@ public class Rate {
     @JsonProperty("expirationTime")
     private final ExpirationTime expirationTime;
 
-    public Rate() {
-        this(0.0, 0);
+    public Rate(final int hbarEquiv, final Double centEquiv, final long expirationTimeInSeconds) {
+        this(hbarEquiv, (int) (hbarEquiv * centEquiv), expirationTimeInSeconds);
     }
 
-    public Rate(final Double centEquiv, final long expirationTimeInSeconds) {
-        this((int) (HBARS_IN_CENTS * centEquiv), expirationTimeInSeconds);
-    }
-
-    public Rate(final int centEquiv, final long expirationTimeInSeconds) {
-        this.hbarEquiv = HBARS_IN_CENTS;
+    public Rate(final int hbarEquiv, final int centEquiv, final long expirationTimeInSeconds) {
+        this.hbarEquiv = hbarEquiv;
         this.centEquiv = centEquiv;
         this.expirationTime = new ExpirationTime(expirationTimeInSeconds);
     }
@@ -49,19 +45,39 @@ public class Rate {
     }
 
     public boolean isValid(final double maxDelta, final Rate nextRate){
-        final long erNowNumTinyCents = this.getCentEquiv();
-        final long erNewNumTinyCents = nextRate.getCentEquiv();
+        final double currentExchangeRate = this.getHBarValueInDecimal();
+        final double nextExchangeRate = nextRate.getHBarValueInDecimal();
 
-        final long difference = Math.abs(erNewNumTinyCents - erNowNumTinyCents);
-        final double calculatedDelta = ( (double)difference / erNowNumTinyCents ) * 100;
+        final double difference = Math.abs(currentExchangeRate - nextExchangeRate);
+        final double calculatedDelta = (difference / nextExchangeRate) * 100;
         if (calculatedDelta <= maxDelta){
             LOGGER.log(Level.DEBUG, "Median is Valid");
             return true;
-        }
-        else{
+        } else {
             LOGGER.log(Level.ERROR, "Median is Invalid. Out of accepted Delta range. Accepted Delta : {},  calculated delta : {}", maxDelta, calculatedDelta);
             return false;
         }
+    }
+
+    @Override
+    public int compareTo(final Double hbarValue) {
+        final Double currentValue = this.getHBarValueInDecimal();
+        return currentValue.compareTo(hbarValue);
+    }
+
+    @JsonIgnore
+    public double getHBarValueInDecimal() {
+        return (double)this.centEquiv / this.hbarEquiv;
+    }
+
+    @JsonIgnore
+    public double getMaxExchangeRate(final double maxDelta) {
+        return this.getHBarValueInDecimal() * ( 1 + (maxDelta / 100.0));
+    }
+
+    @JsonIgnore
+    public double getMinExchangeRate(final double maxDelta) {
+        return this.getHBarValueInDecimal() * ( 1 - (maxDelta / 100.0));
     }
 
     private static class ExpirationTime {

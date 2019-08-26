@@ -15,7 +15,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedera.hashgraph.sdk.account.AccountId;
-import org.apache.logging.log4j.Level;
+import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,8 +35,6 @@ public class ERTParams {
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
 
-    private static final ERTParams DEFAULT = new ERTParams();
-
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
             false);
 
@@ -45,9 +43,6 @@ public class ERTParams {
 
     @JsonProperty("maxDelta")
     private double maxDelta;
-
-    @JsonProperty("privateKeyPath")
-    private String privateKeyPath;
 
     @JsonProperty("Nodes")
     private Map<String, String> nodes;
@@ -63,6 +58,12 @@ public class ERTParams {
 
     @JsonProperty("operatorId")
     private String operatorId;
+
+    @JsonProperty("defaultCentEquiv")
+    private int defaultCentEquiv;
+
+    @JsonProperty("defaultHbarEquiv")
+    private int defaultHbarEquiv;
 
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
@@ -91,7 +92,7 @@ public class ERTParams {
     }
 
     private static ERTParams readConfigFromAWSS3(final String bucketName, final String key) throws IOException {
-        LOGGER.info("Reading configuration from S3 bucket: {} and key {}", bucketName, key);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Reading configuration from S3 bucket: {} and key {}", bucketName, key);
         final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
 
         try (final S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key))) {
@@ -102,23 +103,20 @@ public class ERTParams {
 
     public static ERTParams readConfig(final String configFilePath) {
 
-        LOGGER.log(Level.INFO, "Reading config from {}", configFilePath);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Reading config from {}", configFilePath);
 
-        try {
-            FileReader configFile = new FileReader(configFilePath);
+        try (final FileReader configFile = new FileReader(configFilePath)){
             final ERTParams ertParams = OBJECT_MAPPER.readValue(configFile, ERTParams.class);
-
-            LOGGER.log(Level.INFO, "Config file is read successfully");
-
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Config file is read successfully");
             return ertParams;
-        }
-        catch (final FileNotFoundException e ) {
-            LOGGER.log(Level.ERROR, "Reading config from {} failed. FIle is not found ", configFilePath);
-            return DEFAULT;
-        }
-        catch (final Exception e){
-            LOGGER.log(Level.ERROR, "Mapping error : {}", e.getMessage());
-            return DEFAULT;
+        } catch (final FileNotFoundException ex) {
+            final String exceptionMessage = String.format("Reading config from %s failed. File is not found.", configFilePath);
+            LOGGER.error(Exchange.EXCHANGE_FILTER, exceptionMessage);
+            throw new IllegalArgumentException(exceptionMessage, ex);
+        } catch (final IOException ex) {
+            final String exceptionMessage = String.format("Failed to load configuration %s", configFilePath);
+            LOGGER.error(Exchange.EXCHANGE_FILTER, exceptionMessage);
+            throw new RuntimeException(exceptionMessage);
         }
     }
 
@@ -134,12 +132,12 @@ public class ERTParams {
         return maxDelta;
     }
 
-    public String getPrivateKeyPath() {
-        return privateKeyPath;
-    }
-
     public Map<String, String> getNetworkNodes() {
         return nodes;
+    }
+
+    public int getDefaultHbarEquiv() {
+        return this.defaultHbarEquiv;
     }
 
     public Map<AccountId, String> getNodes() {
@@ -170,14 +168,21 @@ public class ERTParams {
 
     @JsonIgnore
     public String getOperatorKey() {
-        byte[] encryptedKey = Base64.decode(System.getenv("OPERATOR_KEY"));
+        final byte[] encryptedKey = Base64.decode(System.getenv("OPERATOR_KEY"));
 
-        AWSKMS client = AWSKMSClientBuilder.defaultClient();
+        final AWSKMS client = AWSKMSClientBuilder.defaultClient();
 
-        DecryptRequest request = new DecryptRequest()
-                .withCiphertextBlob(ByteBuffer.wrap(encryptedKey));
-
-        ByteBuffer plainTextKey = client.decrypt(request).getPlaintext();
+        final DecryptRequest request = new DecryptRequest().withCiphertextBlob(ByteBuffer.wrap(encryptedKey));
+        final ByteBuffer plainTextKey = client.decrypt(request).getPlaintext();
         return new String(plainTextKey.array(), Charset.forName("UTF-8"));
+    }
+
+    public Rate getDefaultRate() {
+        return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, this.getCurrentExpirationTime());
+    }
+
+    private long getCurrentExpirationTime() {
+        final long currentTime = System.currentTimeMillis();
+        return (currentTime - (currentTime % 3_600_000) ) + 3_600_000;
     }
 }

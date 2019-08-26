@@ -10,7 +10,6 @@ public class ERTParamsTestCases {
     public void readCofiguration() throws Exception {
         final ERTParams ertParams = ERTParams.readConfig("src/test/resources/configs/config.json");
         assertEquals(5.0, ertParams.getMaxDelta());
-        assertEquals("path", ertParams.getPrivateKeyPath());
         assertEquals("0.0.57", ertParams.getPayAccount());
         assertEquals("0.0.112", ertParams.getFileId());
     }
@@ -19,7 +18,6 @@ public class ERTParamsTestCases {
     public void readCofigurationFail() throws Exception {
         final ERTParams ertParams = ERTParams.readConfig("src/test/resources/configs/config1.json");
         assertEquals(5.0, ertParams.getMaxDelta());
-        assertEquals("path", ertParams.getPrivateKeyPath());
         assertEquals("0.0.57", ertParams.getPayAccount());
         assertEquals(null, ertParams.getFileId());
     }
