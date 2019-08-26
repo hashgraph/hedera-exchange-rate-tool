@@ -17,14 +17,13 @@
   -->
 
 <Configuration status="WARN" packages="com.amazonaws.services.lambda.runtime.log4j2">
-
+	<Filters>
+		<!-- In the following, enable a marker with onMatch="ACCEPT" and disable with onMatch="DENY". -->
+		<!-- More markers can be added, but ensure that every onMismatch="NEUTRAL", except the last is "DENY". -->
+		<MarkerFilter marker="EXCHANGE"     onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
+	</Filters>
 	<Appenders>
 		<Console name="Console" target="SYSTEM_OUT">
-			<Filters>
-				<!-- In the following, enable a marker with onMatch="ACCEPT" and disable with onMatch="DENY". -->
-				<!-- More markers can be added, but ensure that every onMismatch="NEUTRAL", except the last is "DENY". -->
-				<MarkerFilter marker="EXCHANGE"     onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
-			</Filters>
 			<PatternLayout pattern="%d{HH:mm:ss.SSS} %6r %t %msg%n"/>
 		</Console>
 		<RandomAccessFile immediateFlush="true" name="fileLog" fileName="/tmp/exchange.log" append="true">
