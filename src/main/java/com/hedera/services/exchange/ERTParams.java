@@ -82,6 +82,10 @@ public class ERTParams {
             return readConfigFromAWSS3(configurationPath);
         }
 
+        if (configurationPath.contains("storage.cloud.google.com/")) {
+            return readConfigFromGCP(configurationPath);
+        }
+
         return readConfig(configurationPath);
     }
 
@@ -104,6 +108,18 @@ public class ERTParams {
             final ERTParams ertParams = OBJECT_MAPPER.readValue(fullObject.getObjectContent(), ERTParams.class);
             return ertParams;
         }
+    }
+
+    private static ERTParams readConfigFromGCP(final String endPoint) throws IOException {
+        final String[] gcsParams = endPoint.split("/");
+        if (gcsParams.length < 3) {
+            throw new IllegalArgumentException("Not enough parameters to read from Google Cloud Storage: " + endPoint);
+        }
+
+        final String fileNameWithParameters = gcsParams[gcsParams.length - 1];
+        final String fileName = fileNameWithParameters.split("\\?")[0];
+        final String bucketName = gcsParams[gcsParams.length - 2];
+        return readConfigFromGCP(bucketName, fileName);
     }
 
     private static ERTParams readConfigFromGCP(final String bucketName, final String srcFileName) throws IOException {
