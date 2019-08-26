@@ -1,6 +1,10 @@
 package com.hedera.services.exchange;
 
-import com.hedera.services.exchange.exchanges.*;
+import com.hedera.services.exchange.exchanges.Bitrex;
+import com.hedera.services.exchange.exchanges.Coinbase;
+import com.hedera.services.exchange.exchanges.Exchange;
+import com.hedera.services.exchange.exchanges.Liquid;
+import com.hedera.services.exchange.exchanges.UpBit;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,14 +48,14 @@ public class ERTproc {
     }
 
     public ExchangeRate call() {
-        LOGGER.log(Level.INFO, "Start of ERT Logic");
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Start of ERT Logic");
 
         try {
-            LOGGER.log(Level.INFO, "Generating exchange objects");
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
             final List<Exchange> exchanges = generateExchanges();
 
             Double medianExRate = calculateMedianRate(exchanges);
-            LOGGER.log(Level.DEBUG, "Median calculated : " + medianExRate);
+            LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : " + medianExRate);
             if (medianExRate == null){
                 return null;
             }
@@ -70,24 +74,24 @@ public class ERTproc {
             }
 
             return new ExchangeRate(currentExchangeRate, nextRate);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
     private Double calculateMedianRate(final List<Exchange> exchanges) {
-        LOGGER.log(Level.INFO, "Computing median");
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Computing median");
 
         exchanges.removeIf(x -> x == null || x.getHBarValue() == null || x.getHBarValue() == 0.0);
 
         if (exchanges.size() == 0){
-            LOGGER.log(Level.ERROR, "No valid exchange rates retrieved.");
+            LOGGER.error(Exchange.EXCHANGE_FILTER, "No valid exchange rates retrieved.");
             return null;
         }
-        exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
 
-        LOGGER.log(Level.INFO, "find the median");
+        exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "find the median");
         if (exchanges.size() % 2 == 0 ) {
             return (exchanges.get(exchanges.size() / 2).getHBarValue() + exchanges.get(exchanges.size() / 2 - 1).getHBarValue()) / 2;
         }
@@ -102,14 +106,14 @@ public class ERTproc {
         for (final Map.Entry<String, String> api : this.exchangeApis.entrySet()) {
             final Function<String, Exchange> exchangeLoader = EXCHANGES.get(api.getKey());
             if (exchangeLoader == null) {
-                LOGGER.error("API {} not found", api.getKey());
+                LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not found", api.getKey());
                 continue;
             }
 
             final String endpoint = api.getValue();
             final Exchange exchange = exchangeLoader.apply(endpoint);
             if (exchange == null) {
-                LOGGER.error("API {} not loaded", api.getKey());
+                LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not loaded", api.getKey());
                 continue;
             }
 

@@ -15,7 +15,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedera.hashgraph.sdk.account.AccountId;
-import org.apache.logging.log4j.Level;
+import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,8 +34,6 @@ import java.util.Map;
 public class ERTParams {
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
-
-    private static final ERTParams DEFAULT = new ERTParams();
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
             false);
@@ -94,7 +92,7 @@ public class ERTParams {
     }
 
     private static ERTParams readConfigFromAWSS3(final String bucketName, final String key) throws IOException {
-        LOGGER.info("Reading configuration from S3 bucket: {} and key {}", bucketName, key);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Reading configuration from S3 bucket: {} and key {}", bucketName, key);
         final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
 
         try (final S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key))) {
@@ -105,23 +103,20 @@ public class ERTParams {
 
     public static ERTParams readConfig(final String configFilePath) {
 
-        LOGGER.log(Level.INFO, "Reading config from {}", configFilePath);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Reading config from {}", configFilePath);
 
-        try {
-            FileReader configFile = new FileReader(configFilePath);
+        try (final FileReader configFile = new FileReader(configFilePath)){
             final ERTParams ertParams = OBJECT_MAPPER.readValue(configFile, ERTParams.class);
-
-            LOGGER.log(Level.INFO, "Config file is read successfully");
-
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Config file is read successfully");
             return ertParams;
-        }
-        catch (final FileNotFoundException e ) {
-            LOGGER.log(Level.ERROR, "Reading config from {} failed. FIle is not found ", configFilePath);
-            return DEFAULT;
-        }
-        catch (final Exception e){
-            LOGGER.log(Level.ERROR, "Mapping error : {}", e.getMessage());
-            return DEFAULT;
+        } catch (final FileNotFoundException ex) {
+            final String exceptionMessage = String.format("Reading config from %s failed. File is not found.", configFilePath);
+            LOGGER.error(Exchange.EXCHANGE_FILTER, exceptionMessage);
+            throw new IllegalArgumentException(exceptionMessage, ex);
+        } catch (final IOException ex) {
+            final String exceptionMessage = String.format("Failed to load configuration %s", configFilePath);
+            LOGGER.error(Exchange.EXCHANGE_FILTER, exceptionMessage);
+            throw new RuntimeException(exceptionMessage);
         }
     }
 

@@ -21,16 +21,8 @@ public class Rate implements Comparable<Double >{
     @JsonProperty("expirationTime")
     private final ExpirationTime expirationTime;
 
-    public Rate() {
-        this(HBARS_IN_CENTS, 0.0, 0);
-    }
-
     public Rate(final int hbarEquiv, final Double centEquiv, final long expirationTimeInSeconds) {
         this(hbarEquiv, (int) (hbarEquiv * centEquiv), expirationTimeInSeconds);
-    }
-
-    public Rate(final int centEquiv, final long expirationTimeInSeconds) {
-        this(HBARS_IN_CENTS, centEquiv, expirationTimeInSeconds);
     }
 
     public Rate(final int hbarEquiv, final int centEquiv, final long expirationTimeInSeconds) {
@@ -61,8 +53,7 @@ public class Rate implements Comparable<Double >{
         if (calculatedDelta <= maxDelta){
             LOGGER.log(Level.DEBUG, "Median is Valid");
             return true;
-        }
-        else{
+        } else {
             LOGGER.log(Level.ERROR, "Median is Invalid. Out of accepted Delta range. Accepted Delta : {},  calculated delta : {}", maxDelta, calculatedDelta);
             return false;
         }
