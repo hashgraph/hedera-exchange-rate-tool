@@ -70,7 +70,7 @@ public class ExchangeRateDB {
             LOGGER.warn("Filed to push Midnight Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
         }
     }
-
+/*
     public ExchangeRate getExchangeRateToValidate(String lastUTCMidnightTime){
         try{
             LOGGER.info("get Exchange rate from database");
@@ -78,7 +78,7 @@ public class ExchangeRateDB {
 
             Table table = dynamoDB.getTable("MidnightUTCRates");
             QuerySpec spec = new QuerySpec()
-                    .withKeyConditionExpression("ExpirationTime = {}", lastUTCMidnightTime);
+                    .withKeyConditionExpression(String.format("ExpirationTime = {}", lastUTCMidnightTime));
 
             ItemCollection<QueryOutcome> items = table.query(spec);
 
@@ -98,4 +98,6 @@ public class ExchangeRateDB {
             LOGGER.warn("Failed to retrieve the last midnight exchange rate ");
         }
     }
+
+ */
 }
