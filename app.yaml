@@ -1,0 +1,2 @@
+runtime: java11
+entrypoint: java com.hedera.services.exchange.Main.java
