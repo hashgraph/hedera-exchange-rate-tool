@@ -6,9 +6,6 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.ItemCollection;
-import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
-import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,26 +18,25 @@ public class ExchangeRateDB {
             .withRegion(Regions.US_EAST_2)
             .build();
 
-    public static void pushExchangeRateToDB(ExchangeRate exchangeRate ){
+    public static void pushExchangeRateToDB(final ExchangeRate exchangeRate){
 
         try{
 
             LOGGER.info("Pushing Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
-            DynamoDB dynamoDB = new DynamoDB(client);
+            final DynamoDB dynamoDB = new DynamoDB(client);
 
-            Table table = dynamoDB.getTable("ExchangeRate");
+            final Table table = dynamoDB.getTable("ExchangeRate");
 
-            // use nextrate expiration as primary key and Json of the exchange rate as value in the table item.
-            Item item = new Item()
+            final Item item = new Item()
                     .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
-                    .withString("ExchangeRateFile", exchangeRate.toString());
+                    .withString("ExchangeRateFile", exchangeRate.toJson());
 
             table.putItem(item);
             LOGGER.info("Successfully pushed Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
 
         }
         catch (Exception e){
-            LOGGER.warn("Filed to push Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+            throw new RuntimeException("Failed to push Exchange rate to database");
         }
 
     }

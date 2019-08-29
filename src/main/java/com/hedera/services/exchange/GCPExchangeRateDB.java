@@ -3,7 +3,7 @@ package com.hedera.services.exchange;
 
 import com.google.cloud.spanner.*;
 
-public class GCPExcahgneRateDB {
+public class GCPExchangeRateDB {
 
     // copy instance and db id from spanner website
     private static final String projectId = "ert-public-test-1";

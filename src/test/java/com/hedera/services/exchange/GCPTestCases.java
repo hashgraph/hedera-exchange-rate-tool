@@ -1,6 +1,5 @@
 package com.hedera.services.exchange;
 
-import com.hedera.services.exchange.exchanges.Exchange;
 import org.junit.jupiter.api.Test;
 
 public class GCPTestCases {
@@ -14,7 +13,7 @@ public class GCPTestCases {
         GCPExcahgneRateDB.pushExchangeRate(exchangeRate);
 
         */
-       GCPExcahgneRateDB.main();
+       GCPExchangeRateDB.main();
 
     }
 }
