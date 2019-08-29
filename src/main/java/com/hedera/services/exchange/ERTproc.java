@@ -36,6 +36,9 @@ public class ERTproc {
     private final double maxDelta;
     private final Rate currentExchangeRate;
     private final int hbarEquiv;
+    private String exchangesData ;
+
+
 
     public ERTproc(final int hbarEquiv,
             final Map<String, String> exchangeApis,
@@ -90,6 +93,13 @@ public class ERTproc {
             return null;
         }
 
+        //update the exchnages data
+        String exchangeData = "";
+        for(Exchange exchange : exchanges){
+            String.format("{}{}",exchangeData,exchange.getResponse());
+        }
+        this.exchangesData = exchangeData;
+
         exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
         LOGGER.info(Exchange.EXCHANGE_FILTER, "find the median");
         if (exchanges.size() % 2 == 0 ) {
@@ -121,5 +131,9 @@ public class ERTproc {
         }
 
         return exchanges;
+    }
+
+    public String getExchangesData() {
+        return exchangesData;
     }
 }

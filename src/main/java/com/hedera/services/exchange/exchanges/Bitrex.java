@@ -13,6 +13,10 @@ public final class Bitrex extends AbstractExchange {
 	@JsonProperty("result")
 	private Result result;
 
+	private String response;
+
+	private String endPoint;
+
 	@Override
 	public Double getHBarValue() {
 		if (result == null) {
@@ -20,6 +24,21 @@ public final class Bitrex extends AbstractExchange {
 		}
 
 		return this.result.last;
+	}
+
+	@Override
+	public String getResponse(){
+		return String.format("\"Query:{}\",\"Response:{}\";",endPoint,response);
+	}
+
+	@Override
+	public void setEndPoint(String url) {
+		this.endPoint = url;
+	}
+
+	@Override
+	public void setResponse(String response){
+		this.response = response;
 	}
 
 	boolean isSuccess() {
@@ -34,9 +53,7 @@ public final class Bitrex extends AbstractExchange {
 		return result;
 	}
 
-	public static Bitrex load(final String endpoint) {
-		return load(endpoint, Bitrex.class);
-	}
+	public static Bitrex load(final String endpoint) { return load(endpoint, Bitrex.class); }
 
 	private static class Result {
 

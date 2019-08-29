@@ -9,6 +9,25 @@ public class Coinbase extends AbstractExchange{
     @JsonProperty("data")
     private Data data;
 
+    private String response;
+
+    private String endPoint;
+
+    @Override
+    public String getResponse(){
+        return String.format("\"Query:{}\",\"Response:{}\";",endPoint,response);
+    }
+
+    @Override
+    public void setEndPoint(String url) {
+        this.endPoint = url;
+    }
+
+    @Override
+    public void setResponse(String response){
+        this.response = response;
+    }
+
     @Override
     public Double getHBarValue() {
         if (this.data == null || this.data.rates == null || !this.data.rates.containsKey("HBAR")) {
