@@ -1,2 +1,1 @@
 runtime: java11
-entrypoint: java Main.java
