@@ -104,7 +104,7 @@ public class GCPExchangeRateDB {
         }
     }
 
-    public static ExchangeRate getMidnightExchange(long expirationTime){
+    public static void getMidnightExchange(long expirationTime){
         // Instantiates a client
         SpannerOptions options = SpannerOptions.newBuilder().setProjectId(projectId).build();
         Spanner spanner = options.getService();

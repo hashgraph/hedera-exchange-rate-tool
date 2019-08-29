@@ -56,6 +56,7 @@ public class ExchangeRateTool {
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
 
+        ExchangeRateDB.pushExchangeRateToDB(exchangeRate);
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 }
