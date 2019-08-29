@@ -13,14 +13,7 @@ public class Liquid extends AbstractExchange {
 	@JsonProperty("code")
 	private String code;
 
-	private String response;
-
 	private String endPoint;
-
-	@Override
-	public String getResponse(){
-		return String.format("\"Query:{}\",\"Response:{}\";",endPoint,response);
-	}
 
 	@Override
 	public void setEndPoint(String url) {
@@ -28,8 +21,8 @@ public class Liquid extends AbstractExchange {
 	}
 
 	@Override
-	public void setResponse(String response){
-		this.response = response;
+	public String getEndPoint(){
+		return this.endPoint;
 	}
 
 	@Override

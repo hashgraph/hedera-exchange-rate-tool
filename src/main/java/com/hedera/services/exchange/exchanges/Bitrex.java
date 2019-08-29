@@ -13,8 +13,6 @@ public final class Bitrex extends AbstractExchange {
 	@JsonProperty("result")
 	private Result result;
 
-	private String response;
-
 	private String endPoint;
 
 	@Override
@@ -27,18 +25,13 @@ public final class Bitrex extends AbstractExchange {
 	}
 
 	@Override
-	public String getResponse(){
-		return String.format("\"Query:{}\",\"Response:{}\";",endPoint,response);
-	}
-
-	@Override
 	public void setEndPoint(String url) {
 		this.endPoint = url;
 	}
 
 	@Override
-	public void setResponse(String response){
-		this.response = response;
+	public String getEndPoint(){
+		return this.endPoint;
 	}
 
 	boolean isSuccess() {

@@ -17,7 +17,6 @@ public abstract class AbstractExchange implements Exchange {
 			final HttpURLConnection con = getConnection(url);
 			final T exchange =  OBJECT_MAPPER.readValue(con.getInputStream(), type);
 			exchange.setEndPoint(endpoint);
-			exchange.setResponse(con.getInputStream().toString());
 			con.disconnect();
 			return exchange;
 		} catch (final Exception exception) {

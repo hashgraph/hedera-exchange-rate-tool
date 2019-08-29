@@ -6,14 +6,7 @@ import java.net.URL;
 public class UpBit extends AbstractExchange {
 
 
-    private String response;
-
     private String endPoint;
-
-    @Override
-    public String getResponse(){
-        return String.format("\"Query:{}\",\"Response:{}\";",endPoint,response);
-    }
 
     @Override
     public void setEndPoint(String url) {
@@ -21,9 +14,10 @@ public class UpBit extends AbstractExchange {
     }
 
     @Override
-    public void setResponse(String response){
-        this.response = response;
+    public String getEndPoint(){
+        return this.endPoint;
     }
+
     @Override
     public Double getHBarValue() {
         return null;

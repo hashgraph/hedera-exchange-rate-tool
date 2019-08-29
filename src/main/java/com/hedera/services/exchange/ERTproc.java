@@ -96,7 +96,7 @@ public class ERTproc {
         //update the exchnages data
         String exchangeData = "";
         for(Exchange exchange : exchanges){
-            String.format("{}{}",exchangeData,exchange.getResponse());
+            exchangeData = String.format("{}\"Query:{}\",\"Response:{}\";",exchangeData,exchange.getEndPoint(),exchange.getHBarValue());
         }
         this.exchangesData = exchangeData;
 
