@@ -1,6 +1,10 @@
 package com.hedera.services.exchange;
 
-import com.hedera.services.exchange.exchanges.*;
+import com.hedera.services.exchange.exchanges.Bitrex;
+import com.hedera.services.exchange.exchanges.Coinbase;
+import com.hedera.services.exchange.exchanges.Exchange;
+import com.hedera.services.exchange.exchanges.Liquid;
+import com.hedera.services.exchange.exchanges.UpBit;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,93 +34,64 @@ public class ERTproc {
 
     private final Map<String, String> exchangeApis;
     private final double maxDelta;
-    private final double currentExchangeRate;
-    private long tE;
+    private final Rate currentExchangeRate;
+    private final int hbarEquiv;
 
-    public ERTproc(final Map<String, String> exchangeApis,
+    public ERTproc(final int hbarEquiv,
+            final Map<String, String> exchangeApis,
             final double maxDelta,
-            final double currentExchangeRate,
-            final long tE) {
+            final Rate currentExchangeRate) {
+        this.hbarEquiv = hbarEquiv;
         this.exchangeApis = exchangeApis;
         this.maxDelta = maxDelta;
         this.currentExchangeRate = currentExchangeRate;
-        this.tE = tE;
     }
 
     public ExchangeRate call() {
-        LOGGER.log(Level.INFO, "Start of ERT Logic");
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Start of ERT Logic");
 
         try {
-            LOGGER.log(Level.INFO, "generating exchange objects");
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
             final List<Exchange> exchanges = generateExchanges();
 
             Double medianExRate = calculateMedianRate(exchanges);
-            LOGGER.log(Level.DEBUG, "Median calculated : " + medianExRate);
+            LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : " + medianExRate);
             if (medianExRate == null){
                 return null;
             }
 
-            tE = getCurrentExpirationTime() / 1000;
-            final Rate currentRate = new Rate(currentExchangeRate, tE);
-            Rate nextRate = new Rate(medianExRate, tE + 3600);
+            final long nextExpirationTimeInSeconds = currentExchangeRate.getExpirationTimeInSeconds() + 3_600;
+            Rate nextRate = new Rate(this.hbarEquiv, medianExRate, nextExpirationTimeInSeconds);
 
-            LOGGER.log(Level.INFO, "validate the median");
-            final boolean isValid = currentRate.isValid(maxDelta, nextRate);
-
-            if (!isValid){
-                // limit the value
-                if (medianExRate < currentExchangeRate){
-                    medianExRate = getMinExchangeRate();
+            if (!currentExchangeRate.isValid(maxDelta, nextRate)){
+                if (this.currentExchangeRate.compareTo(medianExRate) > 0) {
+                    medianExRate = this.currentExchangeRate.getMinExchangeRate(maxDelta);
+                } else {
+                    medianExRate = this.currentExchangeRate.getMaxExchangeRate(maxDelta);
                 }
-                else{
-                    medianExRate = getMaxExchangeRate();
-                }
-                nextRate = new Rate(medianExRate, tE + 3600);
-            }
-            final ExchangeRate exchangeRate = new ExchangeRate(currentRate, nextRate);
 
-            // build the ER File
-            // sign the file accordingly
-            if (isValid){
-                //follow the automatic process
+                nextRate = new Rate(this.hbarEquiv, medianExRate, nextExpirationTimeInSeconds);
             }
-            else{
-                //follow the manual process
-            }
-            // create a transaction for the network
-            // POST it to the network and Pricing DB
-            return  exchangeRate;
 
-        } catch (Exception e) {
+            return new ExchangeRate(currentExchangeRate, nextRate);
+        } catch (final Exception e) {
             e.printStackTrace();
             return null;
         }
     }
-    private long getCurrentExpirationTime() {
-        final long currentTime = System.currentTimeMillis();
-        return ( currentTime - (currentTime % 3600000) ) + 3600000;
-    }
-
-    private double getMaxExchangeRate() {
-        return currentExchangeRate * ( 1 + (maxDelta / 100.0));
-    }
-
-    private double getMinExchangeRate() {
-        return currentExchangeRate * ( 1 - (maxDelta / 100.0));
-    }
 
     private Double calculateMedianRate(final List<Exchange> exchanges) {
-        LOGGER.log(Level.INFO, "Computing median");
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Computing median");
 
         exchanges.removeIf(x -> x == null || x.getHBarValue() == null || x.getHBarValue() == 0.0);
 
         if (exchanges.size() == 0){
-            LOGGER.log(Level.ERROR, "No valid exchange rates retrieved.");
+            LOGGER.error(Exchange.EXCHANGE_FILTER, "No valid exchange rates retrieved.");
             return null;
         }
-        exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
 
-        LOGGER.log(Level.INFO, "find the median");
+        exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "find the median");
         if (exchanges.size() % 2 == 0 ) {
             return (exchanges.get(exchanges.size() / 2).getHBarValue() + exchanges.get(exchanges.size() / 2 - 1).getHBarValue()) / 2;
         }
@@ -131,14 +106,14 @@ public class ERTproc {
         for (final Map.Entry<String, String> api : this.exchangeApis.entrySet()) {
             final Function<String, Exchange> exchangeLoader = EXCHANGES.get(api.getKey());
             if (exchangeLoader == null) {
-                LOGGER.error("API {} not found", api.getKey());
+                LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not found", api.getKey());
                 continue;
             }
 
             final String endpoint = api.getValue();
             final Exchange exchange = exchangeLoader.apply(endpoint);
             if (exchange == null) {
-                LOGGER.error("API {} not loaded", api.getKey());
+                LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not loaded", api.getKey());
                 continue;
             }
 

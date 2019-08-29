@@ -2,7 +2,7 @@ package com.hedera.services.exchange.exchanges;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Bitrex extends AbstractExchange {
+public final class Bitrex extends AbstractExchange {
 
 	@JsonProperty("success")
 	private boolean success;

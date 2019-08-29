@@ -5,11 +5,12 @@
 		"upbit": "https://api.upbit.com/v1/ticker?markets=USD-HBAR",
 		"coinbase": "https://api.coinbase.com/v2/exchange-rates"
 	},
+    "defaultCentEquiv" : 714,
+    "defaultHbarEquiv": 100000,
     "fileId": "0.0.112",
     "maxTransactionFee": 1000000000,
 	"maxDelta": "5.0",
     "operatorId": "0.0.57",
-	"privateKeyPath": "path",
 	"Nodes": {
 		"0.0.3": "0.testnet.hedera.com:50211"
 	},
