@@ -93,11 +93,13 @@ public class ERTproc {
             return null;
         }
 
-        //update the exchnages data
-        String exchangeData = "";
+        //update the exchanges data
+        String exchangeData = "{";
         for(Exchange exchange : exchanges){
-            exchangeData = String.format("{}\"Query:{}\",\"Response:{}\";",exchangeData,exchange.getEndPoint(),exchange.getHBarValue());
+            exchangeData = String.format("{}\"Query:{}\":\"Response:{}\",",exchangeData,exchange.getEndPoint(),exchange.getHBarValue());
         }
+        exchangeData = exchangeData.substring(0, exchangeData.length()-1);
+        exchangeData += "}";
         this.exchangesData = exchangeData;
 
         exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
