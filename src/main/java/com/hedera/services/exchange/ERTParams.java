@@ -14,11 +14,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.hedera.hashgraph.sdk.account.AccountId;
 import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -77,6 +82,10 @@ public class ERTParams {
             return readConfigFromAWSS3(configurationPath);
         }
 
+        if (configurationPath.contains("storage.cloud.google.com/")) {
+            return readConfigFromGCP(configurationPath);
+        }
+
         return readConfig(configurationPath);
     }
 
@@ -99,6 +108,26 @@ public class ERTParams {
             final ERTParams ertParams = OBJECT_MAPPER.readValue(fullObject.getObjectContent(), ERTParams.class);
             return ertParams;
         }
+    }
+
+    private static ERTParams readConfigFromGCP(final String endPoint) throws IOException {
+        final String[] gcsParams = endPoint.split("/");
+        if (gcsParams.length < 3) {
+            throw new IllegalArgumentException("Not enough parameters to read from Google Cloud Storage: " + endPoint);
+        }
+
+        final String fileNameWithParameters = gcsParams[gcsParams.length - 1];
+        final String fileName = fileNameWithParameters.split("\\?")[0];
+        final String bucketName = gcsParams[gcsParams.length - 2];
+        return readConfigFromGCP(bucketName, fileName);
+    }
+
+    private static ERTParams readConfigFromGCP(final String bucketName, final String srcFileName) throws IOException {
+        final Storage storage = StorageOptions.getDefaultInstance().getService();
+        final Blob blob = storage.get(BlobId.of(bucketName, srcFileName));
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        blob.downloadTo(outputStream);
+        return OBJECT_MAPPER.readValue(outputStream.toByteArray(), ERTParams.class);
     }
 
     public static ERTParams readConfig(final String configFilePath) {

@@ -18,7 +18,7 @@ public class ExchangeRateTool {
 
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
 
-    public static void main(final String[] args) throws Exception {
+    public static void main(final String ... args) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
 
         final ERTParams params = ERTParams.readConfig(args);
