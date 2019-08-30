@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.hashgraph.sdk.proto.TimestampSeconds;
 
+import java.util.Date;
+
 @JsonRootName("exchangeRate")
 public class ExchangeRate {
 
@@ -59,5 +61,16 @@ public class ExchangeRate {
 						.build();
 
 		return ExchangeRateSet.newBuilder().setCurrentRate(currentRate).setNextRate(nextRate).build();
+	}
+
+	public boolean isMidnightTime(){
+		Date expiration = new Date( this.getNextExpirationTimeInSeconds() * 1000);
+
+		if(expiration.getHours() == 0 && expiration.getMinutes() == 0 && expiration.getSeconds() == 0){
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 }

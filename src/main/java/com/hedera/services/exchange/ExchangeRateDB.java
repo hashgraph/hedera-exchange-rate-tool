@@ -138,7 +138,7 @@ public class ExchangeRateDB {
         }
     }
 
-    public ExchangeRate getExchangeRateToValidate(String UTCMidnightTime){
+    public static ExchangeRate getExchangeRateToValidate(String UTCMidnightTime){
         try{
             LOGGER.info("get Exchange rate from database");
 
