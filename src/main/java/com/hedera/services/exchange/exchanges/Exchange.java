@@ -12,6 +12,5 @@ public interface Exchange {
 	ObjectMapper OBJECT_MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
 			false);
 	Double getHBarValue();
-	void setEndPoint(String url);
 	String getEndPoint();
 }

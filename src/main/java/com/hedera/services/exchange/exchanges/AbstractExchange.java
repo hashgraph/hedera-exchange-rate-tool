@@ -1,5 +1,6 @@
 package com.hedera.services.exchange.exchanges;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,7 +12,10 @@ public abstract class AbstractExchange implements Exchange {
 
 	private static final Logger LOGGER = LogManager.getLogger(AbstractExchange.class);
 
-	public static <T extends Exchange> T load(final String endpoint, final Class<T> type) {
+	@JsonProperty("Query")
+	private String endPoint;
+
+	public static <T extends AbstractExchange> T load(final String endpoint, final Class<T> type) {
 		try {
 			final URL url = new URL(endpoint);
 			final HttpURLConnection con = getConnection(url);
@@ -26,5 +30,13 @@ public abstract class AbstractExchange implements Exchange {
 
 	private static HttpURLConnection getConnection(final URL url) throws IOException {
 		return (HttpURLConnection) url.openConnection();
+	}
+
+	protected void setEndPoint(String endPoint){
+		this.endPoint = endPoint;
+	}
+
+	public String getEndPoint(){
+		return this.endPoint;
 	}
 }

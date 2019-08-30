@@ -31,7 +31,5 @@ public class LiquidTestCases {
 
         final Liquid liquid = Liquid.load("https://api.liquid.com/products/5");
         assertEquals(0.0093, liquid.getHBarValue());
-        assertEquals("CurrencyPair", liquid.getProductType());
-        assertEquals("CASH", liquid.getCode());
     }
 }
