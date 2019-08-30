@@ -32,7 +32,7 @@ public class ExchangeRateDB {
         try{
             LOGGER.info("Pushing Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
 
-            createTableIfNotExists(TABLE_NAME, CLIENT);
+            createExchangeRateTableIfNotExists(TABLE_NAME, CLIENT);
             waitUntilTableIsActive(TABLE_NAME, CLIENT);
 
             final DynamoDB dynamoDB = new DynamoDB(CLIENT);
@@ -55,7 +55,7 @@ public class ExchangeRateDB {
         TableUtils.waitUntilActive(dynamoDB, tableName);
     }
 
-    private static void createTableIfNotExists(final String tableName, final AmazonDynamoDB dynamoDB) {
+    private static void createExchangeRateTableIfNotExists(final String tableName, final AmazonDynamoDB dynamoDB) {
         final CreateTableRequest request = new CreateTableRequest().withTableName(tableName);
 
         final KeySchemaElement expirationTimeElement = new KeySchemaElement()
@@ -83,8 +83,8 @@ public class ExchangeRateDB {
         TableUtils.createTableIfNotExists(dynamoDB, request);
     }
 
-    public static void pushRetrievedExchangesToDB(){
-
+    public static ExchangeRate retrievedExchangesToDB(){
+        return null;
     }
 
     public static void pushUTCMidnightRateToDB(ExchangeRate exchangeRate){
