@@ -3,10 +3,10 @@ package com.hedera.services.exchange;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.*;
 
+import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
+import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
 import com.amazonaws.services.dynamodbv2.model.BillingMode;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
@@ -14,8 +14,13 @@ import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Iterator;
 
 public class ExchangeRateDB {
 
@@ -132,34 +137,30 @@ public class ExchangeRateDB {
             LOGGER.warn("Filed to push Midnight Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
         }
     }
-/*
-    public ExchangeRate getExchangeRateToValidate(String lastUTCMidnightTime){
+
+    public ExchangeRate getExchangeRateToValidate(String UTCMidnightTime){
         try{
             LOGGER.info("get Exchange rate from database");
-            DynamoDB dynamoDB = new DynamoDB(client);
 
-            Table table = dynamoDB.getTable("MidnightUTCRates");
-            QuerySpec spec = new QuerySpec()
-                    .withKeyConditionExpression(String.format("ExpirationTime = {}", lastUTCMidnightTime));
+            final ObjectMapper object_Mapper = new ObjectMapper().enable(SerializationFeature.WRAP_ROOT_VALUE);;
 
-            ItemCollection<QueryOutcome> items = table.query(spec);
+            final DynamoDB dynamoDB = new DynamoDB(CLIENT);
+            final Table table = dynamoDB.getTable(MIDNIGHT_RATE_TABLE_NAME);
 
-            Iterator<Item> iterator = items.iterator();
-            Item item = null;
-            while (iterator.hasNext()) {
-                item = iterator.next();
-                System.out.println(item.toJSONPretty());
-                // TODO get an object mapper and cast it to ExchangeRate object.
+            GetItemSpec spec = new GetItemSpec().withPrimaryKey("ExpirationTime", UTCMidnightTime);
 
-            }
+            LOGGER.info("Attempting to read the item");
+            Item outcome = table.getItem(spec);
+
+            final ExchangeRate exchangeRate = object_Mapper.readValue( outcome.toJSON() , ExchangeRate.class);
 
             LOGGER.info("Successfully retrieved last Midnight Exchange rate from database");
+            return exchangeRate;
 
         }
         catch (Exception e){
             LOGGER.warn("Failed to retrieve the last midnight exchange rate ");
+            return null;
         }
     }
-
- */
 }
