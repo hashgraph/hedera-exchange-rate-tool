@@ -21,7 +21,9 @@ public class ExchangeRateDB {
 
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
 
-    private static final String TABLE_NAME = "ExchangeRate";
+    private static final String EXCHANGE_RATE_TABLE_NAME = "ExchangeRate";
+    private static final String MIDNIGHT_RATE_TABLE_NAME = "MidnightRate";
+    private static final String QUERIED_RATE_TABLE_NAME = "QueriedRates";
 
     private static final AmazonDynamoDB CLIENT = AmazonDynamoDBClientBuilder.standard()
             .withRegion(Regions.US_EAST_1)
@@ -32,11 +34,11 @@ public class ExchangeRateDB {
         try{
             LOGGER.info("Pushing Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
 
-            createTableIfNotExists(TABLE_NAME, CLIENT);
-            waitUntilTableIsActive(TABLE_NAME, CLIENT);
+            createTableIfNotExists(EXCHANGE_RATE_TABLE_NAME, CLIENT);
+            waitUntilTableIsActive(EXCHANGE_RATE_TABLE_NAME, CLIENT);
 
             final DynamoDB dynamoDB = new DynamoDB(CLIENT);
-            final Table table = dynamoDB.getTable("ExchangeRate");
+            final Table table = dynamoDB.getTable(EXCHANGE_RATE_TABLE_NAME);
 
             final Item item = new Item()
                     .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
@@ -83,19 +85,41 @@ public class ExchangeRateDB {
         TableUtils.createTableIfNotExists(dynamoDB, request);
     }
 
-    public static void pushRetrievedExchangesToDB(){
+    public static void pushRetrievedExchangesToDB(ExchangeRate exchangeRate){
+        try{
 
+            LOGGER.info("Pushing Exchanges Data at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+
+            createTableIfNotExists(QUERIED_RATE_TABLE_NAME, CLIENT);
+            waitUntilTableIsActive(QUERIED_RATE_TABLE_NAME, CLIENT);
+
+            final DynamoDB dynamoDB = new DynamoDB(CLIENT);
+            final Table table = dynamoDB.getTable(QUERIED_RATE_TABLE_NAME);
+
+            Item item = new Item()
+                    .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
+                    .withString("ExchangeRateFile", exchangeRate.getExchangeData());
+
+            table.putItem(item);
+            LOGGER.info("Successfully pushed Exchanges Data at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+
+        }
+        catch (Exception e){
+            LOGGER.warn("Filed to push Exchanges Data at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+        }
     }
 
     public static void pushUTCMidnightRateToDB(ExchangeRate exchangeRate){
         try{
 
-            LOGGER.info("Pushing Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
-            DynamoDB dynamoDB = new DynamoDB(CLIENT);
+            LOGGER.info("Pushing Midnight Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
 
-            Table table = dynamoDB.getTable("MidnightUTCRates");
+            createTableIfNotExists(MIDNIGHT_RATE_TABLE_NAME, CLIENT);
+            waitUntilTableIsActive(MIDNIGHT_RATE_TABLE_NAME, CLIENT);
 
-            // use nextrate expiration as primary key and Json of the exchange rate as value in the table item.
+            final DynamoDB dynamoDB = new DynamoDB(CLIENT);
+            final Table table = dynamoDB.getTable(MIDNIGHT_RATE_TABLE_NAME);
+
             Item item = new Item()
                     .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
                     .withString("ExchangeRateFile", exchangeRate.toString());
