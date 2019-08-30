@@ -6,11 +6,12 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Calendar;
+import java.util.TimeZone;
+
 public class Rate implements Comparable<Double >{
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
-
-    private static final int HBARS_IN_CENTS = 100_000;
 
     @JsonProperty("hbarEquiv")
     private final int hbarEquiv;
@@ -19,7 +20,7 @@ public class Rate implements Comparable<Double >{
     private final int centEquiv;
 
     @JsonProperty("expirationTime")
-    private final ExpirationTime expirationTime;
+    private final long expirationTime;
 
     public Rate(final int hbarEquiv, final Double centEquiv, final long expirationTimeInSeconds) {
         this(hbarEquiv, (int) (hbarEquiv * centEquiv), expirationTimeInSeconds);
@@ -28,12 +29,12 @@ public class Rate implements Comparable<Double >{
     public Rate(final int hbarEquiv, final int centEquiv, final long expirationTimeInSeconds) {
         this.hbarEquiv = hbarEquiv;
         this.centEquiv = centEquiv;
-        this.expirationTime = new ExpirationTime(expirationTimeInSeconds);
+        this.expirationTime =  expirationTimeInSeconds;
     }
 
     @JsonIgnore
     public long getExpirationTimeInSeconds() {
-        return this.expirationTime.seconds;
+        return this.expirationTime;
     }
 
     public int getCentEquiv() {
@@ -45,7 +46,12 @@ public class Rate implements Comparable<Double >{
     }
 
     public boolean isValid(final double maxDelta, final Rate nextRate){
-        final double currentExchangeRate = this.getHBarValueInDecimal();
+        double currentExchangeRate = this.getHBarValueInDecimal();
+        if(ExchangeRateDB.getExchangeRateToValidate(
+                getMidnightUTCTime()) != null) {
+            currentExchangeRate =  ExchangeRateDB.getExchangeRateToValidate(
+                    getMidnightUTCTime()).getNextRatecentEqu();
+        }
         final double nextExchangeRate = nextRate.getHBarValueInDecimal();
 
         final double difference = Math.abs(currentExchangeRate - nextExchangeRate);
@@ -80,13 +86,10 @@ public class Rate implements Comparable<Double >{
         return this.getHBarValueInDecimal() * ( 1 - (maxDelta / 100.0));
     }
 
-    private static class ExpirationTime {
+    private long getMidnightUTCTime(){
+        Calendar currentTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        currentTime.set(currentTime.YEAR, currentTime.MONTH, currentTime.DAY_OF_MONTH, 0,0,0);
 
-        @JsonProperty("seconds")
-        private long seconds;
-
-        private ExpirationTime(final long seconds) {
-            this.seconds = seconds;
-        }
+        return  currentTime.getTimeInMillis() / 1000;
     }
 }

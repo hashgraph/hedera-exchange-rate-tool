@@ -23,7 +23,8 @@ public class ExchangeRateTool {
 
         final ERTParams params = ERTParams.readConfig(args);
 
-        final Rate currentRate = params.getDefaultRate();
+
+        Rate currentRate = params.getDefaultRate();
         final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
@@ -56,7 +57,11 @@ public class ExchangeRateTool {
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
 
+        if(exchangeRate.isMidnightTime()){
+            ExchangeRateDB.pushUTCMidnightRateToDB(exchangeRate);
+        }
         ExchangeRateDB.pushExchangeRateToDB(exchangeRate);
+        ExchangeRateDB.pushRetrievedExchangesToDB(exchangeRate);
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 }

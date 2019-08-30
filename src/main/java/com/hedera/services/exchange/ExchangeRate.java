@@ -9,15 +9,18 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.hashgraph.sdk.proto.TimestampSeconds;
 
-@JsonRootName("exchangeRate")
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 public class ExchangeRate {
 
-	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().enable(SerializationFeature.WRAP_ROOT_VALUE);;
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-	@JsonProperty("currentRate")
+	@JsonProperty("CurrentRate")
 	private Rate currentRate;
 
-	@JsonProperty("nextRate")
+	@JsonProperty("NextRate")
 	private Rate nextRate;
 
 	public ExchangeRate(final Rate currentRate, final Rate nextRate) {
@@ -59,5 +62,21 @@ public class ExchangeRate {
 						.build();
 
 		return ExchangeRateSet.newBuilder().setCurrentRate(currentRate).setNextRate(nextRate).build();
+	}
+
+	public boolean isMidnightTime(){
+		Calendar expiration = GregorianCalendar.getInstance();
+		expiration.setTimeInMillis(this.getNextExpirationTimeInSeconds() * 1000);
+
+		if(expiration.HOUR_OF_DAY == 0 && expiration.MINUTE == 0 && expiration.SECOND == 0){
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+
+	public double getNextRatecentEqu(){
+		return nextRate.getHBarValueInDecimal();
 	}
 }

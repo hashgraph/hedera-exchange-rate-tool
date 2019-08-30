@@ -3,10 +3,9 @@ package com.hedera.services.exchange;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.*;
 
+import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
 import com.amazonaws.services.dynamodbv2.model.BillingMode;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
@@ -14,14 +13,19 @@ import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 
 public class ExchangeRateDB {
 
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
 
-    private static final String TABLE_NAME = "ExchangeRate";
+    private static final String EXCHANGE_RATE_TABLE_NAME = "ExchangeRate";
+    private static final String MIDNIGHT_RATE_TABLE_NAME = "MidnightRate";
+    private static final String QUERIED_RATE_TABLE_NAME = "QueriedRates";
 
     private static final AmazonDynamoDB CLIENT = AmazonDynamoDBClientBuilder.standard()
             .withRegion(Regions.US_EAST_1)
@@ -32,11 +36,12 @@ public class ExchangeRateDB {
         try{
             LOGGER.info("Pushing Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
 
-            createExchangeRateTableIfNotExists(TABLE_NAME, CLIENT);
-            waitUntilTableIsActive(TABLE_NAME, CLIENT);
+            createTableIfNotExists(EXCHANGE_RATE_TABLE_NAME, CLIENT);
+            waitUntilTableIsActive(EXCHANGE_RATE_TABLE_NAME, CLIENT);
+
 
             final DynamoDB dynamoDB = new DynamoDB(CLIENT);
-            final Table table = dynamoDB.getTable("ExchangeRate");
+            final Table table = dynamoDB.getTable(EXCHANGE_RATE_TABLE_NAME);
 
             final Item item = new Item()
                     .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
@@ -55,7 +60,7 @@ public class ExchangeRateDB {
         TableUtils.waitUntilActive(dynamoDB, tableName);
     }
 
-    private static void createExchangeRateTableIfNotExists(final String tableName, final AmazonDynamoDB dynamoDB) {
+    private static void createTableIfNotExists(final String tableName, final AmazonDynamoDB dynamoDB) {
         final CreateTableRequest request = new CreateTableRequest().withTableName(tableName);
 
         final KeySchemaElement expirationTimeElement = new KeySchemaElement()
@@ -83,19 +88,41 @@ public class ExchangeRateDB {
         TableUtils.createTableIfNotExists(dynamoDB, request);
     }
 
-    public static ExchangeRate retrievedExchangesToDB(){
-        return null;
+    public static void pushRetrievedExchangesToDB(ExchangeRate exchangeRate){
+        try{
+
+            LOGGER.info("Pushing Exchanges Data at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+
+            createTableIfNotExists(QUERIED_RATE_TABLE_NAME, CLIENT);
+            waitUntilTableIsActive(QUERIED_RATE_TABLE_NAME, CLIENT);
+
+            final DynamoDB dynamoDB = new DynamoDB(CLIENT);
+            final Table table = dynamoDB.getTable(QUERIED_RATE_TABLE_NAME);
+
+            Item item = new Item()
+                    .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
+                    .withString("ExchangeRateFile", "TODO after merging");
+
+            table.putItem(item);
+            LOGGER.info("Successfully pushed Exchanges Data at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+
+        }
+        catch (Exception e){
+            LOGGER.warn("Filed to push Exchanges Data at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+        }
     }
 
     public static void pushUTCMidnightRateToDB(ExchangeRate exchangeRate){
         try{
 
-            LOGGER.info("Pushing Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
-            DynamoDB dynamoDB = new DynamoDB(CLIENT);
+            LOGGER.info("Pushing Midnight Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
 
-            Table table = dynamoDB.getTable("MidnightUTCRates");
+            createTableIfNotExists(MIDNIGHT_RATE_TABLE_NAME, CLIENT);
+            waitUntilTableIsActive(MIDNIGHT_RATE_TABLE_NAME, CLIENT);
 
-            // use nextrate expiration as primary key and Json of the exchange rate as value in the table item.
+            final DynamoDB dynamoDB = new DynamoDB(CLIENT);
+            final Table table = dynamoDB.getTable(MIDNIGHT_RATE_TABLE_NAME);
+
             Item item = new Item()
                     .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
                     .withString("ExchangeRateFile", exchangeRate.toString());
@@ -108,34 +135,30 @@ public class ExchangeRateDB {
             LOGGER.warn("Filed to push Midnight Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
         }
     }
-/*
-    public ExchangeRate getExchangeRateToValidate(String lastUTCMidnightTime){
+
+    public static ExchangeRate getExchangeRateToValidate(long UTCMidnightTime){
         try{
             LOGGER.info("get Exchange rate from database");
-            DynamoDB dynamoDB = new DynamoDB(client);
 
-            Table table = dynamoDB.getTable("MidnightUTCRates");
-            QuerySpec spec = new QuerySpec()
-                    .withKeyConditionExpression(String.format("ExpirationTime = {}", lastUTCMidnightTime));
+            final ObjectMapper object_Mapper = new ObjectMapper().enable(SerializationFeature.WRAP_ROOT_VALUE);
 
-            ItemCollection<QueryOutcome> items = table.query(spec);
+            final DynamoDB dynamoDB = new DynamoDB(CLIENT);
+            final Table table = dynamoDB.getTable(MIDNIGHT_RATE_TABLE_NAME);
 
-            Iterator<Item> iterator = items.iterator();
-            Item item = null;
-            while (iterator.hasNext()) {
-                item = iterator.next();
-                System.out.println(item.toJSONPretty());
-                // TODO get an object mapper and cast it to ExchangeRate object.
+            GetItemSpec spec = new GetItemSpec().withPrimaryKey("ExpirationTime", UTCMidnightTime);
 
-            }
+            LOGGER.info("Attempting to read the item");
+            Item outcome = table.getItem(spec);
+
+            final ExchangeRate exchangeRate = object_Mapper.readValue( outcome.toJSON() , ExchangeRate.class);
 
             LOGGER.info("Successfully retrieved last Midnight Exchange rate from database");
+            return exchangeRate;
 
         }
         catch (Exception e){
             LOGGER.warn("Failed to retrieve the last midnight exchange rate ");
+            return null;
         }
     }
-
- */
 }
