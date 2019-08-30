@@ -13,6 +13,7 @@ import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hedera.services.exchange.ExchangeRate;
@@ -21,7 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-public class DynamoDBExchangeRate {
+public class DynamoDBExchangeRate implements ExchangeDB {
 
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
 
@@ -33,29 +34,32 @@ public class DynamoDBExchangeRate {
             .withRegion(Regions.US_EAST_1)
             .build();
 
-    public static void pushExchangeRateToDB(final ExchangeRate exchangeRate) {
+    @Override
+    public ExchangeRate getLastestExchangeRate() {
+        return null;
+    }
 
-        try{
-            LOGGER.info("Pushing Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+    @Override
+    public ExchangeRate getLatestMidnightExchangeRate() {
+        return null;
+    }
 
-            createTableIfNotExists(EXCHANGE_RATE_TABLE_NAME, CLIENT);
-            waitUntilTableIsActive(EXCHANGE_RATE_TABLE_NAME, CLIENT);
+    public void pushExchangeRate(final ExchangeRate exchangeRate) throws JsonProcessingException, InterruptedException {
+        LOGGER.info("Pushing Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+
+        createTableIfNotExists(EXCHANGE_RATE_TABLE_NAME, CLIENT);
+        waitUntilTableIsActive(EXCHANGE_RATE_TABLE_NAME, CLIENT);
 
 
-            final DynamoDB dynamoDB = new DynamoDB(CLIENT);
-            final Table table = dynamoDB.getTable(EXCHANGE_RATE_TABLE_NAME);
+        final DynamoDB dynamoDB = new DynamoDB(CLIENT);
+        final Table table = dynamoDB.getTable(EXCHANGE_RATE_TABLE_NAME);
 
-            final Item item = new Item()
-                    .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
-                    .withString("ExchangeRateFile", exchangeRate.toJson());
+        final Item item = new Item()
+                .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
+                .withString("ExchangeRateFile", exchangeRate.toJson());
 
-            table.putItem(item);
-            LOGGER.info("Successfully pushed Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
-
-        } catch (final Exception ex){
-            throw new RuntimeException("Failed to push Exchange rate to database", ex);
-        }
-
+        table.putItem(item);
+        LOGGER.info("Successfully pushed Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
     }
 
     private static void waitUntilTableIsActive(final String tableName, final AmazonDynamoDB dynamoDB) throws InterruptedException {
@@ -67,11 +71,11 @@ public class DynamoDBExchangeRate {
 
         final KeySchemaElement expirationTimeElement = new KeySchemaElement()
                 .withAttributeName("ExpirationTime")
-                .withKeyType(KeyType.RANGE);
+                .withKeyType(KeyType.HASH);
 
         final KeySchemaElement exchangeRateFileElement = new KeySchemaElement()
                 .withAttributeName("ExchangeRateFile")
-                .withKeyType(KeyType.HASH);
+                .withKeyType(KeyType.RANGE);
 
         request.withKeySchema(exchangeRateFileElement, expirationTimeElement);
 
