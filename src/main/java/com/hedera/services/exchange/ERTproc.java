@@ -5,7 +5,6 @@ import com.hedera.services.exchange.exchanges.Coinbase;
 import com.hedera.services.exchange.exchanges.Exchange;
 import com.hedera.services.exchange.exchanges.Liquid;
 import com.hedera.services.exchange.exchanges.UpBit;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -75,8 +74,9 @@ public class ERTproc {
 
                 nextRate = new Rate(this.hbarEquiv, medianExRate, nextExpirationTimeInSeconds);
             }
-
-            return new ExchangeRate(currentExchangeRate, nextRate);
+            ExchangeRate exchangeRate = new ExchangeRate(currentExchangeRate, nextRate);
+            exchangeRate.setExchangeData(this.exchangesData);
+            return exchangeRate;
         } catch (final Exception e) {
             e.printStackTrace();
             return null;
@@ -133,9 +133,5 @@ public class ERTproc {
         }
 
         return exchanges;
-    }
-
-    public String getExchangesData() {
-        return exchangesData;
     }
 }

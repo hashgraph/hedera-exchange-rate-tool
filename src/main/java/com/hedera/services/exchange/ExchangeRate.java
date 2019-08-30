@@ -20,6 +20,8 @@ public class ExchangeRate {
 	@JsonProperty("nextRate")
 	private Rate nextRate;
 
+	private String exchangeData;
+
 	public ExchangeRate(final Rate currentRate, final Rate nextRate) {
 		this.currentRate = currentRate;
 		this.nextRate = nextRate;
@@ -59,5 +61,13 @@ public class ExchangeRate {
 						.build();
 
 		return ExchangeRateSet.newBuilder().setCurrentRate(currentRate).setNextRate(nextRate).build();
+	}
+
+	public String getExchangeData() {
+		return exchangeData;
+	}
+
+	public void setExchangeData(String exchangeData) {
+		this.exchangeData = exchangeData;
 	}
 }
