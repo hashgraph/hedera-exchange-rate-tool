@@ -1,4 +1,4 @@
-package com.hedera.services.exchange;
+package com.hedera.services.exchange.database;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
@@ -15,11 +15,13 @@ import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.hedera.services.exchange.ExchangeRate;
+import com.hedera.services.exchange.ExchangeRateTool;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-public class ExchangeRateDB {
+public class DynamoDBExchangeRate {
 
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
 

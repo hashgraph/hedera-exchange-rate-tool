@@ -7,6 +7,7 @@ import com.hedera.hashgraph.sdk.file.FileContentsQuery;
 import com.hedera.hashgraph.sdk.file.FileId;
 import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
 import com.hedera.hashgraph.sdk.proto.FileGetContentsResponse;
+import com.hedera.services.exchange.database.DynamoDBExchangeRate;
 import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -58,10 +59,10 @@ public class ExchangeRateTool {
         }
 
         if(exchangeRate.isMidnightTime()){
-            ExchangeRateDB.pushUTCMidnightRateToDB(exchangeRate);
+            DynamoDBExchangeRate.pushUTCMidnightRateToDB(exchangeRate);
         }
-        ExchangeRateDB.pushExchangeRateToDB(exchangeRate);
-        ExchangeRateDB.pushRetrievedExchangesToDB(exchangeRate);
+        DynamoDBExchangeRate.pushExchangeRateToDB(exchangeRate);
+        DynamoDBExchangeRate.pushRetrievedExchangesToDB(exchangeRate);
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 }

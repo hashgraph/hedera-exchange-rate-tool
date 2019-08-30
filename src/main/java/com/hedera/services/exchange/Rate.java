@@ -2,6 +2,7 @@ package com.hedera.services.exchange;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hedera.services.exchange.database.DynamoDBExchangeRate;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,9 +48,9 @@ public class Rate implements Comparable<Double >{
 
     public boolean isValid(final double maxDelta, final Rate nextRate){
         double currentExchangeRate = this.getHBarValueInDecimal();
-        if(ExchangeRateDB.getExchangeRateToValidate(
+        if(DynamoDBExchangeRate.getExchangeRateToValidate(
                 getMidnightUTCTime()) != null) {
-            currentExchangeRate =  ExchangeRateDB.getExchangeRateToValidate(
+            currentExchangeRate =  DynamoDBExchangeRate.getExchangeRateToValidate(
                     getMidnightUTCTime()).getNextRatecentEqu();
         }
         final double nextExchangeRate = nextRate.getHBarValueInDecimal();
