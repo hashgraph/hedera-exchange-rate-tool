@@ -103,7 +103,7 @@ public class ExchangeRateDB {
 
             Item item = new Item()
                     .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
-                    .withString("ExchangeRateFile", exchangeRate.getExchangeData());
+                    .withString("ExchangeRateFile", "TODO after merging");
 
             table.putItem(item);
             LOGGER.info("Successfully pushed Exchanges Data at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
@@ -138,7 +138,7 @@ public class ExchangeRateDB {
         }
     }
 
-    public static ExchangeRate getExchangeRateToValidate(String UTCMidnightTime){
+    public static ExchangeRate getExchangeRateToValidate(long UTCMidnightTime){
         try{
             LOGGER.info("get Exchange rate from database");
 

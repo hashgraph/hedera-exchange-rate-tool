@@ -6,6 +6,9 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Calendar;
+import java.util.TimeZone;
+
 public class Rate implements Comparable<Double >{
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
@@ -45,7 +48,12 @@ public class Rate implements Comparable<Double >{
     }
 
     public boolean isValid(final double maxDelta, final Rate nextRate){
-        final double currentExchangeRate = this.getHBarValueInDecimal();
+        double currentExchangeRate = this.getHBarValueInDecimal();
+        if(ExchangeRateDB.getExchangeRateToValidate(
+                getMidnightUTCTime()) != null) {
+            currentExchangeRate =  ExchangeRateDB.getExchangeRateToValidate(
+                    getMidnightUTCTime()).getNextRatecentEqu();
+        }
         final double nextExchangeRate = nextRate.getHBarValueInDecimal();
 
         final double difference = Math.abs(currentExchangeRate - nextExchangeRate);
@@ -88,5 +96,13 @@ public class Rate implements Comparable<Double >{
         private ExpirationTime(final long seconds) {
             this.seconds = seconds;
         }
+    }
+
+    private long getMidnightUTCTime(){
+        Calendar currentTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        Calendar midnightTime = currentTime;
+        midnightTime.set(currentTime.YEAR, currentTime.MONTH, currentTime.DAY_OF_MONTH, 0,0,0);
+
+        return  midnightTime.getTimeInMillis() / 1000;
     }
 }

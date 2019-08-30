@@ -9,7 +9,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.hashgraph.sdk.proto.TimestampSeconds;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 @JsonRootName("exchangeRate")
 public class ExchangeRate {
@@ -64,13 +66,18 @@ public class ExchangeRate {
 	}
 
 	public boolean isMidnightTime(){
-		Date expiration = new Date( this.getNextExpirationTimeInSeconds() * 1000);
+		Calendar expiration = GregorianCalendar.getInstance();
+		expiration.setTimeInMillis(this.getNextExpirationTimeInSeconds() * 1000);
 
-		if(expiration.getHours() == 0 && expiration.getMinutes() == 0 && expiration.getSeconds() == 0){
+		if(expiration.HOUR_OF_DAY == 0 && expiration.MINUTE == 0 && expiration.SECOND == 0){
 			return true;
 		}
 		else{
 			return false;
 		}
+	}
+
+	public double getNextRatecentEqu(){
+		return nextRate.getHBarValueInDecimal();
 	}
 }
