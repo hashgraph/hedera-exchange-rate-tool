@@ -8,6 +8,7 @@ import com.hedera.hashgraph.sdk.file.FileId;
 import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
 import com.hedera.hashgraph.sdk.proto.FileGetContentsResponse;
 import com.hedera.services.exchange.database.DynamoDBExchangeRate;
+import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,8 +25,8 @@ public class ExchangeRateTool {
 
         final ERTParams params = ERTParams.readConfig(args);
 
-
-        Rate currentRate = params.getDefaultRate();
+        final ExchangeDB exchangeDb = params.getExchangeDB();
+        final Rate currentRate = getCurrentRate(exchangeDb, params);
         final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
@@ -58,11 +59,29 @@ public class ExchangeRateTool {
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
 
-        if(exchangeRate.isMidnightTime()){
-            DynamoDBExchangeRate.pushUTCMidnightRateToDB(exchangeRate);
-        }
-        DynamoDBExchangeRate.pushExchangeRateToDB(exchangeRate);
-        DynamoDBExchangeRate.pushRetrievedExchangesToDB(exchangeRate);
+        exchangeDb.pushExchangeRate(exchangeRate);
+//        if(exchangeRate.isMidnightTime()){
+//            exchangeDb.pushUTCMidnightRateToDB(exchangeRate);
+//        }
+//        // DynamoDBExchangeRate.pushExchangeRateToDB(exchangeRate);
+//        exchangeDb.pushRetrievedExchangesToDB(exchangeRate);
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
+    }
+
+    private static Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
+        ExchangeRate exchangeRate = exchangeDb.getLatestMidnightExchangeRate();
+        if (exchangeRate != null) {
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest midnight exchange rate as current exchange rate");
+            return exchangeRate.getCurrentRate();
+        }
+
+        exchangeRate = exchangeDb.getLatestExchangeRate();
+        if (exchangeRate != null) {
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
+            return exchangeRate.getNextRate();
+        }
+
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
+        return params.getDefaultRate();
     }
 }

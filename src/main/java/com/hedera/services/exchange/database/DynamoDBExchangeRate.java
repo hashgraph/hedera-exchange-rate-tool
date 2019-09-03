@@ -35,7 +35,7 @@ public class DynamoDBExchangeRate implements ExchangeDB {
             .build();
 
     @Override
-    public ExchangeRate getLastestExchangeRate() {
+    public ExchangeRate getLatestExchangeRate() {
         return null;
     }
 

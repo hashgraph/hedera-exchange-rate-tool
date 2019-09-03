@@ -2,15 +2,13 @@ package com.hedera.services.exchange;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.hashgraph.sdk.proto.TimestampSeconds;
 
+import java.io.IOException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 public class ExchangeRate {
@@ -38,8 +36,22 @@ public class ExchangeRate {
 		return this.nextRate.getExpirationTimeInSeconds();
 	}
 
+	@JsonIgnore
+	public Rate getCurrentRate() {
+		return this.currentRate;
+	}
+
+	@JsonIgnore
+	public Rate getNextRate() {
+		return this.nextRate;
+	}
+
 	public String toJson() throws JsonProcessingException {
 		return OBJECT_MAPPER.writeValueAsString(this);
+	}
+
+	public static ExchangeRate fromJson(final String json) throws IOException {
+		return OBJECT_MAPPER.readValue(json, ExchangeRate.class);
 	}
 
 	public ExchangeRateSet toExchangeRateSet() {
@@ -67,13 +79,7 @@ public class ExchangeRate {
 	public boolean isMidnightTime(){
 		Calendar expiration = GregorianCalendar.getInstance();
 		expiration.setTimeInMillis(this.getNextExpirationTimeInSeconds() * 1000);
-
-		if(expiration.HOUR_OF_DAY == 0 && expiration.MINUTE == 0 && expiration.SECOND == 0){
-			return true;
-		}
-		else{
-			return false;
-		}
+		return expiration.get(Calendar.HOUR_OF_DAY) == 0 && expiration.get(Calendar.MINUTE) == 0 && expiration.get(Calendar.SECOND) == 0;
 	}
 
 	public double getNextRatecentEqu(){
