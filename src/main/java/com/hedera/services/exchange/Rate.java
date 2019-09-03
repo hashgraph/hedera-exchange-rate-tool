@@ -1,5 +1,6 @@
 package com.hedera.services.exchange;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hedera.services.exchange.database.DynamoDBExchangeRate;
@@ -27,7 +28,8 @@ public class Rate implements Comparable<Double >{
         this(hbarEquiv, (int) (hbarEquiv * centEquiv), expirationTimeInSeconds);
     }
 
-    public Rate(final int hbarEquiv, final int centEquiv, final long expirationTimeInSeconds) {
+    @JsonCreator
+    public Rate(@JsonProperty("hbarEquiv") final int hbarEquiv, @JsonProperty("centEquiv") final int centEquiv, @JsonProperty("expirationTime") final long expirationTimeInSeconds) {
         this.hbarEquiv = hbarEquiv;
         this.centEquiv = centEquiv;
         this.expirationTime =  expirationTimeInSeconds;
