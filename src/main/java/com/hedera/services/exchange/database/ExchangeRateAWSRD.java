@@ -1,6 +1,9 @@
 package com.hedera.services.exchange.database;
 
 import com.hedera.services.exchange.ExchangeRate;
+import com.hedera.services.exchange.exchanges.Exchange;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,10 +14,9 @@ import java.sql.Statement;
 
 public class ExchangeRateAWSRD implements ExchangeDB {
 
-	private static final String LATEST_EXCHANGE_QUERY = "SELECT expirationTime, exchangeRateFile FROM exchange_rate e1 " +
-			"INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM exchange_rate) e2" +
-			"ON e1.expirationTime = e2.expirationTime" +
-			"LIMIT 1";
+	private static final Logger LOGGER = LogManager.getLogger(ExchangeRateAWSRD.class);
+
+	private static final String LATEST_EXCHANGE_QUERY = "SELECT e1.expirationTime, e1.exchangeRateFile FROM exchange_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM exchange_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
 	private final AWSDBParams params;
 
@@ -52,7 +54,9 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	}
 
 	private Connection getConnection() throws SQLException {
-		return DriverManager.getConnection(this.params.getEndpoint(),
+		final String endpoint = this.params.getEndpoint();
+		LOGGER.info(Exchange.EXCHANGE_FILTER, "Connecting to endpoint: {}", endpoint);
+		return DriverManager.getConnection(endpoint,
 				this.params.getUsername(),
 				this.params.getPassword());
 	}

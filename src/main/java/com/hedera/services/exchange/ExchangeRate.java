@@ -1,5 +1,6 @@
 package com.hedera.services.exchange;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,7 +22,8 @@ public class ExchangeRate {
 	@JsonProperty("NextRate")
 	private Rate nextRate;
 
-	public ExchangeRate(final Rate currentRate, final Rate nextRate) {
+	@JsonCreator
+	public ExchangeRate(@JsonProperty("CurrentRate") final Rate currentRate, @JsonProperty("NextRate") final Rate nextRate) {
 		this.currentRate = currentRate;
 		this.nextRate = nextRate;
 	}
@@ -76,12 +78,14 @@ public class ExchangeRate {
 		return ExchangeRateSet.newBuilder().setCurrentRate(currentRate).setNextRate(nextRate).build();
 	}
 
+	@JsonIgnore
 	public boolean isMidnightTime(){
 		Calendar expiration = GregorianCalendar.getInstance();
 		expiration.setTimeInMillis(this.getNextExpirationTimeInSeconds() * 1000);
 		return expiration.get(Calendar.HOUR_OF_DAY) == 0 && expiration.get(Calendar.MINUTE) == 0 && expiration.get(Calendar.SECOND) == 0;
 	}
 
+	@JsonIgnore
 	public double getNextRatecentEqu(){
 		return nextRate.getHBarValueInDecimal();
 	}
