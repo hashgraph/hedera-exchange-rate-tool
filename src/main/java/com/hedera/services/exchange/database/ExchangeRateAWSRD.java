@@ -53,6 +53,28 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 		}
 	}
 
+	@Override
+	public void pushMidnightRate(ExchangeRate exchangeRate) throws Exception {
+		try (final Connection conn = getConnection();
+			 final PreparedStatement statement = conn.prepareStatement(
+					 "INSERT INTO midnight_rate (expirationTime,exchangeRateFile) VALUES(?,?::JSON)")) {
+			statement.setLong(1, exchangeRate.getNextExpirationTimeInSeconds());
+			statement.setObject(2, exchangeRate.toJson());
+			statement.executeUpdate();
+		}
+	}
+
+	@Override
+	public void pushQueriedRate(long expirationTime, String queriedRate) throws Exception {
+		try (final Connection conn = getConnection();
+			 final PreparedStatement statement = conn.prepareStatement(
+					 "INSERT INTO queried_rate (expirationTime,queriedrates) VALUES(?,?::JSON)")) {
+			statement.setLong(1, expirationTime);
+			statement.setObject(2, queriedRate);
+			statement.executeUpdate();
+		}
+	}
+
 	private Connection getConnection() throws SQLException {
 		final String endpoint = this.params.getEndpoint();
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "Connecting to endpoint: {}", endpoint);

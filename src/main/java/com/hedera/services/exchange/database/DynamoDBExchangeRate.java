@@ -62,6 +62,10 @@ public class DynamoDBExchangeRate implements ExchangeDB {
         LOGGER.info("Successfully pushed Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
     }
 
+    {
+
+    }
+
     private static void waitUntilTableIsActive(final String tableName, final AmazonDynamoDB dynamoDB) throws InterruptedException {
         TableUtils.waitUntilActive(dynamoDB, tableName);
     }
@@ -94,10 +98,11 @@ public class DynamoDBExchangeRate implements ExchangeDB {
         TableUtils.createTableIfNotExists(dynamoDB, request);
     }
 
-    public static void pushRetrievedExchangesToDB(ExchangeRate exchangeRate){
+    @Override
+    public void pushQueriedRate(long expirationTime, String queriedRate) throws Exception {
         try{
 
-            LOGGER.info("Pushing Exchanges Data at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+            LOGGER.info("Pushing Exchanges Data at {} to database", expirationTime);
 
             createTableIfNotExists(QUERIED_RATE_TABLE_NAME, CLIENT);
             waitUntilTableIsActive(QUERIED_RATE_TABLE_NAME, CLIENT);
@@ -106,40 +111,42 @@ public class DynamoDBExchangeRate implements ExchangeDB {
             final Table table = dynamoDB.getTable(QUERIED_RATE_TABLE_NAME);
 
             Item item = new Item()
-                    .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
-                    .withString("ExchangeRateFile", "TODO after merging");
+                    .withPrimaryKey("ExpirationTime", expirationTime)
+                    .withString("ExchangeRateFile", queriedRate);
 
             table.putItem(item);
-            LOGGER.info("Successfully pushed Exchanges Data at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+            LOGGER.info("Successfully pushed Exchanges Data at {} to database", expirationTime);
 
         }
         catch (Exception e){
-            LOGGER.warn("Filed to push Exchanges Data at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+            LOGGER.warn("Filed to push Exchanges Data at {} to database", expirationTime);
         }
     }
 
-    public static void pushUTCMidnightRateToDB(ExchangeRate exchangeRate){
+    @Override
+    public void pushMidnightRate(ExchangeRate exchangeRate) throws Exception
+    {
         try{
 
-            LOGGER.info("Pushing Midnight Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+                LOGGER.info("Pushing Midnight Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
 
-            createTableIfNotExists(MIDNIGHT_RATE_TABLE_NAME, CLIENT);
-            waitUntilTableIsActive(MIDNIGHT_RATE_TABLE_NAME, CLIENT);
+                createTableIfNotExists(MIDNIGHT_RATE_TABLE_NAME, CLIENT);
+                waitUntilTableIsActive(MIDNIGHT_RATE_TABLE_NAME, CLIENT);
 
-            final DynamoDB dynamoDB = new DynamoDB(CLIENT);
-            final Table table = dynamoDB.getTable(MIDNIGHT_RATE_TABLE_NAME);
+                final DynamoDB dynamoDB = new DynamoDB(CLIENT);
+                final Table table = dynamoDB.getTable(MIDNIGHT_RATE_TABLE_NAME);
 
-            Item item = new Item()
-                    .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
-                    .withString("ExchangeRateFile", exchangeRate.toString());
+                Item item = new Item()
+                        .withPrimaryKey("ExpirationTime", exchangeRate.getNextExpirationTimeInSeconds())
+                        .withString("ExchangeRateFile", exchangeRate.toString());
 
-            table.putItem(item);
-            LOGGER.info("Successfully pushed Midnight Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+                table.putItem(item);
+                LOGGER.info("Successfully pushed Midnight Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
 
-        }
-        catch (Exception e){
-            LOGGER.warn("Filed to push Midnight Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
-        }
+            }
+            catch (Exception e){
+                LOGGER.warn("Filed to push Midnight Exchange rate at {} to database", exchangeRate.getNextExpirationTimeInSeconds());
+            }
     }
 
     public static ExchangeRate getExchangeRateToValidate(long UTCMidnightTime){

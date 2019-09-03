@@ -7,7 +7,6 @@ import com.hedera.hashgraph.sdk.file.FileContentsQuery;
 import com.hedera.hashgraph.sdk.file.FileId;
 import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
 import com.hedera.hashgraph.sdk.proto.FileGetContentsResponse;
-import com.hedera.services.exchange.database.DynamoDBExchangeRate;
 import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
@@ -59,12 +58,13 @@ public class ExchangeRateTool {
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
 
+//        exchangeDb.pushExchangeRate(exchangeRate);
+        if(exchangeRate.isMidnightTime()){
+            exchangeDb.pushMidnightRate(exchangeRate);
+        }
         exchangeDb.pushExchangeRate(exchangeRate);
-//        if(exchangeRate.isMidnightTime()){
-//            exchangeDb.pushUTCMidnightRateToDB(exchangeRate);
-//        }
-//        // DynamoDBExchangeRate.pushExchangeRateToDB(exchangeRate);
-//        exchangeDb.pushRetrievedExchangesToDB(exchangeRate);
+        // TODO
+        exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), "");
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
