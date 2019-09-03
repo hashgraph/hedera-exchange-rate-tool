@@ -1,5 +1,6 @@
 package com.hedera.services.exchange.exchanges;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,6 +22,11 @@ public abstract class AbstractExchange implements Exchange {
 		} catch (final Exception exception) {
 			return null;
 		}
+	}
+
+	@Override
+	public String toJson() throws JsonProcessingException {
+		return OBJECT_MAPPER.writeValueAsString(this);
 	}
 
 	private static HttpURLConnection getConnection(final URL url) throws IOException {
