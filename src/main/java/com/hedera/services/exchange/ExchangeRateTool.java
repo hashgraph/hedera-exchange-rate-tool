@@ -63,8 +63,7 @@ public class ExchangeRateTool {
             exchangeDb.pushMidnightRate(exchangeRate);
         }
         exchangeDb.pushExchangeRate(exchangeRate);
-        // TODO
-        exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), "");
+        exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), ERTproc.getEXCHANGES().toString());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 

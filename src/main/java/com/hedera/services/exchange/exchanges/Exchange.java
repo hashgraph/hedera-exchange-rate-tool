@@ -1,5 +1,6 @@
 package com.hedera.services.exchange.exchanges;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +15,8 @@ public interface Exchange {
 			false);
 
 	Double getHBarValue();
+
+	void setEndPoint(String url);
 
 	String toJson() throws JsonProcessingException;
 }

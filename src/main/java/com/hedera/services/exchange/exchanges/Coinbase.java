@@ -8,9 +8,19 @@ import java.util.Map;
 public class Coinbase extends AbstractExchange{
 
     @JsonProperty(value = "data", access = JsonProperty.Access.WRITE_ONLY)
+    @JsonIgnore
     private Data data;
 
+    @JsonProperty("Query")
+    String endPoint = "";
+
     @Override
+    public void setEndPoint(String url) {
+        endPoint = url;
+    }
+
+    @Override
+    @JsonProperty("HBAR")
     public Double getHBarValue() {
         if (this.data == null || this.data.rates == null || !this.data.rates.containsKey("HBAR")) {
             return null;

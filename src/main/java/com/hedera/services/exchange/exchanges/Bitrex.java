@@ -1,19 +1,32 @@
 package com.hedera.services.exchange.exchanges;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class Bitrex extends AbstractExchange {
 
 	@JsonProperty("success")
+	@JsonIgnore
 	private boolean success;
 
 	@JsonProperty("message")
+	@JsonIgnore
 	private String message;
 
 	@JsonProperty("result")
+	@JsonIgnore
 	private Result result;
 
+	@JsonProperty("Query")
+	String endPoint = "";
+
 	@Override
+	public void setEndPoint(String url) {
+		endPoint = url;
+	}
+
+	@Override
+	@JsonProperty("HBAR")
 	public Double getHBarValue() {
 		if (result == null) {
 			return null;
