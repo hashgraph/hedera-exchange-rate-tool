@@ -9,7 +9,6 @@ import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.hashgraph.sdk.proto.TimestampSeconds;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -55,7 +54,12 @@ public class ExchangeRate {
 	}
 
 	public static ExchangeRate fromJson(final String json) throws IOException {
-		return OBJECT_MAPPER.readValue(json, ExchangeRate.class);
+		try {
+			return OBJECT_MAPPER.readValue(json, ExchangeRate.class);
+		} catch (final Exception ex) {
+			final ExchangeRate[] rates = OBJECT_MAPPER.readValue(json, ExchangeRate[].class);
+			return rates[0];
+		}
 	}
 
 	public ExchangeRateSet toExchangeRateSet() {
