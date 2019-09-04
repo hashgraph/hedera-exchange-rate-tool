@@ -53,7 +53,7 @@ public class Rate implements Comparable<Double >{
         if(DynamoDBExchangeRate.getExchangeRateToValidate(
                 getMidnightUTCTime()) != null) {
             currentExchangeRate =  DynamoDBExchangeRate.getExchangeRateToValidate(
-                    getMidnightUTCTime()).getNextRatecentEqu();
+                    getMidnightUTCTime()).getNextRateCentEqu();
         }
         final double nextExchangeRate = nextRate.getHBarValueInDecimal();
 

@@ -119,7 +119,7 @@ public class ERTproc {
         return exchanges;
     }
 
-    public static Map<String, Function<String, Exchange>> getEXCHANGES() {
+    public static Map<String, Function<String, Exchange>> getExchanges() {
         return EXCHANGES;
     }
 }
