@@ -19,3 +19,34 @@ if ! [ -x "$(command -v aws)" ]; then
 fi
 
 echo 'AWS CLI installed. Proceeding normally.'
+
+NAME=""
+DATABASE_NAME="exchange-rate-tool-db-"
+
+while [[ $# -gt 0 ]]
+do
+  key="$1"
+
+  case $key in
+      -n|--name)
+      NAME="$2"
+      shift
+      shift
+      ;;
+  esac
+done
+
+if [ -z "$NAME" ]; then
+  echo "You must provide a name with the -n/--name option"
+  exit 1
+fi
+
+DATABASE_NAME="$DATABASE_NAME$NAME"
+
+echo "Creating database instance ${DATABASE_NAME}"
+
+#aws rds create-db-instance \
+#    --allocated-storage 100 \
+#    --db-instance-class db.m1.small \
+#    --db-instance-identifier
+
