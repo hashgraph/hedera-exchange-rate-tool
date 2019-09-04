@@ -49,11 +49,17 @@ public class ExchangeRate {
 	}
 
 	public String toJson() throws JsonProcessingException {
-		return OBJECT_MAPPER.writeValueAsString(this);
+		final ExchangeRate[] rates = new ExchangeRate[] { this };
+		return OBJECT_MAPPER.writeValueAsString(rates);
 	}
 
 	public static ExchangeRate fromJson(final String json) throws IOException {
-		return OBJECT_MAPPER.readValue(json, ExchangeRate.class);
+		try {
+			return OBJECT_MAPPER.readValue(json, ExchangeRate.class);
+		} catch (final Exception ex) {
+			final ExchangeRate[] rates = OBJECT_MAPPER.readValue(json, ExchangeRate[].class);
+			return rates[0];
+		}
 	}
 
 	public ExchangeRateSet toExchangeRateSet() {
