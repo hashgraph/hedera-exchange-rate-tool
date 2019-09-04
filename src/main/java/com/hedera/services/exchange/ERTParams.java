@@ -203,7 +203,9 @@ public class ERTParams {
 
     private long getCurrentExpirationTime() {
         final long currentTime = System.currentTimeMillis();
-        return currentTime - (currentTime % 3_600_000);
+        final long currentHourOnTheDot = currentTime - (currentTime % 3_600_000);
+        final long currentExpirationTime = currentHourOnTheDot + 3_600_000;
+        return currentExpirationTime;
     }
 
     public ExchangeDB getExchangeDB() {
