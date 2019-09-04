@@ -11,14 +11,6 @@ public class Coinbase extends AbstractExchange{
     @JsonIgnore
     private Data data;
 
-    @JsonProperty("Query")
-    String endPoint = "";
-
-    @Override
-    public void setEndPoint(String url) {
-        endPoint = url;
-    }
-
     @Override
     @JsonProperty("HBAR")
     public Double getHBarValue() {

@@ -22,6 +22,7 @@ public class ExchangeRate {
 	@JsonProperty("NextRate")
 	private Rate nextRate;
 
+
 	@JsonCreator
 	public ExchangeRate(@JsonProperty("CurrentRate") final Rate currentRate, @JsonProperty("NextRate") final Rate nextRate) {
 		this.currentRate = currentRate;

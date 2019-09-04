@@ -17,14 +17,6 @@ public final class Bitrex extends AbstractExchange {
 	@JsonIgnore
 	private Result result;
 
-	@JsonProperty("Query")
-	String endPoint = "";
-
-	@Override
-	public void setEndPoint(String url) {
-		endPoint = url;
-	}
-
 	@Override
 	@JsonProperty("HBAR")
 	public Double getHBarValue() {

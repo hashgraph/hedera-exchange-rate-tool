@@ -17,14 +17,6 @@ public class Liquid extends AbstractExchange {
 	@JsonIgnore
 	private String code;
 
-	@JsonProperty("Query")
-	String endPoint = "";
-
-	@Override
-	public void setEndPoint(String url) {
-		endPoint = url;
-	}
-
 	@Override
 	@JsonProperty("HBAR")
 	public Double getHBarValue() {
