@@ -56,11 +56,10 @@ if [ -z "$USERNAME" ]; then
   exit 1
 fi
 
-read -s -p "Enter database password (at least 8 characters): " PASSWORD
+read -s -p -r "Enter database password (at least 8 characters): " PASSWORD
 
-read -s -p "Enter operator key: " OPERATOR_KEY
+read -s -p -r "Enter operator key: " OPERATOR_KEY
 
-TAG="exchange-rate-tool$NAME"
 DATABASE_NAME="$DATABASE_NAME$NAME"
 
 echo "Creating database instance ${DATABASE_NAME}"
@@ -87,12 +86,12 @@ aws rds create-db-instance \
 echo "Waiting for database ${DATABASE_NAME} to become available"
 
 aws rds wait db-instance-available \
-    --db-instance-identifier ${DATABASE_NAME}  \
+    --db-instance-identifier "${DATABASE_NAME}"  \
     --region us-east-1
 
 echo "Retrieving endpoint for database ${DATABASE_NAME}"
 
-DATABASE_ENDPOINT=`aws rds describe-db-instances  --db-instance-identifier "$DATABASE_NAME" --region us-east-1 --query 'DBInstances[0].Endpoint.Address' --output text`
+DATABASE_ENDPOINT=$(aws rds describe-db-instances  --db-instance-identifier "$DATABASE_NAME" --region us-east-1 --query 'DBInstances[0].Endpoint.Address' --output text)
 
 echo "${DATABASE_NAME} has endpoint ${DATABASE_ENDPOINT}"
 
