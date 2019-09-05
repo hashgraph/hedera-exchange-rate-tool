@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if ! [ -x "$(command -v aws)" ]; then
   echo 'AWS CLI not installed. Proceeding to install it'
 
@@ -41,16 +43,6 @@ do
       shift
       shift
       ;;
-      -p|--password)
-      PASSWORD=="$2"
-      shift
-      shift
-      ;;
-      -o|--operator)
-      OPERATOR_KEY="$2"
-      shift
-      shift
-      ;;
   esac
 done
 
@@ -64,15 +56,9 @@ if [ -z "$USERNAME" ]; then
   exit 1
 fi
 
-if [ -z "$PASSWORD" ]; then
-  echo "You must provide a password with the -p/--password option"
-  exit 1
-fi
+read -s -p "Enter database password (at least 8 characters): " PASSWORD
 
-if [ -z "$OPERATOR_KEY" ]; then
-  echo "You must provide an operator key with the -o/--operator option"
-  exit 1
-fi
+read -s -p "Enter operator key: " OPERATOR_KEY
 
 TAG="exchange-rate-tool$NAME"
 DATABASE_NAME="$DATABASE_NAME$NAME"
@@ -96,7 +82,7 @@ aws rds create-db-instance \
     --enable-iam-database-authentication \
     --enable-performance-insights \
     --publicly-accessible \
-    --region us-east-1 
+    --region us-east-1
 
 echo "Waiting for database ${DATABASE_NAME} to become available"
 
@@ -130,6 +116,7 @@ aws lambda create-function \
     --timeout 60 \
     --zip-file fileb://./target/Exchange-Rate-Tool.jar \
     --environment Variables={DATABASE=exchangeRate,ENDPOINT="${JDBC_ENDPOINT}",OPERATOR_KEY="${OPERATOR_KEY}",USERNAME="${USERNAME}",PASSWORD="${USERNAME}"}
+
 
 
 
