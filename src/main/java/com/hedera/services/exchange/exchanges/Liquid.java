@@ -5,16 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Liquid extends AbstractExchange {
 
-	@JsonProperty("exchange_rate")
-	@JsonIgnore
+	@JsonProperty(value="exchange_rate",access = JsonProperty.Access.WRITE_ONLY)
 	private Double exchangeRate;
 
-	@JsonProperty("product_type")
-	@JsonIgnore
+	@JsonProperty(value="product_type",access = JsonProperty.Access.WRITE_ONLY)
 	private String productType;
 
-	@JsonProperty("code")
-	@JsonIgnore
+	@JsonProperty(value="code", access = JsonProperty.Access.WRITE_ONLY)
 	private String code;
 
 	@Override

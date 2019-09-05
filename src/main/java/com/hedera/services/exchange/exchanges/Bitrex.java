@@ -5,16 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class Bitrex extends AbstractExchange {
 
-	@JsonProperty("success")
-	@JsonIgnore
+	@JsonProperty(value="success", access = JsonProperty.Access.WRITE_ONLY)
 	private boolean success;
 
-	@JsonProperty("message")
-	@JsonIgnore
+	@JsonProperty(value="message", access = JsonProperty.Access.WRITE_ONLY)
 	private String message;
 
-	@JsonProperty("result")
-	@JsonIgnore
+	@JsonProperty(value="result", access = JsonProperty.Access.WRITE_ONLY)
 	private Result result;
 
 	@Override
