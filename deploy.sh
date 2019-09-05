@@ -23,6 +23,7 @@ echo 'AWS CLI installed. Proceeding normally.'
 NAME=""
 USERNAME=""
 PASSWORD=""
+OPERATOR_KEY=""
 DATABASE_NAME="exchange-rate-tool-db-"
 
 while [[ $# -gt 0 ]]
@@ -45,6 +46,11 @@ do
       shift
       shift
       ;;
+      -o|--operator)
+      OPERATOR_KEY="$2"
+      shift
+      shift
+      ;;
   esac
 done
 
@@ -63,6 +69,11 @@ if [ -z "$PASSWORD" ]; then
   exit 1
 fi
 
+if [ -z "$OPERATOR_KEY" ]; then
+  echo "You must provide an operator key with the -o/--operator option"
+  exit 1
+fi
+
 TAG="exchange-rate-tool$NAME"
 DATABASE_NAME="$DATABASE_NAME$NAME"
 
@@ -71,35 +82,58 @@ echo "Creating database instance ${DATABASE_NAME}"
 aws rds create-db-instance \
     --allocated-storage 100 \
     --max-allocated-storage 500 \
-    --db-instance-class db.m1.small \
+    --db-instance-class db.m5.xlarge \
     --db-instance-identifier "$DATABASE_NAME" \
-    --engine PostgreSQL \
-    --enable-cloudwatch-logs-exports '["audit","error","general","slowquery"]' \
+    --engine postgres \
+    --enable-cloudwatch-logs-exports '["postgresql","upgrade"]' \
     --master-username "$USERNAME" \
     --master-user-password "$PASSWORD" \
     --db-name exchangeRate \
     --port 5432 \
-    --engine-version \
-    --engine-version 10.6 \
-    --tags "$TAG" \
+    --engine-version 11.4 \
     --storage-type gp2 \
     --copy-tags-to-snapshot \
     --enable-iam-database-authentication \
     --enable-performance-insights \
-    --availability-zone us-east-1 \
     --publicly-accessible \
-    > database-deploy.json
+    --region us-east-1 
 
 echo "Waiting for database ${DATABASE_NAME} to become available"
 
 aws rds wait db-instance-available \
-    --db-instance-identifier exchange-rate04 \
+    --db-instance-identifier ${DATABASE_NAME}  \
     --region us-east-1
 
 echo "Retrieving endpoint for database ${DATABASE_NAME}"
 
-ENDPOINT=`aws rds describe-db-instances  --db-instance-identifier exchange-rate04 --region us-east-1 --query 'DBInstances[0].Endpoint.Address' --output text`
+DATABASE_ENDPOINT=`aws rds describe-db-instances  --db-instance-identifier "$DATABASE_NAME" --region us-east-1 --query 'DBInstances[0].Endpoint.Address' --output text`
 
-echo "${DATABASE_NAME} has endpoint ${ENDPOINT}"
+echo "${DATABASE_NAME} has endpoint ${DATABASE_ENDPOINT}"
+
+echo "Building jar to deploy"
+mvn package
+
+LAMBDA_NAME="exchange-rate-tool-lambda-$NAME"
+
+echo "Creating lambda ${LAMBDA_NAME}"
+
+JDBC_ENDPOINT="jdbc:postgresql://${DATABASE_ENDPOINT}:5432/"
+
+aws lambda create-function \
+    --function-name "$LAMBDA_NAME" \
+    --runtime java8 \
+    --handler com.hedera.services.exchange.ExchangeRateTool::main \
+    --publish \
+    --memory-size 1024 \
+    --role service-role/test \
+    --kms-key-arn arn:aws:kms:us-east-1:772706802921:key/b475550c-0a43-440e-bf05-d045d6ce3803 \
+    --timeout 60 \
+    --zip-file fileb://./target/Exchange-Rate-Tool.jar \
+    --environment Variables={DATABASE=exchangeRate,ENDPOINT="${JDBC_ENDPOINT}",OPERATOR_KEY="${OPERATOR_KEY}",USERNAME="${USERNAME}",PASSWORD="${USERNAME}"}
+
+
+
+
+
 
 
