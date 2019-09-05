@@ -25,11 +25,12 @@ public class ExchangeRateTool {
         final ERTParams params = ERTParams.readConfig(args);
 
         final ExchangeDB exchangeDb = params.getExchangeDB();
-        final Rate currentRate = getCurrentRate(exchangeDb, params);
+        final Rate currentRate = exchangeDb.getLatestMidnightExchangeRate().getNextRate();//getCurrentRate(exchangeDb, params);
         final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
-                currentRate);
+                currentRate,
+                exchangeDb);
 
         final ExchangeRate exchangeRate = proc.call();
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
@@ -58,7 +59,6 @@ public class ExchangeRateTool {
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
 
-//        exchangeDb.pushExchangeRate(exchangeRate);
         if(exchangeRate.isMidnightTime()){
             exchangeDb.pushMidnightRate(exchangeRate);
         }
@@ -71,7 +71,7 @@ public class ExchangeRateTool {
         ExchangeRate exchangeRate = exchangeDb.getLatestMidnightExchangeRate();
         if (exchangeRate != null) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest midnight exchange rate as current exchange rate");
-            return exchangeRate.getCurrentRate();
+            return exchangeRate.getNextRate();
         }
 
         exchangeRate = exchangeDb.getLatestExchangeRate();
