@@ -56,9 +56,9 @@ if [ -z "$USERNAME" ]; then
   exit 1
 fi
 
-read -s -p -r "Enter database password (at least 8 characters): " PASSWORD
+read -s -p "Enter database password (at least 8 characters): " PASSWORD
 
-read -s -p -r "Enter operator key: " OPERATOR_KEY
+read -s -p "Enter operator key: " OPERATOR_KEY
 
 DATABASE_NAME="$DATABASE_NAME$NAME"
 
