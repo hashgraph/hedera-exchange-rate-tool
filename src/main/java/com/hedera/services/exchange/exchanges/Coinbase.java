@@ -1,15 +1,17 @@
 package com.hedera.services.exchange.exchanges;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
 
 public class Coinbase extends AbstractExchange{
 
-    @JsonProperty("data")
+    @JsonProperty(value = "data", access = JsonProperty.Access.WRITE_ONLY)
     private Data data;
 
     @Override
+    @JsonProperty("HBAR")
     public Double getHBarValue() {
         if (this.data == null || this.data.rates == null || !this.data.rates.containsKey("HBAR")) {
             return null;
@@ -18,6 +20,7 @@ public class Coinbase extends AbstractExchange{
         return Double.valueOf(this.data.rates.get("HBAR"));
     }
 
+    @JsonIgnore
     String getCurrency() {
         return this.data.currency;
     }

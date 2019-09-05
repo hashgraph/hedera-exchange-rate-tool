@@ -1,16 +1,18 @@
 package com.hedera.services.exchange;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Calendar;
+import java.util.TimeZone;
+
 public class Rate implements Comparable<Double >{
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
-
-    private static final int HBARS_IN_CENTS = 100_000;
 
     @JsonProperty("hbarEquiv")
     private final int hbarEquiv;
@@ -19,21 +21,28 @@ public class Rate implements Comparable<Double >{
     private final int centEquiv;
 
     @JsonProperty("expirationTime")
-    private final ExpirationTime expirationTime;
+    private final long expirationTime;
+
+    public Rate(){
+        hbarEquiv = 1;
+        centEquiv = 12;
+        expirationTime = getCurrentExpirationTime();
+    }
 
     public Rate(final int hbarEquiv, final Double centEquiv, final long expirationTimeInSeconds) {
         this(hbarEquiv, (int) (hbarEquiv * centEquiv), expirationTimeInSeconds);
     }
 
-    public Rate(final int hbarEquiv, final int centEquiv, final long expirationTimeInSeconds) {
+    @JsonCreator
+    public Rate(@JsonProperty("hbarEquiv") final int hbarEquiv, @JsonProperty("centEquiv") final int centEquiv, @JsonProperty("expirationTime") final long expirationTimeInSeconds) {
         this.hbarEquiv = hbarEquiv;
         this.centEquiv = centEquiv;
-        this.expirationTime = new ExpirationTime(expirationTimeInSeconds);
+        this.expirationTime =  expirationTimeInSeconds;
     }
 
     @JsonIgnore
     public long getExpirationTimeInSeconds() {
-        return this.expirationTime.seconds;
+        return this.expirationTime;
     }
 
     public int getCentEquiv() {
@@ -80,13 +89,16 @@ public class Rate implements Comparable<Double >{
         return this.getHBarValueInDecimal() * ( 1 - (maxDelta / 100.0));
     }
 
-    private static class ExpirationTime {
+    private long getMidnightUTCTime(){
+        Calendar currentTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        currentTime.set(currentTime.YEAR, currentTime.MONTH, currentTime.DAY_OF_MONTH, 0,0,0);
 
-        @JsonProperty("seconds")
-        private long seconds;
+        return  currentTime.getTimeInMillis() / 1000;
+    }
 
-        private ExpirationTime(final long seconds) {
-            this.seconds = seconds;
-        }
+    private long getCurrentExpirationTime() {
+        long currentTime = System.currentTimeMillis();
+        long nextHour = ( currentTime - (currentTime % 3600000) ) + 3600000;
+        return nextHour;
     }
 }

@@ -1,13 +1,9 @@
 package com.hedera.services.exchange;
 
-import com.amazonaws.services.kms.AWSKMS;
-import com.amazonaws.services.kms.AWSKMSClientBuilder;
-import com.amazonaws.services.kms.model.DecryptRequest;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.util.Base64;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -19,6 +15,9 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.hedera.hashgraph.sdk.account.AccountId;
+import com.hedera.services.exchange.database.AWSDBParams;
+import com.hedera.services.exchange.database.ExchangeDB;
+import com.hedera.services.exchange.database.ExchangeRateAWSRD;
 import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,8 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -197,13 +194,7 @@ public class ERTParams {
 
     @JsonIgnore
     public String getOperatorKey() {
-        final byte[] encryptedKey = Base64.decode(System.getenv("OPERATOR_KEY"));
-
-        final AWSKMS client = AWSKMSClientBuilder.defaultClient();
-
-        final DecryptRequest request = new DecryptRequest().withCiphertextBlob(ByteBuffer.wrap(encryptedKey));
-        final ByteBuffer plainTextKey = client.decrypt(request).getPlaintext();
-        return new String(plainTextKey.array(), Charset.forName("UTF-8"));
+        return ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY");
     }
 
     public Rate getDefaultRate() {
@@ -212,6 +203,12 @@ public class ERTParams {
 
     private long getCurrentExpirationTime() {
         final long currentTime = System.currentTimeMillis();
-        return (currentTime - (currentTime % 3_600_000) ) + 3_600_000;
+        final long currentHourOnTheDot = currentTime - (currentTime % 3_600_000);
+        final long currentExpirationTime = currentHourOnTheDot + 3_600_000;
+        return currentExpirationTime;
+    }
+
+    public ExchangeDB getExchangeDB() {
+        return new ExchangeRateAWSRD(new AWSDBParams());
     }
 }

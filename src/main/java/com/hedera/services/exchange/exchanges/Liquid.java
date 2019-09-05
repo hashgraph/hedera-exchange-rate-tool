@@ -1,19 +1,21 @@
 package com.hedera.services.exchange.exchanges;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Liquid extends AbstractExchange {
 
-	@JsonProperty("exchange_rate")
+	@JsonProperty(value="exchange_rate",access = JsonProperty.Access.WRITE_ONLY)
 	private Double exchangeRate;
 
-	@JsonProperty("product_type")
+	@JsonProperty(value="product_type",access = JsonProperty.Access.WRITE_ONLY)
 	private String productType;
 
-	@JsonProperty("code")
+	@JsonProperty(value="code", access = JsonProperty.Access.WRITE_ONLY)
 	private String code;
 
 	@Override
+	@JsonProperty("HBAR")
 	public Double getHBarValue() {
 		return this.exchangeRate;
 	}
