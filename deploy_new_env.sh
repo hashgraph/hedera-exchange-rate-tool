@@ -200,12 +200,44 @@ RESOURCE_ID=$(aws apigateway create-resource \
           --output text \
           --query 'id')
 
+echo "Creating the GET method"
+
 aws apigateway put-method \
           --rest-api-id "${API_GATEWAY_ID}" \
           --region us-east-1 \
           --resource-id "${RESOURCE_ID}" \
           --http-method GET \
           --authorization-type "NONE"
+
+echo "Integrating API Gateway with Lambda"
+
+aws apigateway put-integration \
+          --region us-east-1 \
+          --rest-api-id "${API_GATEWAY_ID}" \
+          --resource-id "${RESOURCE_ID}" \
+          --http-method GET \
+          --type AWS \
+          --integration-http-method POST \
+          --uri "${LAMBDA_API_ARN}"
+
+echo "Setting status code to 200"
+
+aws apigateway put-integration \
+          --region us-east-1 \
+          --rest-api-id "${API_GATEWAY_ID}" \
+          --resource-id "${RESOURCE_ID}" \
+          --http-method GET \
+          --status-code 200 \
+          --selection-pattern ""
+
+API_GATEWAY_STAGE="exchange-rate-tool-api-stage-$NAME";
+
+echo "Deploying Api Gateway to stage ${API_GATEWAY_STAGE}"
+
+aws apigateway create-deployment \
+          --rest-api-id "${API_GATEWAY_ID}" \
+          --state-name "${API_GATEWAY_STAGE}"
+
 
 
 
