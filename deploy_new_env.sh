@@ -56,6 +56,8 @@ if [ -z "$USERNAME" ]; then
   exit 1
 fi
 
+echo "Required parameters provided"
+
 read -s -p "Enter database password (at least 8 characters): " PASSWORD
 
 read -s -p "Enter operator key: " OPERATOR_KEY
@@ -120,7 +122,10 @@ LAMBDA_ARN=$(aws lambda create-function \
               --zip-file fileb://./target/Exchange-Rate-Tool.jar \
               --environment "Variables={DATABASE=exchangeRate,ENDPOINT=${JDBC_ENDPOINT},OPERATOR_KEY=${OPERATOR_KEY},USERNAME=${USERNAME},PASSWORD=${USERNAME}}" \
               --region us-east-1 \
-              --output text)
+              --output text \
+              --query 'FunctionArn')
+
+echo "Lambda ${LAMBDA_NAME} created with ARN: ${LAMBDA_ARN}"
 
 SCHEDULER_NAME="exchange-rate-tool-scheduler-$NAME"
 echo "Creating Scheduler ${SCHEDULER_NAME}"
