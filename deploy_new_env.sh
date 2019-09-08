@@ -173,7 +173,8 @@ LAMBDA_API_ARN=$(aws lambda create-function \
               --zip-file fileb://./target/Exchange-Rate-Tool.jar \
               --environment "Variables={DATABASE=exchangeRate,ENDPOINT=${JDBC_ENDPOINT},USERNAME=${USERNAME},PASSWORD=${USERNAME}}" \
               --region us-east-1 \
-              --output text)
+              --output text \
+              --query 'FunctionArn')
 
 API_GATEWAY="exchange-rate-api-gateway-$NAME"
 
@@ -195,7 +196,7 @@ ROOT_RESOURCE_ID=$(aws apigateway get-resources \
 
 echo "Root resource id: ${ROOT_RESOURCE_ID} for Api Gateway ${API_GATEWAY} with id ${API_GATEWAY_ID}"
 
-echo "Creating Api Gateway resource"
+echo "Creating Api Gateway resource with API Gateway Id ${API_GATEWAY_ID}"
 
 RESOURCE_ID=$(aws apigateway create-resource \
           --rest-api-id "${API_GATEWAY_ID}" \
@@ -214,20 +215,20 @@ aws apigateway put-method \
           --http-method GET \
           --authorization-type "NONE"
 
-echo "Integrating API Gateway with Lambda"
+echo "Integrating API Gateway with Lambda ${LAMBDA_API_ARN}"
 
 aws apigateway put-integration \
           --region us-east-1 \
           --rest-api-id "${API_GATEWAY_ID}" \
           --resource-id "${RESOURCE_ID}" \
-          --http-method GET \
+          --http-method ANY \
           --type AWS \
           --integration-http-method POST \
-          --uri "${LAMBDA_API_ARN}"
+          --uri "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${LAMBDA_API_ARN}/invocations"
 
 echo "Setting status code to 200"
 
-aws apigateway put-integration \
+aws apigateway put-integration-response \
           --region us-east-1 \
           --rest-api-id "${API_GATEWAY_ID}" \
           --resource-id "${RESOURCE_ID}" \
@@ -241,7 +242,8 @@ echo "Deploying Api Gateway to stage ${API_GATEWAY_STAGE}"
 
 aws apigateway create-deployment \
           --rest-api-id "${API_GATEWAY_ID}" \
-          --state-name "${API_GATEWAY_STAGE}"
+          --stage-name default \
+          --region us-east-1
 
 
 
