@@ -69,10 +69,14 @@ public class ERTParams {
 
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
-            return readConfig("src/main/resources/config.json");
+            return readDefaultConfig();
         }
 
         final String configurationPath = args[0];
+        if (configurationPath == null || configurationPath.trim().length() < 1) {
+            return readDefaultConfig();
+        }
+
         LOGGER.info("Using configuration file: {}", configurationPath);
 
         if (configurationPath.contains("s3.amazonaws.com/")) {
@@ -86,7 +90,13 @@ public class ERTParams {
         return readConfig(configurationPath);
     }
 
+    private static ERTParams readDefaultConfig() throws IOException {
+        final String defaultConfigUri = ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
+        return readConfigFromAWSS3(defaultConfigUri);
+    }
+
     private static ERTParams readConfigFromAWSS3(final String endpoint) throws IOException {
+        LOGGER.info("Reading configuration file from AWS S3: {}", endpoint);
         final String[] s3Params = endpoint.split("/");
         if (s3Params.length < 3) {
             throw new IllegalArgumentException("Not enough parameters to read from S3: " + endpoint);
