@@ -8,7 +8,6 @@ import java.util.Map;
 public class Coinbase extends AbstractExchange{
 
     @JsonProperty(value = "data", access = JsonProperty.Access.WRITE_ONLY)
-    @JsonIgnore
     private Data data;
 
     @Override

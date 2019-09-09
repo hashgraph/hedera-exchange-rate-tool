@@ -28,6 +28,7 @@ PASSWORD=""
 OPERATOR_KEY=""
 DATABASE_NAME="exchange-rate-tool-db-"
 DEFAULT_CONFIG_URI="https://s3.amazonaws.com/exchange.rate.config/config.json"
+FREQUENCY=1
 
 while [[ $# -gt 0 ]]
 do
@@ -41,6 +42,11 @@ do
       ;;
       -u|--username)
       USERNAME="$2"
+      shift
+      shift
+      ;;
+      -f|--frequency)
+      FREQUENCY="$2"
       shift
       shift
       ;;
@@ -201,7 +207,7 @@ echo "Creating Scheduler ${SCHEDULER_NAME}"
 
 RULE_ARN=$(aws events put-rule \
             --name "$SCHEDULER_NAME" \
-            --schedule-expression 'rate(60 minutes)' \
+            --schedule-expression "rate(${FREQUENCY} minutes)" \
             --state ENABLED \
             --description "Executes exchange rate tool ${LAMBDA_NAME}" \
             --region us-east-1 \

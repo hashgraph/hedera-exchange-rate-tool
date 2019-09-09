@@ -6,15 +6,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class Bitrex extends AbstractExchange {
 
 	@JsonProperty("success")
-	@JsonIgnore
 	private boolean success;
 
 	@JsonProperty("message")
-	@JsonIgnore
 	private String message;
 
 	@JsonProperty("result")
-	@JsonIgnore
 	private Result result;
 
 	@Override
