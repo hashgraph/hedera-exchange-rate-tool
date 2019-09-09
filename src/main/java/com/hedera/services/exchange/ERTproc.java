@@ -5,7 +5,6 @@ import com.hedera.services.exchange.exchanges.Coinbase;
 import com.hedera.services.exchange.exchanges.Exchange;
 import com.hedera.services.exchange.exchanges.Liquid;
 import com.hedera.services.exchange.exchanges.UpBit;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,16 +29,19 @@ public class ERTproc {
 
     private final Map<String, String> exchangeApis;
     private final double maxDelta;
+    private final Rate midnightExchangeRate;
     private final Rate currentExchangeRate;
     private final int hbarEquiv;
 
     public ERTproc(final int hbarEquiv,
             final Map<String, String> exchangeApis,
             final double maxDelta,
+            final Rate midnightExchangeRate,
             final Rate currentExchangeRate) {
         this.hbarEquiv = hbarEquiv;
         this.exchangeApis = exchangeApis;
         this.maxDelta = maxDelta;
+        this.midnightExchangeRate = midnightExchangeRate;
         this.currentExchangeRate = currentExchangeRate;
     }
 
@@ -53,20 +55,28 @@ public class ERTproc {
             Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : " + medianExRate);
             if (medianExRate == null){
+                LOGGER.warn(Exchange.EXCHANGE_FILTER, "invalid median calculated : " + medianExRate);
                 return null;
             }
 
             final long nextExpirationTimeInSeconds = currentExchangeRate.getExpirationTimeInSeconds() + 3_600;
             Rate nextRate = new Rate(this.hbarEquiv, medianExRate, nextExpirationTimeInSeconds);
 
-            if (!currentExchangeRate.isValid(maxDelta, nextRate)){
-                if (this.currentExchangeRate.compareTo(medianExRate) > 0) {
-                    medianExRate = this.currentExchangeRate.getMinExchangeRate(maxDelta);
-                } else {
-                    medianExRate = this.currentExchangeRate.getMaxExchangeRate(maxDelta);
-                }
+            if(midnightExchangeRate != null){
+                LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present .. validating the median");
+                if (!midnightExchangeRate.isValid(maxDelta, nextRate)){
+                    if (this.midnightExchangeRate.compareTo(medianExRate) > 0) {
+                        medianExRate = this.midnightExchangeRate.getMinExchangeRate(maxDelta);
+                    } else {
+                        medianExRate = this.midnightExchangeRate.getMaxExchangeRate(maxDelta);
+                    }
 
-                nextRate = new Rate(this.hbarEquiv, medianExRate, nextExpirationTimeInSeconds);
+                    nextRate = new Rate(this.hbarEquiv, medianExRate, nextExpirationTimeInSeconds);
+                }
+            }
+            else {
+                LOGGER.debug(Exchange.EXCHANGE_FILTER, "No midnight value found. " +
+                        "skipping validation of the calculated median");
             }
 
             return new ExchangeRate(currentExchangeRate, nextRate);

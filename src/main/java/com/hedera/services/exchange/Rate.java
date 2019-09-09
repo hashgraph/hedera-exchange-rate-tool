@@ -3,7 +3,6 @@ package com.hedera.services.exchange;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hedera.services.exchange.database.DynamoDBExchangeRate;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,6 +22,12 @@ public class Rate implements Comparable<Double >{
 
     @JsonProperty("expirationTime")
     private final long expirationTime;
+
+    public Rate(){
+        hbarEquiv = 1;
+        centEquiv = 12;
+        expirationTime = getCurrentExpirationTime();
+    }
 
     public Rate(final int hbarEquiv, final Double centEquiv, final long expirationTimeInSeconds) {
         this(hbarEquiv, (int) (hbarEquiv * centEquiv), expirationTimeInSeconds);
@@ -49,12 +54,7 @@ public class Rate implements Comparable<Double >{
     }
 
     public boolean isValid(final double maxDelta, final Rate nextRate){
-        double currentExchangeRate = this.getHBarValueInDecimal();
-        if(DynamoDBExchangeRate.getExchangeRateToValidate(
-                getMidnightUTCTime()) != null) {
-            currentExchangeRate =  DynamoDBExchangeRate.getExchangeRateToValidate(
-                    getMidnightUTCTime()).getNextRateCentEqu();
-        }
+        final double currentExchangeRate = this.getHBarValueInDecimal();
         final double nextExchangeRate = nextRate.getHBarValueInDecimal();
 
         final double difference = Math.abs(currentExchangeRate - nextExchangeRate);
@@ -94,5 +94,11 @@ public class Rate implements Comparable<Double >{
         currentTime.set(currentTime.YEAR, currentTime.MONTH, currentTime.DAY_OF_MONTH, 0,0,0);
 
         return  currentTime.getTimeInMillis() / 1000;
+    }
+
+    private long getCurrentExpirationTime() {
+        long currentTime = System.currentTimeMillis();
+        long nextHour = ( currentTime - (currentTime % 3600000) ) + 3600000;
+        return nextHour;
     }
 }
