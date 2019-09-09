@@ -126,12 +126,39 @@ ENCRYPTED_OPERATOR_KEY=$(aws kms encrypt \
               --output text \
               --query CiphertextBlob)
 
+JDBC_ENDPOINT="jdbc:postgresql://${DATABASE_ENDPOINT}:5432/"
+
+echo "Encrypting JDBC Endpoint"
+
+ENCRYPTED_JDBC_ENDPOINT=$(aws kms encrypt \
+              --key-id "${KMS_KEY_ID}" \
+              --region us-east-1 \
+              --plaintext "${JDBC_ENDPOINT}" \
+              --output text \
+              --query CiphertextBlob)
+
+echo "Encrypting username"
+
+ENCRYPTED_USERNAME=$(aws kms encrypt \
+              --key-id "${KMS_KEY_ID}" \
+              --region us-east-1 \
+              --plaintext "${USERNAME}" \
+              --output text \
+              --query CiphertextBlob)
+
+echo "Encrypting database name"
+
+ENCRYPTED_DATABASE=$(aws kms encrypt \
+              --key-id "${KMS_KEY_ID}" \
+              --region us-east-1 \
+              --plaintext exchangeRate \
+              --output text \
+              --query CiphertextBlob)
 
 LAMBDA_NAME="exchange-rate-tool-lambda-$NAME"
 
 echo "Creating lambda ${LAMBDA_NAME}"
 
-JDBC_ENDPOINT="jdbc:postgresql://${DATABASE_ENDPOINT}:5432/"
 
 LAMBDA_ARN=$(aws lambda create-function \
               --function-name "$LAMBDA_NAME" \
@@ -143,7 +170,7 @@ LAMBDA_ARN=$(aws lambda create-function \
               --kms-key-arn arn:aws:kms:us-east-1:772706802921:key/b475550c-0a43-440e-bf05-d045d6ce3803 \
               --timeout 60 \
               --zip-file fileb://./target/Exchange-Rate-Tool.jar \
-              --environment "Variables={DATABASE=exchangeRate,ENDPOINT=${JDBC_ENDPOINT},OPERATOR_KEY=${ENCRYPTED_OPERATOR_KEY},USERNAME=${USERNAME},PASSWORD=${ENCRYPTED_PASSWORD}}" \
+              --environment "Variables={DATABASE=${ENCRYPTED_DATABASE},ENDPOINT=${ENCRYPTED_JDBC_ENDPOINT},OPERATOR_KEY=${ENCRYPTED_OPERATOR_KEY},USERNAME=${ENCRYPTED_USERNAME},PASSWORD=${ENCRYPTED_PASSWORD}}" \
               --region us-east-1 \
               --output text \
               --query 'FunctionArn')
