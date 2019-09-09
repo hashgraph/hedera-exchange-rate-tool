@@ -29,6 +29,7 @@ OPERATOR_KEY=""
 DATABASE_NAME="exchange-rate-tool-db-"
 DEFAULT_CONFIG_URI="https://s3.amazonaws.com/exchange.rate.config/config.json"
 FREQUENCY=60
+CONFIG_FILE=""
 
 while [[ $# -gt 0 ]]
 do
@@ -50,6 +51,11 @@ do
       shift
       shift
       ;;
+      -c|--config-file)
+      CONFIG_FILE="$2"
+      shift
+      shift
+      ;;
   esac
 done
 
@@ -60,6 +66,11 @@ fi
 
 if [ -z "$USERNAME" ]; then
   echo "You must provide a username with the -u/--username option"
+  exit 1
+fi
+
+if [ -z "$CONFIG_FILE" ]; then
+  echo "You must provide a path to a configuration file with the -c/--config-file option. Take a look at ${DEFAULT_CONFIG_URI} to see a test file"
   exit 1
 fi
 
