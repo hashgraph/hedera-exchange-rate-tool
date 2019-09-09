@@ -35,7 +35,7 @@ import java.util.Map;
 
 public class ERTParams {
 
-    private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
+    private static final Logger LOGGER = LogManager.getLogger(ERTParams.class);
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
             false);
@@ -69,7 +69,7 @@ public class ERTParams {
 
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
-            return readConfig("src/resources/config.json");
+            return readConfig("src/main/resources/config.json");
         }
 
         final String configurationPath = args[0];

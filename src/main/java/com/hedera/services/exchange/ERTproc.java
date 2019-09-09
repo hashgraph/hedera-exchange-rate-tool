@@ -1,5 +1,6 @@
 package com.hedera.services.exchange;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Bitrex;
 import com.hedera.services.exchange.exchanges.Coinbase;
@@ -31,11 +32,11 @@ public class ERTproc {
     private final Map<String, String> exchangeApis;
     private final double maxDelta;
     private Rate midnightExchangeRate;
-    private final int hbarEquiv;
     private ExchangeDB exchangeDB;
+    private int hbarEquiv;
+    private List<Exchange> exchanges;
 
-    public ERTproc(final int hbarEquiv,
-            final Map<String, String> exchangeApis,
+    public ERTproc(final int hbarEquiv, final Map<String, String> exchangeApis,
             final double maxDelta,Rate midnightExchangeRate, ExchangeDB exchangeDB) {
         this.hbarEquiv = hbarEquiv;
         this.exchangeApis = exchangeApis;
@@ -49,7 +50,7 @@ public class ERTproc {
 
         try {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
-            final List<Exchange> exchanges = generateExchanges();
+            exchanges = generateExchanges();
 
             Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : " + medianExRate);
@@ -65,7 +66,9 @@ public class ERTproc {
             }
 
             final long nextExpirationTimeInSeconds = currentExchangeRate.getExpirationTimeInSeconds() + 3_600;
-            Rate nextRate = new Rate(this.hbarEquiv, medianExRate, nextExpirationTimeInSeconds);
+            Rate nextRate = new Rate(this.hbarEquiv,
+                    (int) (medianExRate * 100 * this.hbarEquiv),
+                    nextExpirationTimeInSeconds);
 
             if(midnightExchangeRate != null){
                 LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present .. validating the median");
@@ -76,7 +79,9 @@ public class ERTproc {
                         medianExRate = this.midnightExchangeRate.getMaxExchangeRate(maxDelta);
                     }
 
-                    nextRate = new Rate(this.hbarEquiv, medianExRate, nextExpirationTimeInSeconds);
+                    nextRate = new Rate(this.hbarEquiv,
+                            (int) (medianExRate * 100 * this.hbarEquiv),
+                            nextExpirationTimeInSeconds);
                 }
             }
             else {
@@ -135,8 +140,8 @@ public class ERTproc {
         return exchanges;
     }
 
-    public static Map<String, Function<String, Exchange>> getEXCHANGES() {
-        return EXCHANGES;
+    public String getExchangeJson() throws JsonProcessingException {
+        return Exchange.OBJECT_MAPPER.writeValueAsString(exchanges);
     }
 
     private static Rate getCurrentRate(final ExchangeDB exchangeDb) throws Exception {
@@ -146,5 +151,16 @@ public class ERTproc {
             return exchangeRate.getNextRate();
         }
         return null;
+    }
+
+    public Rate buildRate(final double rate, long expirationTimeInSeconds){
+        double tempRate = rate;
+        int hbarEquiv = 1;
+        int centEquiv = 1;
+        while(tempRate % 1 != 0){
+            hbarEquiv = hbarEquiv * 10;
+            tempRate = tempRate * 10;
+        }
+        return new Rate(hbarEquiv/100, (int)tempRate, expirationTimeInSeconds );
     }
 }

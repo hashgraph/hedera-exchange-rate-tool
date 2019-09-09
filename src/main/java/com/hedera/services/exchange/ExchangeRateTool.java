@@ -25,7 +25,7 @@ public class ExchangeRateTool {
         final ERTParams params = ERTParams.readConfig(args);
 
         final ExchangeDB exchangeDb = params.getExchangeDB();
-        final Rate currentRate = exchangeDb.getLatestMidnightExchangeRate().getNextRate();//getCurrentRate(exchangeDb, params);
+        final Rate currentRate = getMidnightRate(exchangeDb, params);
         final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
@@ -63,24 +63,25 @@ public class ExchangeRateTool {
             exchangeDb.pushMidnightRate(exchangeRate);
         }
         exchangeDb.pushExchangeRate(exchangeRate);
-        exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), ERTproc.getEXCHANGES().toString());
+        exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
-    private static Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
+    private static Rate getMidnightRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
         ExchangeRate exchangeRate = exchangeDb.getLatestMidnightExchangeRate();
         if (exchangeRate != null) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest midnight exchange rate as current exchange rate");
             return exchangeRate.getNextRate();
         }
 
-        exchangeRate = exchangeDb.getLatestExchangeRate();
+        /*exchangeRate = exchangeDb.getLatestExchangeRate();
         if (exchangeRate != null) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
             return exchangeRate.getNextRate();
         }
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
-        return params.getDefaultRate();
+        return params.getDefaultRate();*/
+        return  null;
     }
 }

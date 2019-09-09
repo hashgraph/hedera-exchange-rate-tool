@@ -33,6 +33,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 			 final Statement statement = conn.createStatement();
 			 final ResultSet result = statement.executeQuery(LATEST_EXCHANGE_QUERY)) {
 				if (result.next()) {
+					LOGGER.info(Exchange.EXCHANGE_FILTER, "the latest exchange rate : {}", result.getString(2));
 					return ExchangeRate.fromJson(result.getString(2));
 				}
 			LOGGER.warn(Exchange.EXCHANGE_FILTER, "failed to get latest exchange rate from exchange rate table ");
@@ -47,6 +48,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 			 final Statement statement = conn.createStatement();
 			 final ResultSet result = statement.executeQuery(MIDNIGHT_EXCHANGE_QUERY)) {
 			if (result.next()) {
+				LOGGER.info(Exchange.EXCHANGE_FILTER, "the midnight exchange rate : {}", result.getString(2));
 				return ExchangeRate.fromJson(result.getString(2));
 			}
 			LOGGER.warn(Exchange.EXCHANGE_FILTER, "failed to get latest exchange rate from midnight rate table ");

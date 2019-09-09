@@ -5,8 +5,8 @@
 		"upbit": "https://api.upbit.com/v1/ticker?markets=USD-HBAR",
 		"coinbase": "https://api.coinbase.com/v2/exchange-rates"
 	},
-    "defaultCentEquiv" : 12,
-    "defaultHbarEquiv": 100000,
+    "defaultCentEquiv" : 12000000,
+    "defaultHbarEquiv": 1000000,
     "fileId": "0.0.112",
     "maxTransactionFee": 1000000000,
 	"maxDelta": "5.0",
