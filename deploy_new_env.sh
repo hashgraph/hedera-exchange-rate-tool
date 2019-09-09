@@ -160,7 +160,7 @@ echo "Encrypting config's uri"
 ENCRYPTED_CONFIG_URI=$(aws kms encrypt \
               --key-id "${KMS_KEY_ID}" \
               --region us-east-1 \
-              --plaintext "${DEFAULT_CONFIG_URI}" \
+              --plaintext fileb:://<(echo -n "${DEFAULT_CONFIG_URI}") \
               --output text \
               --query CiphertextBlob)
 
@@ -168,6 +168,8 @@ LAMBDA_NAME="exchange-rate-tool-lambda-$NAME"
 
 echo "Creating lambda ${LAMBDA_NAME}"
 
+FILE_URI="./target/Exchange-Rate-Tool.jar"
+#FILE_URI="s3.amazonaws.com/exchange.rate.deployment.test225/Exchange-Rate-Tool.jar"
 
 LAMBDA_ARN=$(aws lambda create-function \
               --function-name "$LAMBDA_NAME" \
@@ -178,7 +180,7 @@ LAMBDA_ARN=$(aws lambda create-function \
               --role arn:aws:iam::772706802921:role/service-role/test \
               --kms-key-arn arn:aws:kms:us-east-1:772706802921:key/b475550c-0a43-440e-bf05-d045d6ce3803 \
               --timeout 60 \
-              --zip-file fileb://./target/Exchange-Rate-Tool.jar \
+              --zip-file fileb://"${FILE_URI}" \
               --environment "Variables={DEFAULT_CONFIG_URI=${ENCRYPTED_CONFIG_URI},DATABASE=${ENCRYPTED_DATABASE},ENDPOINT=${ENCRYPTED_JDBC_ENDPOINT},OPERATOR_KEY=${ENCRYPTED_OPERATOR_KEY},USERNAME=${ENCRYPTED_USERNAME},PASSWORD=${ENCRYPTED_PASSWORD}}" \
               --region us-east-1 \
               --output text \
@@ -229,7 +231,7 @@ LAMBDA_API_ARN=$(aws lambda create-function \
               --role arn:aws:iam::772706802921:role/service-role/test \
               --kms-key-arn arn:aws:kms:us-east-1:772706802921:key/b475550c-0a43-440e-bf05-d045d6ce3803 \
               --timeout 60 \
-              --zip-file fileb://./target/Exchange-Rate-Tool.jar \
+              --zip-file fileb://"${FILE_URI}" \
               --environment "Variables={DATABASE=${ENCRYPTED_DATABASE},ENDPOINT=${ENCRYPTED_JDBC_ENDPOINT},USERNAME=${ENCRYPTED_USERNAME},PASSWORD=${ENCRYPTED_PASSWORD}}" \
               --region us-east-1 \
               --output text \
