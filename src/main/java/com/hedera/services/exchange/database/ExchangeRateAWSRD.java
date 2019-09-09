@@ -4,6 +4,7 @@ import com.hedera.services.exchange.ExchangeRate;
 import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.flywaydb.core.Flyway;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,6 +23,17 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 
 	public ExchangeRateAWSRD(final AWSDBParams params) {
 		this.params = params;
+		this.migrate();
+	}
+
+	private void migrate() {
+		final Flyway flyway = Flyway.configure()
+				.dataSource(this.params.getEndpoint(),
+						this.params.getUsername(),
+						this.params.getPassword())
+				.load();
+
+		flyway.migrate();
 	}
 
 	@Override

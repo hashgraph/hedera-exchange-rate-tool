@@ -59,11 +59,11 @@ public class ExchangeRateTool {
         }
 
 //        exchangeDb.pushExchangeRate(exchangeRate);
-        if(exchangeRate.isMidnightTime()){
-            exchangeDb.pushMidnightRate(exchangeRate);
-        }
+//        if(exchangeRate.isMidnightTime()){
+//            exchangeDb.pushMidnightRate(exchangeRate);
+//        }
         exchangeDb.pushExchangeRate(exchangeRate);
-        exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), ERTproc.getExchanges().toString());
+        // exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), ERTproc.getExchanges().toString());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
