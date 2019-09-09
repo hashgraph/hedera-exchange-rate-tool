@@ -72,30 +72,30 @@ DATABASE_NAME="$DATABASE_NAME$NAME"
 
 echo "Creating database instance ${DATABASE_NAME}"
 
-aws rds create-db-instance \
-    --allocated-storage 100 \
-    --max-allocated-storage 500 \
-    --db-instance-class db.m5.xlarge \
-    --db-instance-identifier "$DATABASE_NAME" \
-    --engine postgres \
-    --enable-cloudwatch-logs-exports '["postgresql","upgrade"]' \
-    --master-username "$USERNAME" \
-    --master-user-password "$PASSWORD" \
-    --db-name exchangeRate \
-    --port 5432 \
-    --engine-version 11.4 \
-    --storage-type gp2 \
-    --copy-tags-to-snapshot \
-    --enable-iam-database-authentication \
-    --enable-performance-insights \
-    --publicly-accessible \
-    --region us-east-1
-
-echo "Waiting for database ${DATABASE_NAME} to become available"
-
-aws rds wait db-instance-available \
-    --db-instance-identifier "${DATABASE_NAME}"  \
-    --region us-east-1
+#aws rds create-db-instance \
+#    --allocated-storage 100 \
+#    --max-allocated-storage 500 \
+#    --db-instance-class db.m5.xlarge \
+#    --db-instance-identifier "$DATABASE_NAME" \
+#    --engine postgres \
+#    --enable-cloudwatch-logs-exports '["postgresql","upgrade"]' \
+#    --master-username "$USERNAME" \
+#    --master-user-password "$PASSWORD" \
+#    --db-name exchangeRate \
+#    --port 5432 \
+#    --engine-version 11.4 \
+#    --storage-type gp2 \
+#    --copy-tags-to-snapshot \
+#    --enable-iam-database-authentication \
+#    --enable-performance-insights \
+#    --publicly-accessible \
+#    --region us-east-1
+#
+#echo "Waiting for database ${DATABASE_NAME} to become available"
+#
+#aws rds wait db-instance-available \
+#    --db-instance-identifier "${DATABASE_NAME}"  \
+#    --region us-east-1
 
 echo "Retrieving endpoint for database ${DATABASE_NAME}"
 
@@ -161,12 +161,17 @@ ENCRYPTED_DATABASE=$(aws kms encrypt \
               --query CiphertextBlob)
 
 echo "Encrypting config's uri"
+
+aws configure set cli_follow_urlparam false
+
 ENCRYPTED_CONFIG_URI=$(aws kms encrypt \
               --key-id "${KMS_KEY_ID}" \
               --region us-east-1 \
-              --plaintext fileb:://<(echo -n "${DEFAULT_CONFIG_URI}") \
+              --plaintext "${DEFAULT_CONFIG_URI}" \
               --output text \
               --query CiphertextBlob)
+
+aws configure set cli_follow_urlparam true
 
 LAMBDA_NAME="exchange-rate-tool-lambda-$NAME"
 
