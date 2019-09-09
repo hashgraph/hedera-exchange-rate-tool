@@ -28,7 +28,7 @@ PASSWORD=""
 OPERATOR_KEY=""
 DATABASE_NAME="exchange-rate-tool-db-"
 DEFAULT_CONFIG_URI="https://s3.amazonaws.com/exchange.rate.config/config.json"
-FREQUENCY=1
+FREQUENCY=60
 
 while [[ $# -gt 0 ]]
 do
@@ -78,38 +78,38 @@ DATABASE_NAME="$DATABASE_NAME$NAME"
 
 echo "Creating database instance ${DATABASE_NAME}"
 
-aws rds create-db-instance \
-    --allocated-storage 100 \
-    --max-allocated-storage 500 \
-    --db-instance-class db.m5.xlarge \
-    --db-instance-identifier "$DATABASE_NAME" \
-    --engine postgres \
-    --enable-cloudwatch-logs-exports '["postgresql","upgrade"]' \
-    --master-username "$USERNAME" \
-    --master-user-password "$PASSWORD" \
-    --db-name exchangeRate \
-    --port 5432 \
-    --engine-version 11.4 \
-    --storage-type gp2 \
-    --copy-tags-to-snapshot \
-    --enable-iam-database-authentication \
-    --enable-performance-insights \
-    --publicly-accessible \
-    --region us-east-1
-
-echo "Waiting for database ${DATABASE_NAME} to become available"
-
-aws rds wait db-instance-available \
-    --db-instance-identifier "${DATABASE_NAME}"  \
-    --region us-east-1
-
-echo "Retrieving endpoint for database ${DATABASE_NAME}"
-
-DATABASE_ENDPOINT=$(aws rds describe-db-instances  \
-                        --db-instance-identifier "$DATABASE_NAME" \
-                        --region us-east-1 \
-                        --query 'DBInstances[0].Endpoint.Address' \
-                        --output text)
+#aws rds create-db-instance \
+#    --allocated-storage 100 \
+#    --max-allocated-storage 500 \
+#    --db-instance-class db.m5.xlarge \
+#    --db-instance-identifier "$DATABASE_NAME" \
+#    --engine postgres \
+#    --enable-cloudwatch-logs-exports '["postgresql","upgrade"]' \
+#    --master-username "$USERNAME" \
+#    --master-user-password "$PASSWORD" \
+#    --db-name exchangeRate \
+#    --port 5432 \
+#    --engine-version 11.4 \
+#    --storage-type gp2 \
+#    --copy-tags-to-snapshot \
+#    --enable-iam-database-authentication \
+#    --enable-performance-insights \
+#    --publicly-accessible \
+#    --region us-east-1
+#
+#echo "Waiting for database ${DATABASE_NAME} to become available"
+#
+#aws rds wait db-instance-available \
+#    --db-instance-identifier "${DATABASE_NAME}"  \
+#    --region us-east-1
+#
+#echo "Retrieving endpoint for database ${DATABASE_NAME}"
+#
+#DATABASE_ENDPOINT=$(aws rds describe-db-instances  \
+#                        --db-instance-identifier "$DATABASE_NAME" \
+#                        --region us-east-1 \
+#                        --query 'DBInstances[0].Endpoint.Address' \
+#                        --output text)
 
 echo "${DATABASE_NAME} has endpoint ${DATABASE_ENDPOINT}"
 
@@ -207,7 +207,7 @@ echo "Creating Scheduler ${SCHEDULER_NAME}"
 
 RULE_ARN=$(aws events put-rule \
             --name "$SCHEDULER_NAME" \
-            --schedule-expression "rate(${FREQUENCY} minutes)" \
+            --schedule-expression "rate(60 minutes)" \
             --state ENABLED \
             --description "Executes exchange rate tool ${LAMBDA_NAME}" \
             --region us-east-1 \
@@ -296,7 +296,7 @@ aws apigateway put-integration \
           --rest-api-id "${API_GATEWAY_ID}" \
           --resource-id "${RESOURCE_ID}" \
           --http-method GET \
-          --type AWS \
+          --type AWS_PROXY \
           --integration-http-method POST \
           --uri "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${LAMBDA_API_ARN}/invocations"
 
