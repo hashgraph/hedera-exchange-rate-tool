@@ -11,7 +11,12 @@ public class ExchangeRateApi {
 
 	public static LambdaResponse getLatest() throws Exception {
 		final ExchangeDB exchangeDb = new ExchangeRateAWSRD(new AWSDBParams());
-		return new LambdaResponse(200, exchangeDb.getLatestExchangeRate().toJson());
+		final ExchangeRate latestExchangeRate = exchangeDb.getLatestExchangeRate();
+		if (latestExchangeRate == null) {
+			return new LambdaResponse(200, "No exchange rate available yet");
+		}
+
+		return new LambdaResponse(200, latestExchangeRate.toJson());
 	}
 
 	public static class LambdaResponse {
