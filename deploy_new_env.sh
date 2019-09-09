@@ -64,42 +64,46 @@ echo
 read -s -p "Enter operator key: " OPERATOR_KEY
 echo
 
+
+echo "Passowrd: $PASSWORD"
+echo "OPERATOR KEY: $OPERATOR_KEY"
+
 DATABASE_NAME="$DATABASE_NAME$NAME"
 
 echo "Creating database instance ${DATABASE_NAME}"
 
-#aws rds create-db-instance \
-#    --allocated-storage 100 \
-#    --max-allocated-storage 500 \
-#    --db-instance-class db.m5.xlarge \
-#    --db-instance-identifier "$DATABASE_NAME" \
-#    --engine postgres \
-#    --enable-cloudwatch-logs-exports '["postgresql","upgrade"]' \
-#    --master-username "$USERNAME" \
-#    --master-user-password "$PASSWORD" \
-#    --db-name exchangeRate \
-#    --port 5432 \
-#    --engine-version 11.4 \
-#    --storage-type gp2 \
-#    --copy-tags-to-snapshot \
-#    --enable-iam-database-authentication \
-#    --enable-performance-insights \
-#    --publicly-accessible \
-#    --region us-east-1
-#
-#echo "Waiting for database ${DATABASE_NAME} to become available"
-#
-#aws rds wait db-instance-available \
-#    --db-instance-identifier "${DATABASE_NAME}"  \
-#    --region us-east-1
-#
-#echo "Retrieving endpoint for database ${DATABASE_NAME}"
-#
-#DATABASE_ENDPOINT=$(aws rds describe-db-instances  \
-#                        --db-instance-identifier "$DATABASE_NAME" \
-#                        --region us-east-1 \
-#                        --query 'DBInstances[0].Endpoint.Address' \
-#                        --output text)
+aws rds create-db-instance \
+    --allocated-storage 100 \
+    --max-allocated-storage 500 \
+    --db-instance-class db.m5.xlarge \
+    --db-instance-identifier "$DATABASE_NAME" \
+    --engine postgres \
+    --enable-cloudwatch-logs-exports '["postgresql","upgrade"]' \
+    --master-username "$USERNAME" \
+    --master-user-password "$PASSWORD" \
+    --db-name exchangeRate \
+    --port 5432 \
+    --engine-version 11.4 \
+    --storage-type gp2 \
+    --copy-tags-to-snapshot \
+    --enable-iam-database-authentication \
+    --enable-performance-insights \
+    --publicly-accessible \
+    --region us-east-1
+
+echo "Waiting for database ${DATABASE_NAME} to become available"
+
+aws rds wait db-instance-available \
+    --db-instance-identifier "${DATABASE_NAME}"  \
+    --region us-east-1
+
+echo "Retrieving endpoint for database ${DATABASE_NAME}"
+
+DATABASE_ENDPOINT=$(aws rds describe-db-instances  \
+                        --db-instance-identifier "$DATABASE_NAME" \
+                        --region us-east-1 \
+                        --query 'DBInstances[0].Endpoint.Address' \
+                        --output text)
 
 echo "${DATABASE_NAME} has endpoint ${DATABASE_ENDPOINT}"
 
@@ -178,7 +182,6 @@ LAMBDA_ARN=$(aws lambda create-function \
               --publish \
               --memory-size 1024 \
               --role arn:aws:iam::772706802921:role/service-role/test \
-              --kms-key-arn arn:aws:kms:us-east-1:772706802921:key/b475550c-0a43-440e-bf05-d045d6ce3803 \
               --timeout 60 \
               --zip-file fileb://"${FILE_URI}" \
               --environment "Variables={DEFAULT_CONFIG_URI=${ENCRYPTED_CONFIG_URI},DATABASE=${ENCRYPTED_DATABASE},ENDPOINT=${ENCRYPTED_JDBC_ENDPOINT},OPERATOR_KEY=${ENCRYPTED_OPERATOR_KEY},USERNAME=${ENCRYPTED_USERNAME},PASSWORD=${ENCRYPTED_PASSWORD}}" \
@@ -229,7 +232,6 @@ LAMBDA_API_ARN=$(aws lambda create-function \
               --publish \
               --memory-size 1024 \
               --role arn:aws:iam::772706802921:role/service-role/test \
-              --kms-key-arn arn:aws:kms:us-east-1:772706802921:key/b475550c-0a43-440e-bf05-d045d6ce3803 \
               --timeout 60 \
               --zip-file fileb://"${FILE_URI}" \
               --environment "Variables={DATABASE=${ENCRYPTED_DATABASE},ENDPOINT=${ENCRYPTED_JDBC_ENDPOINT},USERNAME=${ENCRYPTED_USERNAME},PASSWORD=${ENCRYPTED_PASSWORD}}" \
