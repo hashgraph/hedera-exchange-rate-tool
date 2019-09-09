@@ -59,8 +59,9 @@ fi
 echo "Required parameters provided"
 
 read -s -p "Enter database password (at least 8 characters): " PASSWORD
-
+echo
 read -s -p "Enter operator key: " OPERATOR_KEY
+echo
 
 DATABASE_NAME="$DATABASE_NAME$NAME"
 
@@ -221,7 +222,7 @@ aws apigateway put-integration \
           --region us-east-1 \
           --rest-api-id "${API_GATEWAY_ID}" \
           --resource-id "${RESOURCE_ID}" \
-          --http-method ANY \
+          --http-method GET \
           --type AWS \
           --integration-http-method POST \
           --uri "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/${LAMBDA_API_ARN}/invocations"
@@ -246,6 +247,9 @@ aws apigateway create-deployment \
           --region us-east-1
 
 
+API_URL="https://${API_GATEWAY_ID}.execute-api.us-east-1.amazonaws.com/default/pricing"
+
+echo "Test pricing API with URL ${API_URL}"
 
 
 
