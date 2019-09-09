@@ -30,7 +30,7 @@ DATABASE_NAME="exchange-rate-tool-db-"
 DEFAULT_CONFIG_URI="https://s3.amazonaws.com/exchange.rate.config/config.json"
 FREQUENCY=60
 CONFIG_FILE=""
-DEPLOYED_JAR="https://s3.amazonaws.com/exchange.rate.deployment.test225/Exchange-Rate-Tool.jar"
+DEPLOYED_JAR="s3://exchange.rate.deployment.test225/"
 
 while [[ $# -gt 0 ]]
 do
@@ -57,6 +57,11 @@ do
       shift
       shift
       ;;
+      -j|--jar-path)
+      DEPLOYED_JAR="$2"
+      shift
+      shift
+      ;;
   esac
 done
 
@@ -67,6 +72,11 @@ fi
 
 if [ -z "$USERNAME" ]; then
   echo "You must provide a username with the -u/--username option"
+  exit 1
+fi
+
+if [ -z "$DEPLOYED_JAR" ]; then
+  echo "The default directory path  -u/--username option"
   exit 1
 fi
 
@@ -90,43 +100,48 @@ DATABASE_NAME="$DATABASE_NAME$NAME"
 
 echo "Creating database instance ${DATABASE_NAME}"
 
-aws rds create-db-instance \
-    --allocated-storage 100 \
-    --max-allocated-storage 500 \
-    --db-instance-class db.m5.xlarge \
-    --db-instance-identifier "$DATABASE_NAME" \
-    --engine postgres \
-    --enable-cloudwatch-logs-exports '["postgresql","upgrade"]' \
-    --master-username "$USERNAME" \
-    --master-user-password "$PASSWORD" \
-    --db-name exchangeRate \
-    --port 5432 \
-    --engine-version 11.4 \
-    --storage-type gp2 \
-    --copy-tags-to-snapshot \
-    --enable-iam-database-authentication \
-    --enable-performance-insights \
-    --publicly-accessible \
-    --region us-east-1
-
-echo "Waiting for database ${DATABASE_NAME} to become available"
-
-aws rds wait db-instance-available \
-    --db-instance-identifier "${DATABASE_NAME}"  \
-    --region us-east-1
-
-echo "Retrieving endpoint for database ${DATABASE_NAME}"
-
-DATABASE_ENDPOINT=$(aws rds describe-db-instances  \
-                        --db-instance-identifier "$DATABASE_NAME" \
-                        --region us-east-1 \
-                        --query 'DBInstances[0].Endpoint.Address' \
-                        --output text)
+#aws rds create-db-instance \
+#    --allocated-storage 100 \
+#    --max-allocated-storage 500 \
+#    --db-instance-class db.m5.xlarge \
+#    --db-instance-identifier "$DATABASE_NAME" \
+#    --engine postgres \
+#    --enable-cloudwatch-logs-exports '["postgresql","upgrade"]' \
+#    --master-username "$USERNAME" \
+#    --master-user-password "$PASSWORD" \
+#    --db-name exchangeRate \
+#    --port 5432 \
+#    --engine-version 11.4 \
+#    --storage-type gp2 \
+#    --copy-tags-to-snapshot \
+#    --enable-iam-database-authentication \
+#    --enable-performance-insights \
+#    --publicly-accessible \
+#    --region us-east-1
+#
+#echo "Waiting for database ${DATABASE_NAME} to become available"
+#
+#aws rds wait db-instance-available \
+#    --db-instance-identifier "${DATABASE_NAME}"  \
+#    --region us-east-1
+#
+#echo "Retrieving endpoint for database ${DATABASE_NAME}"
+#
+#DATABASE_ENDPOINT=$(aws rds describe-db-instances  \
+#                        --db-instance-identifier "$DATABASE_NAME" \
+#                        --region us-east-1 \
+#                        --query 'DBInstances[0].Endpoint.Address' \
+#                        --output text)
 
 echo "${DATABASE_NAME} has endpoint ${DATABASE_ENDPOINT}"
 
-echo "Building jar to deploy"
-#mvn package
+echo "Downloading deployed jar from ${DEPLOYED_JAR}"
+
+
+DOWNLOADED_JAR="Exchange-Rate-Tool.jar"
+LOCAL_JAR="./${DOWNLOADED_JAR}"
+
+aws s3 sync "${DEPLOYED_JAR}" ./
 
 echo "Encrypting password"
 
@@ -195,8 +210,7 @@ LAMBDA_NAME="exchange-rate-tool-lambda-$NAME"
 
 echo "Creating lambda ${LAMBDA_NAME}"
 
-FILE_URI="./target/Exchange-Rate-Tool.jar"
-#FILE_URI="${DEPLOYED_JAR}"
+FILE_URI="${LOCAL_JAR}"
 
 LAMBDA_ARN=$(aws lambda create-function \
               --function-name "$LAMBDA_NAME" \
@@ -351,11 +365,4 @@ API_URL="https://${API_GATEWAY_ID}.execute-api.us-east-1.amazonaws.com/default/p
 
 echo "Test pricing API with URL ${API_URL}"
 
-
-
-
-
-
-
-
-
+rm "${DOWNLOADED_JAR}"
