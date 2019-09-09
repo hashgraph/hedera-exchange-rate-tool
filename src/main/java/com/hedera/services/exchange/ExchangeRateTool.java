@@ -25,13 +25,14 @@ public class ExchangeRateTool {
         final ERTParams params = ERTParams.readConfig(args);
 
         final ExchangeDB exchangeDb = params.getExchangeDB();
-        final Rate midnightExchangeRate = exchangeDb.getLatestMidnightExchangeRate().getNextRate();
-        final Rate currentExchangeRate = getCurrentRate(exchangeDb, params);
+        final ExchangeRate midnightExchangeRate = exchangeDb.getLatestMidnightExchangeRate();
+        final Rate midnightRate = midnightExchangeRate == null ? null : midnightExchangeRate.getNextRate();
+        final Rate currentRate = getCurrentRate(exchangeDb, params);
         final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
-                midnightExchangeRate,
-                currentExchangeRate);
+                midnightRate,
+                currentRate);
 
         final ExchangeRate exchangeRate = proc.call();
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
