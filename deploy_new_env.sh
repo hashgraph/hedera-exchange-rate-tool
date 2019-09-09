@@ -298,7 +298,7 @@ aws apigateway create-deployment \
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity \
           --region us-east-1 \
           --output text \
-          --query 'UserId')
+          --query 'Account')
 
 echo "Adding API Gateway permissions to Lambda API with account id ${AWS_ACCOUNT_ID}"
 
@@ -307,7 +307,7 @@ aws lambda add-permission \
       --statement-id "${API_GATEWAY_ID}" \
       --action 'lambda:InvokeFunction' \
       --principal apigateway.amazonaws.com \
-      --source-arn "arn:aws:execute-api:us-region-id:${AWS_ACCOUNT_ID}:${API_GATEWAY_ID}/*" \
+      --source-arn "arn:aws:execute-api:us-east-1:${AWS_ACCOUNT_ID}:${API_GATEWAY_ID}/*" \
       --region us-east-1 \
       --output text
 
