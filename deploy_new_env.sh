@@ -30,6 +30,7 @@ DATABASE_NAME="exchange-rate-tool-db-"
 DEFAULT_CONFIG_URI="https://s3.amazonaws.com/exchange.rate.config/config.json"
 FREQUENCY=60
 CONFIG_FILE=""
+DEPLOYED_JAR="https://s3.amazonaws.com/exchange.rate.deployment.test225/Exchange-Rate-Tool.jar"
 
 while [[ $# -gt 0 ]]
 do
@@ -69,10 +70,10 @@ if [ -z "$USERNAME" ]; then
   exit 1
 fi
 
-if [ -z "$CONFIG_FILE" ]; then
-  echo "You must provide a path to a configuration file with the -c/--config-file option. Take a look at ${DEFAULT_CONFIG_URI} to see a test file"
-  exit 1
-fi
+#if [ -z "$CONFIG_FILE" ]; then
+#  echo "You must provide a path to a configuration file with the -c/--config-file option. Take a look at ${DEFAULT_CONFIG_URI} to see a test file"
+#  exit 1
+#fi
 
 echo "Required parameters provided"
 
@@ -195,7 +196,7 @@ LAMBDA_NAME="exchange-rate-tool-lambda-$NAME"
 echo "Creating lambda ${LAMBDA_NAME}"
 
 FILE_URI="./target/Exchange-Rate-Tool.jar"
-#FILE_URI="s3.amazonaws.com/exchange.rate.deployment.test225/Exchange-Rate-Tool.jar"
+#FILE_URI="${DEPLOYED_JAR}"
 
 LAMBDA_ARN=$(aws lambda create-function \
               --function-name "$LAMBDA_NAME" \
@@ -218,7 +219,7 @@ echo "Creating Scheduler ${SCHEDULER_NAME}"
 
 RULE_ARN=$(aws events put-rule \
             --name "$SCHEDULER_NAME" \
-            --schedule-expression "rate(2 minutes)" \
+            --schedule-expression "rate(60 minutes)" \
             --state ENABLED \
             --description "Executes exchange rate tool ${LAMBDA_NAME}" \
             --region us-east-1 \
@@ -235,11 +236,11 @@ aws lambda add-permission \
       --region us-east-1 \
       --output text
 
-echo "Creating target for rule ${SCHEDULER_NAME}"
+echo "Creating target for rule ${SCHEDULER_NAME} for lambda arn ${LAMBDA_ARN}"
 
 aws events put-targets \
     --rule "${SCHEDULER_NAME}" \
-    --targets "Id"="1","Arn"="${LAMBDA_ARN}"\
+    --targets "[{\"Id\":\"1\",\"Arn\":\"${LAMBDA_ARN}\",\"Input\":\"[]\"}]"  \
     --region us-east-1
 
 
