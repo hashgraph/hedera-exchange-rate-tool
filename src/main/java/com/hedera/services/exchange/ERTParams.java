@@ -69,7 +69,7 @@ public class ERTParams {
 
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
-            return readConfig("src/resources/config.json");
+            return readDefaultConfig();
         }
 
         final String configurationPath = args[0];
@@ -84,6 +84,11 @@ public class ERTParams {
         }
 
         return readConfig(configurationPath);
+    }
+
+    private static ERTParams readDefaultConfig() throws IOException {
+        final String defaultConfigUri = ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
+        return readConfigFromAWSS3(defaultConfigUri);
     }
 
     private static ERTParams readConfigFromAWSS3(final String endpoint) throws IOException {
