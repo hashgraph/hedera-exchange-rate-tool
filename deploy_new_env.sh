@@ -203,7 +203,7 @@ echo "Creating target for rule ${SCHEDULER_NAME}"
 
 aws events put-targets \
     --rule "${SCHEDULER_NAME}" \
-    --targets "Id"="1","Arn"="${LAMBDA_ARN}" \
+    --targets "Id"="1","Arn"="${LAMBDA_ARN}"\
     --region us-east-1
 
 
@@ -221,7 +221,7 @@ LAMBDA_API_ARN=$(aws lambda create-function \
               --kms-key-arn arn:aws:kms:us-east-1:772706802921:key/b475550c-0a43-440e-bf05-d045d6ce3803 \
               --timeout 60 \
               --zip-file fileb://./target/Exchange-Rate-Tool.jar \
-              --environment "Variables={DATABASE=exchangeRate,ENDPOINT=${JDBC_ENDPOINT},USERNAME=${USERNAME},PASSWORD=${USERNAME}}" \
+              --environment "Variables={DATABASE=${ENCRYPTED_DATABASE},ENDPOINT=${ENCRYPTED_JDBC_ENDPOINT},USERNAME=${ENCRYPTED_USERNAME},PASSWORD=${ENCRYPTED_PASSWORD}}" \
               --region us-east-1 \
               --output text \
               --query 'FunctionArn')
