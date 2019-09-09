@@ -1,9 +1,9 @@
 package com.hedera.services.exchange.exchanges;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class Bitrex extends AbstractExchange {
+
 
 	@JsonProperty(value="success", access = JsonProperty.Access.WRITE_ONLY)
 	private boolean success;

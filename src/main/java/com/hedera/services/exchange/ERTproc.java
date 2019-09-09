@@ -1,6 +1,5 @@
 package com.hedera.services.exchange;
 
-import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Bitrex;
 import com.hedera.services.exchange.exchanges.Coinbase;
 import com.hedera.services.exchange.exchanges.Exchange;
@@ -30,18 +29,20 @@ public class ERTproc {
 
     private final Map<String, String> exchangeApis;
     private final double maxDelta;
-    private Rate midnightExchangeRate;
+    private final Rate midnightExchangeRate;
+    private final Rate currentExchangeRate;
     private final int hbarEquiv;
-    private ExchangeDB exchangeDB;
 
     public ERTproc(final int hbarEquiv,
             final Map<String, String> exchangeApis,
-            final double maxDelta,Rate midnightExchangeRate, ExchangeDB exchangeDB) {
+            final double maxDelta,
+            final Rate midnightExchangeRate,
+            final Rate currentExchangeRate) {
         this.hbarEquiv = hbarEquiv;
         this.exchangeApis = exchangeApis;
         this.maxDelta = maxDelta;
         this.midnightExchangeRate = midnightExchangeRate;
-        this.exchangeDB = exchangeDB;
+        this.currentExchangeRate = currentExchangeRate;
     }
 
     public ExchangeRate call() {
@@ -56,12 +57,6 @@ public class ERTproc {
             if (medianExRate == null){
                 LOGGER.warn(Exchange.EXCHANGE_FILTER, "invalid median calculated : " + medianExRate);
                 return null;
-            }
-
-            Rate currentExchangeRate = getCurrentRate(exchangeDB);
-            if(currentExchangeRate == null ){
-                LOGGER.debug(Exchange.EXCHANGE_FILTER, "No current rate in db, must be the first run");
-                currentExchangeRate = new Rate();
             }
 
             final long nextExpirationTimeInSeconds = currentExchangeRate.getExpirationTimeInSeconds() + 3_600;
@@ -82,7 +77,6 @@ public class ERTproc {
             else {
                 LOGGER.debug(Exchange.EXCHANGE_FILTER, "No midnight value found. " +
                         "skipping validation of the calculated median");
-
             }
 
             return new ExchangeRate(currentExchangeRate, nextRate);
@@ -135,16 +129,7 @@ public class ERTproc {
         return exchanges;
     }
 
-    public static Map<String, Function<String, Exchange>> getEXCHANGES() {
+    public static Map<String, Function<String, Exchange>> getExchanges() {
         return EXCHANGES;
-    }
-
-    private static Rate getCurrentRate(final ExchangeDB exchangeDb) throws Exception {
-        ExchangeRate exchangeRate = exchangeDb.getLatestExchangeRate();
-        if (exchangeRate != null) {
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
-            return exchangeRate.getNextRate();
-        }
-        return null;
     }
 }

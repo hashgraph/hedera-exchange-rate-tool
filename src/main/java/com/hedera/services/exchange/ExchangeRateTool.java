@@ -25,12 +25,14 @@ public class ExchangeRateTool {
         final ERTParams params = ERTParams.readConfig(args);
 
         final ExchangeDB exchangeDb = params.getExchangeDB();
-        final Rate currentRate = exchangeDb.getLatestMidnightExchangeRate().getNextRate();//getCurrentRate(exchangeDb, params);
+        final ExchangeRate midnightExchangeRate = exchangeDb.getLatestMidnightExchangeRate();
+        final Rate midnightRate = midnightExchangeRate == null ? null : midnightExchangeRate.getNextRate();
+        final Rate currentRate = getCurrentRate(exchangeDb, params);
         final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
-                currentRate,
-                exchangeDb);
+                midnightRate,
+                currentRate);
 
         final ExchangeRate exchangeRate = proc.call();
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
@@ -63,18 +65,11 @@ public class ExchangeRateTool {
             exchangeDb.pushMidnightRate(exchangeRate);
         }
         exchangeDb.pushExchangeRate(exchangeRate);
-        exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), ERTproc.getEXCHANGES().toString());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
     private static Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
-        ExchangeRate exchangeRate = exchangeDb.getLatestMidnightExchangeRate();
-        if (exchangeRate != null) {
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest midnight exchange rate as current exchange rate");
-            return exchangeRate.getNextRate();
-        }
-
-        exchangeRate = exchangeDb.getLatestExchangeRate();
+        final ExchangeRate exchangeRate = exchangeDb.getLatestExchangeRate();
         if (exchangeRate != null) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
             return exchangeRate.getNextRate();

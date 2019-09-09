@@ -31,6 +31,7 @@ public class ERTprocTestCases {
         final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
+                params.getDefaultRate(),
                 params.getDefaultRate());
         final ExchangeRate exchangeRate = ertProcess.call();
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();

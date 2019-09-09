@@ -56,10 +56,10 @@ public class ExchangeRate {
 
 	public static ExchangeRate fromJson(final String json) throws IOException {
 		try {
-			return OBJECT_MAPPER.readValue(json, ExchangeRate.class);
-		} catch (final Exception ex) {
 			final ExchangeRate[] rates = OBJECT_MAPPER.readValue(json, ExchangeRate[].class);
 			return rates[0];
+		} catch (final Exception ex) {
+			return OBJECT_MAPPER.readValue(json, ExchangeRate.class);
 		}
 	}
 
@@ -93,7 +93,7 @@ public class ExchangeRate {
 	}
 
 	@JsonIgnore
-	public double getNextRatecentEqu(){
+	public double getNextRateCentEqu(){
 		return nextRate.getHBarValueInDecimal();
 	}
 }
