@@ -105,13 +105,10 @@ echo "${DATABASE_NAME} has endpoint ${DATABASE_ENDPOINT}"
 echo "Building jar to deploy"
 #mvn package
 
-LAMBDA_NAME="exchange-rate-tool-lambda-$NAME"
-
-echo "Creating lambda ${LAMBDA_NAME}"
-
-JDBC_ENDPOINT="jdbc:postgresql://${DATABASE_ENDPOINT}:5432/"
+echo "Encrypting password"
 
 KMS_KEY_ID="b475550c-0a43-440e-bf05-d045d6ce3803"
+
 
 ENCRYPTED_PASSWORD=$(aws kms encrypt \
               --key-id "${KMS_KEY_ID}" \
@@ -120,12 +117,21 @@ ENCRYPTED_PASSWORD=$(aws kms encrypt \
               --output text \
               --query CiphertextBlob)
 
+echo "Encrypting operator key"
+
 ENCRYPTED_OPERATOR_KEY=$(aws kms encrypt \
               --key-id "${KMS_KEY_ID}" \
               --region us-east-1 \
               --plaintext "${OPERATOR_KEY}" \
               --output text \
               --query CiphertextBlob)
+
+
+LAMBDA_NAME="exchange-rate-tool-lambda-$NAME"
+
+echo "Creating lambda ${LAMBDA_NAME}"
+
+JDBC_ENDPOINT="jdbc:postgresql://${DATABASE_ENDPOINT}:5432/"
 
 LAMBDA_ARN=$(aws lambda create-function \
               --function-name "$LAMBDA_NAME" \
