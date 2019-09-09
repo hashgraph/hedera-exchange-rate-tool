@@ -27,6 +27,7 @@ USERNAME=""
 PASSWORD=""
 OPERATOR_KEY=""
 DATABASE_NAME="exchange-rate-tool-db-"
+DEFAULT_CONFIG_URI="https://s3.amazonaws.com/exchange.rate.config/config.json"
 
 while [[ $# -gt 0 ]]
 do
@@ -155,6 +156,14 @@ ENCRYPTED_DATABASE=$(aws kms encrypt \
               --output text \
               --query CiphertextBlob)
 
+echo "Encrypting config's uri"
+ENCRYPTED_CONFIG_URI=$(aws kms encrypt \
+              --key-id "${KMS_KEY_ID}" \
+              --region us-east-1 \
+              --plaintext "${DEFAULT_CONFIG_URI}" \
+              --output text \
+              --query CiphertextBlob)
+
 LAMBDA_NAME="exchange-rate-tool-lambda-$NAME"
 
 echo "Creating lambda ${LAMBDA_NAME}"
@@ -170,7 +179,7 @@ LAMBDA_ARN=$(aws lambda create-function \
               --kms-key-arn arn:aws:kms:us-east-1:772706802921:key/b475550c-0a43-440e-bf05-d045d6ce3803 \
               --timeout 60 \
               --zip-file fileb://./target/Exchange-Rate-Tool.jar \
-              --environment "Variables={DATABASE=${ENCRYPTED_DATABASE},ENDPOINT=${ENCRYPTED_JDBC_ENDPOINT},OPERATOR_KEY=${ENCRYPTED_OPERATOR_KEY},USERNAME=${ENCRYPTED_USERNAME},PASSWORD=${ENCRYPTED_PASSWORD}}" \
+              --environment "Variables={DEFAULT_CONFIG_URI=${ENCRYPTED_CONFIG_URI},DATABASE=${ENCRYPTED_DATABASE},ENDPOINT=${ENCRYPTED_JDBC_ENDPOINT},OPERATOR_KEY=${ENCRYPTED_OPERATOR_KEY},USERNAME=${ENCRYPTED_USERNAME},PASSWORD=${ENCRYPTED_PASSWORD}}" \
               --region us-east-1 \
               --output text \
               --query 'FunctionArn')
