@@ -286,7 +286,7 @@ aws apigateway put-integration-response \
           --status-code 200 \
           --selection-pattern ""
 
-API_GATEWAY_STAGE="exchange-rate-tool-api-stage-$NAME";
+API_GATEWAY_STAGE="default";
 
 echo "Deploying Api Gateway to stage ${API_GATEWAY_STAGE}"
 
@@ -295,6 +295,21 @@ aws apigateway create-deployment \
           --stage-name default \
           --region us-east-1
 
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity \
+          --region us-east-1 \
+          --output text \
+          --query 'UserId')
+
+echo "Adding API Gateway permissions to Lambda API with account id ${AWS_ACCOUNT_ID}"
+
+aws lambda add-permission \
+      --function-name "${LAMBDA_API_NAME}" \
+      --statement-id "${API_GATEWAY_ID}" \
+      --action 'lambda:InvokeFunction' \
+      --principal apigateway.amazonaws.com \
+      --source-arn "arn:aws:execute-api:us-region-id:${AWS_ACCOUNT_ID}:${API_GATEWAY_ID}/*" \
+      --region us-east-1 \
+      --output text
 
 API_URL="https://${API_GATEWAY_ID}.execute-api.us-east-1.amazonaws.com/default/pricing"
 
