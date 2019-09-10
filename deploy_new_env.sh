@@ -76,7 +76,7 @@ if [ -z "$USERNAME" ]; then
 fi
 
 if [ -z "$DEPLOYED_JAR" ]; then
-  echo "The default directory path  -u/--username option"
+  echo "The default jar path was overriden with the -j/--jar-path option"
   exit 1
 fi
 
