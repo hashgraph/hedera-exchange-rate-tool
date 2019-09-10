@@ -28,7 +28,7 @@ PASSWORD=""
 OPERATOR_KEY=""
 DATABASE_NAME="exchange-rate-tool-db-"
 DEFAULT_CONFIG_URI="https://s3.amazonaws.com/exchange.rate.config/config.json"
-FREQUENCY=60
+FREQUENCY="2"
 CONFIG_FILE=""
 DEPLOYED_JAR_PATH="s3://exchange.rate.deployment.test225/"
 
@@ -143,16 +143,16 @@ LOCAL_JAR="./${DOWNLOADED_JAR}"
 
 aws s3 sync "${DEPLOYED_JAR_PATH}" ./
 
+S3_BUCKET="exchange.rate.config.${NAME}"
+echo "Creating S3 bucket ${S3_BUCKET}"
 
-echo "Creating S3 bucket ${NAME}"
+aws s3 mb "s3://${S3_BUCKET}"
 
-aws s3 mb "s3://${NAME}"
+echo "Uploading ${CONFIG_URI} to s3://${S3_BUCKET}/config.json"
 
-echo "Uploading ${CONFIG_URI} to s3://${NAME}/config.json"
+aws s3 cp "$CONFIG_FILE" s3://"${S3_BUCKET}"/config.json
 
-aws s3 cp "$CONFIG_FILE" s3://"${NAME}"/config.json
-
-CONFIG_URI="https://s3.amazonaws.com/${NAME}/config.json"
+CONFIG_URI="https://s3.amazonaws.com/${S3_BUCKET}/config.json"
 
 echo "URI for configuration file: ${CONFIG_URI}"
 
@@ -246,7 +246,7 @@ echo "Creating Scheduler ${SCHEDULER_NAME}"
 
 RULE_ARN=$(aws events put-rule \
             --name "$SCHEDULER_NAME" \
-            --schedule-expression "rate(60 minutes)" \
+            --schedule-expression "rate(${FREQUENCY} minutes)" \
             --state ENABLED \
             --description "Executes exchange rate tool ${LAMBDA_NAME}" \
             --region us-east-1 \
