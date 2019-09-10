@@ -11,6 +11,7 @@ import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.util.Arrays;
 
 public class ExchangeRateTool {
