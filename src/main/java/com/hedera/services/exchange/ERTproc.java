@@ -53,7 +53,7 @@ public class ERTproc {
             Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : " + medianExRate);
             if (medianExRate == null){
-                LOGGER.warn(Exchange.EXCHANGE_FILTER, "invalid median calculated : " + medianExRate);
+                LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed" );
                 return null;
             }
 
@@ -63,7 +63,7 @@ public class ERTproc {
                     nextExpirationTimeInSeconds);
 
             if(midnightExchangeRate != null){
-                LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present .. validating the median");
+                LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the median with {}", midnightExchangeRate.toJson());
                 if (!midnightExchangeRate.isValid(maxDelta, nextRate)){
                     if (this.midnightExchangeRate.compareTo(medianExRate) > 0) {
                         medianExRate = this.midnightExchangeRate.getMinExchangeRate(maxDelta);

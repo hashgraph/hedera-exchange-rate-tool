@@ -3,12 +3,15 @@ package com.hedera.services.exchange;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Calendar;
 import java.util.TimeZone;
+
+import static com.hedera.services.exchange.exchanges.Exchange.OBJECT_MAPPER;
 
 public class Rate implements Comparable<Double >{
 
@@ -22,12 +25,6 @@ public class Rate implements Comparable<Double >{
 
     @JsonProperty("expirationTime")
     private final long expirationTime;
-
-    public Rate(){
-        hbarEquiv = 1000000;
-        centEquiv = 12000000;
-        expirationTime = getCurrentExpirationTime();
-    }
 
     public Rate(final int hbarEquiv, final Double centEquiv, final long expirationTimeInSeconds) {
         this(hbarEquiv, (int) (hbarEquiv * centEquiv), expirationTimeInSeconds);
@@ -90,17 +87,14 @@ public class Rate implements Comparable<Double >{
         return this.getHBarValueInDecimal() * ( 1 - (maxDelta / 100.0));
     }
 
+    public String toJson() throws JsonProcessingException {
+        return OBJECT_MAPPER.writeValueAsString(this);
+    }
+
     @JsonIgnore
     public static long toTinyCents(final double rate){
         long numTinyBars = 1_000_000_000;
         return (long)(rate * 100 * numTinyBars);
-    }
-
-    private long getMidnightUTCTime(){
-        Calendar currentTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        currentTime.set(currentTime.YEAR, currentTime.MONTH, currentTime.DAY_OF_MONTH, 0,0,0);
-
-        return  currentTime.getTimeInMillis() / 1000;
     }
 
     private long getCurrentExpirationTime() {

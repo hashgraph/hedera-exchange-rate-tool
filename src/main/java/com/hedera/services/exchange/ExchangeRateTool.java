@@ -36,12 +36,16 @@ public class ExchangeRateTool {
                 midnightRate,
                 currentRate);
 
-        final ExchangeRate exchangeRate = proc.call();
+        ExchangeRate exchangeRate = proc.call();
+        if (exchangeRate == null) {
+            LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed. Using current rate as next rate: {}", currentRate.toJson());
+            exchangeRate = new ExchangeRate(currentRate, currentRate);
+        }
+
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
         final AccountId operatorId = AccountId.fromString(params.getOperatorId());
 
         final FileId fileId = FileId.fromString(params.getFileId());
-
         final Ed25519PrivateKey privateOperatorKey =  Ed25519PrivateKey.fromString(params.getOperatorKey());
         final Client client = new Client(params.getNodes())
                 .setMaxTransactionFee(params.getMaxTransactionFee())
