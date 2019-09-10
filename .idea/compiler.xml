@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="Exchange-Rate-Tool" target="10" />
+      <module name="Exchange-Rate-Tool" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>
