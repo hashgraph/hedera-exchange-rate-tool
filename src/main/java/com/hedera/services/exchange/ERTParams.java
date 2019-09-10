@@ -43,13 +43,13 @@ public class ERTParams {
     @JsonProperty("exchanges")
     private Map<String, String> exchanges;
 
-    @JsonProperty("maxDelta")
+    @JsonProperty("maxDeltaPercentage")
     private double maxDelta;
 
     @JsonProperty("Nodes")
     private Map<String, String> nodes;
 
-    @JsonProperty("payAccount")
+    @JsonProperty("payerAccount")
     private String payAccount;
 
     @JsonProperty("maxTransactionFee")

@@ -5,10 +5,10 @@
   },
   "defaultCentEquiv" : 1200,
   "defaultHbarEquiv": 100000,
-  "maxDelta": "5.0",
+  "maxDeltaPercentage": "5.0",
   "Nodes": {
     "0.0.4": "1.testnet.hedera.com:71322",
     "0.0.5": "1.testnet.hedera.com:71322"
   },
-  "payAccount": "0.0.57"
+  "payerAccount": "0.0.57"
 }

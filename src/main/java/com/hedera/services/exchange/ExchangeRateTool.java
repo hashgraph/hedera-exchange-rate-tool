@@ -11,7 +11,8 @@ import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.util.Arrays;
+
+import java.util.Arrays;
 
 public class ExchangeRateTool {
 
@@ -56,7 +57,7 @@ public class ExchangeRateTool {
         final long costPerCheck = contentsResponse.getHeader().getCost();
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Cost to validate file contents is {}", costPerCheck);
         final byte[] contentsRetrieved = contentsResponse.getFileContents().getContents().toByteArray();
-        if (Arrays.areEqual(exchangeRateAsBytes, contentsRetrieved)) {
+        if (Arrays.equals(exchangeRateAsBytes, contentsRetrieved)) {
             LOGGER.error(Exchange.EXCHANGE_FILTER, UPDATE_ERROR_MESSAGE);
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
