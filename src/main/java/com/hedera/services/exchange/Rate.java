@@ -24,8 +24,8 @@ public class Rate implements Comparable<Double >{
     private final long expirationTime;
 
     public Rate(){
-        hbarEquiv = 1;
-        centEquiv = 12;
+        hbarEquiv = 1000000;
+        centEquiv = 12000000;
         expirationTime = getCurrentExpirationTime();
     }
 
@@ -54,8 +54,9 @@ public class Rate implements Comparable<Double >{
     }
 
     public boolean isValid(final double maxDelta, final Rate nextRate){
-        final double currentExchangeRate = this.getHBarValueInDecimal();
-        final double nextExchangeRate = nextRate.getHBarValueInDecimal();
+
+        final double currentExchangeRate = toTinyCents(this.getHBarValueInDecimal());
+        final double nextExchangeRate = toTinyCents(nextRate.getHBarValueInDecimal());
 
         final double difference = Math.abs(currentExchangeRate - nextExchangeRate);
         final double calculatedDelta = (difference / nextExchangeRate) * 100;
@@ -76,7 +77,7 @@ public class Rate implements Comparable<Double >{
 
     @JsonIgnore
     public double getHBarValueInDecimal() {
-        return (double)this.centEquiv / this.hbarEquiv;
+        return (double)this.centEquiv / (this.hbarEquiv * 100);
     }
 
     @JsonIgnore
@@ -89,6 +90,12 @@ public class Rate implements Comparable<Double >{
         return this.getHBarValueInDecimal() * ( 1 - (maxDelta / 100.0));
     }
 
+    @JsonIgnore
+    public static long toTinyCents(final double rate){
+        long numTinyBars = 1_000_000_000;
+        return (long)(rate * 100 * numTinyBars);
+    }
+
     private long getMidnightUTCTime(){
         Calendar currentTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         currentTime.set(currentTime.YEAR, currentTime.MONTH, currentTime.DAY_OF_MONTH, 0,0,0);
@@ -99,6 +106,6 @@ public class Rate implements Comparable<Double >{
     private long getCurrentExpirationTime() {
         long currentTime = System.currentTimeMillis();
         long nextHour = ( currentTime - (currentTime % 3600000) ) + 3600000;
-        return nextHour;
+        return nextHour / 1000 ;
     }
 }

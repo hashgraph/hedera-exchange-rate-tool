@@ -1,6 +1,8 @@
 package com.hedera.services.exchange;
 
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
+import com.hedera.services.exchange.database.ExchangeDB;
+import com.hedera.services.exchange.database.ExchangeRateAWSRD;
 import com.hedera.services.exchange.exchanges.AbstractExchange;
 import mockit.Mock;
 import mockit.MockUp;
@@ -28,6 +30,7 @@ public class ERTprocTestCases {
         this.setExchanges();
 
         final ERTParams params = ERTParams.readConfig(configPath);
+        final ExchangeDB exchangeDb = params.getExchangeDB();
         final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
@@ -36,10 +39,10 @@ public class ERTprocTestCases {
         final ExchangeRate exchangeRate = ertProcess.call();
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
         assertEquals(expectedCentEquiv, exchangeRateSet.getNextRate().getCentEquiv());
-        assertEquals(100_000, exchangeRateSet.getNextRate().getHbarEquiv());
+        assertEquals(1_000_000, exchangeRateSet.getNextRate().getHbarEquiv());
         final String expectedJson = String.format("[{"+
-                "\"CurrentRate\":{\"hbarEquiv\":100000,\"centEquiv\":%d,\"expirationTime\":%d}," +
-                "\"NextRate\":{\"hbarEquiv\":100000,\"centEquiv\":%d,\"expirationTime\":%d}}]",
+                "\"CurrentRate\":{\"hbarEquiv\":1000000,\"centEquiv\":%d,\"expirationTime\":%d}," +
+                "\"NextRate\":{\"hbarEquiv\":1000000,\"centEquiv\":%d,\"expirationTime\":%d}}]",
                 currentCentEquiv,
                 exchangeRate.getCurrentExpiriationsTimeInSeconds(),
                 expectedCentEquiv,
@@ -83,5 +86,12 @@ public class ERTprocTestCases {
                 return null;
             }
         };
+    }
+
+    @Test
+    public void testHbarCentEquiv(){
+        // change buildrate to static to make this work
+        //Rate testRate = ERTproc.buildRate(0.0071, 1234567890);
+        //System.out.println(testRate.toString());
     }
 }

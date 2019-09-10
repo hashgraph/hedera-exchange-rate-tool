@@ -26,6 +26,7 @@ public class ExchangeRateTool {
         final ERTParams params = ERTParams.readConfig(args);
 
         final ExchangeDB exchangeDb = params.getExchangeDB();
+
         final ExchangeRate midnightExchangeRate = exchangeDb.getLatestMidnightExchangeRate();
         final Rate midnightRate = midnightExchangeRate == null ? null : midnightExchangeRate.getNextRate();
         final Rate currentRate = getCurrentRate(exchangeDb, params);
@@ -63,9 +64,11 @@ public class ExchangeRateTool {
         }
 
         if(exchangeRate.isMidnightTime()){
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
             exchangeDb.pushMidnightRate(exchangeRate);
         }
         exchangeDb.pushExchangeRate(exchangeRate);
+        exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
@@ -76,7 +79,7 @@ public class ExchangeRateTool {
             return exchangeRate.getNextRate();
         }
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Using default exchange rate as current exchange rate");
         return params.getDefaultRate();
     }
 }

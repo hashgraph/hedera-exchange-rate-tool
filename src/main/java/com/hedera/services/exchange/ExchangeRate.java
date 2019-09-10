@@ -11,6 +11,7 @@ import com.hedera.hashgraph.sdk.proto.TimestampSeconds;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 public class ExchangeRate {
 
@@ -87,7 +88,7 @@ public class ExchangeRate {
 
 	@JsonIgnore
 	public boolean isMidnightTime(){
-		Calendar expiration = GregorianCalendar.getInstance();
+		Calendar expiration = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
 		expiration.setTimeInMillis(this.getNextExpirationTimeInSeconds() * 1000);
 		return expiration.get(Calendar.HOUR_OF_DAY) == 0 && expiration.get(Calendar.MINUTE) == 0 && expiration.get(Calendar.SECOND) == 0;
 	}
