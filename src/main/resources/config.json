@@ -14,6 +14,6 @@
 	"Nodes": {
 		"0.0.3": "0.testnet.hedera.com:50211"
 	},
-	"payAccount": "0.0.57"
+	"payerAccount": "0.0.57"
 }
 

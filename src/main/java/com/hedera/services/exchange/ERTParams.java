@@ -49,7 +49,7 @@ public class ERTParams {
     @JsonProperty("Nodes")
     private Map<String, String> nodes;
 
-    @JsonProperty("payAccount")
+    @JsonProperty("payerAccount")
     private String payAccount;
 
     @JsonProperty("maxTransactionFee")
