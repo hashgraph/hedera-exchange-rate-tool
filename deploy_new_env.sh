@@ -30,7 +30,7 @@ DATABASE_NAME="exchange-rate-tool-db-"
 DEFAULT_CONFIG_URI="https://s3.amazonaws.com/exchange.rate.config/config.json"
 FREQUENCY=60
 CONFIG_FILE=""
-DEPLOYED_JAR="s3://exchange.rate.deployment.test225/"
+DEPLOYED_JAR_PATH="s3://exchange.rate.deployment.test225/"
 
 while [[ $# -gt 0 ]]
 do
@@ -75,15 +75,15 @@ if [ -z "$USERNAME" ]; then
   exit 1
 fi
 
-if [ -z "$DEPLOYED_JAR" ]; then
+if [ -z "$DEPLOYED_JAR_PATH" ]; then
   echo "The default jar path was overriden with the -j/--jar-path option"
   exit 1
 fi
 
-#if [ -z "$CONFIG_FILE" ]; then
-#  echo "You must provide a path to a configuration file with the -c/--config-file option. Take a look at ${DEFAULT_CONFIG_URI} to see a test file"
-#  exit 1
-#fi
+if [ -z "$CONFIG_FILE" ]; then
+  echo "You must provide a path to a configuration file with the -c/--config-file option. Take a look at ${DEFAULT_CONFIG_URI} to see a test file"
+  exit 1
+fi
 
 echo "Required parameters provided"
 
@@ -141,7 +141,20 @@ echo "Downloading deployed jar from ${DEPLOYED_JAR}"
 DOWNLOADED_JAR="Exchange-Rate-Tool.jar"
 LOCAL_JAR="./${DOWNLOADED_JAR}"
 
-aws s3 sync "${DEPLOYED_JAR}" ./
+aws s3 sync "${DEPLOYED_JAR_PATH}" ./
+
+
+echo "Creating S3 bucket ${NAME}"
+
+aws s3 mb "s3://${NAME}"
+
+echo "Uploading ${CONFIG_URI} to s3://${NAME}/config.json"
+
+aws s3 cp "$CONFIG_FILE" s3://"${NAME}"/config.json
+
+CONFIG_URI="https://s3.amazonaws.com/${NAME}/config.json"
+
+echo "URI for configuration file: ${CONFIG_URI}"
 
 echo "Encrypting password"
 
@@ -200,7 +213,7 @@ aws configure set cli_follow_urlparam false
 ENCRYPTED_CONFIG_URI=$(aws kms encrypt \
               --key-id "${KMS_KEY_ID}" \
               --region us-east-1 \
-              --plaintext "${DEFAULT_CONFIG_URI}" \
+              --plaintext "${CONFIG_URI}" \
               --output text \
               --query CiphertextBlob)
 
