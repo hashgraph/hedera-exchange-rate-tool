@@ -28,7 +28,7 @@ PASSWORD=""
 OPERATOR_KEY=""
 DATABASE_NAME="exchange-rate-tool-db-"
 DEFAULT_CONFIG_URI="https://s3.amazonaws.com/exchange.rate.config/config.json"
-FREQUENCY="2"
+FREQUENCY="0 0-23 * * ? *"
 CONFIG_FILE=""
 DEPLOYED_JAR_PATH="s3://exchange.rate.deployment.test225/"
 DEFAULT_REGION="us-east-1"
@@ -250,11 +250,12 @@ LAMBDA_ARN=$(aws lambda create-function \
 echo "Lambda ${LAMBDA_NAME} created with ARN: ${LAMBDA_ARN}"
 
 SCHEDULER_NAME="exchange-rate-tool-scheduler-$NAME"
-echo "Creating Scheduler ${SCHEDULER_NAME}"
+CRON_FREQUENCY="cron(${FREQUENCY})"
+echo "Creating Scheduler ${SCHEDULER_NAME} with frequency ${CRON_FREQUENCY}"
 
 RULE_ARN=$(aws events put-rule \
             --name "$SCHEDULER_NAME" \
-            --schedule-expression "rate(${FREQUENCY} minutes)" \
+            --schedule-expression "${CRON_FREQUENCY}" \
             --state ENABLED \
             --description "Executes exchange rate tool ${LAMBDA_NAME}" \
             --region "${REGION}" \
