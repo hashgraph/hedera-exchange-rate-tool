@@ -35,7 +35,7 @@ public class ERTprocTestCases {
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
                 params.getDefaultRate(),
-                exchangeDb);
+                params.getDefaultRate());
         final ExchangeRate exchangeRate = ertProcess.call();
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
         assertEquals(expectedCentEquiv, exchangeRateSet.getNextRate().getCentEquiv());

@@ -33,8 +33,8 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 				.dataSource(this.params.getEndpoint(),
 						this.params.getUsername(),
 						this.params.getPassword())
+				.baselineOnMigrate(true)
 				.load();
-
 		flyway.migrate();
 	}
 

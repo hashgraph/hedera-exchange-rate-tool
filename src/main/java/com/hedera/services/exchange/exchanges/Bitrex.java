@@ -1,6 +1,5 @@
 package com.hedera.services.exchange.exchanges;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class Bitrex extends AbstractExchange {

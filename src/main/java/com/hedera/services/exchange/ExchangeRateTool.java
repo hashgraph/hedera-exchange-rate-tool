@@ -11,7 +11,7 @@ import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.util.Arrays;
+import java.util.Arrays;
 
 public class ExchangeRateTool {
 
@@ -25,12 +25,15 @@ public class ExchangeRateTool {
         final ERTParams params = ERTParams.readConfig(args);
 
         final ExchangeDB exchangeDb = params.getExchangeDB();
-        final Rate currentRate = getMidnightRate(exchangeDb, params);
+
+        final ExchangeRate midnightExchangeRate = exchangeDb.getLatestMidnightExchangeRate();
+        final Rate midnightRate = midnightExchangeRate == null ? null : midnightExchangeRate.getNextRate();
+        final Rate currentRate = getCurrentRate(exchangeDb, params);
         final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
-                currentRate,
-                exchangeDb);
+                midnightRate,
+                currentRate);
 
         final ExchangeRate exchangeRate = proc.call();
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
@@ -54,7 +57,7 @@ public class ExchangeRateTool {
         final long costPerCheck = contentsResponse.getHeader().getCost();
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Cost to validate file contents is {}", costPerCheck);
         final byte[] contentsRetrieved = contentsResponse.getFileContents().getContents().toByteArray();
-        if (Arrays.areEqual(exchangeRateAsBytes, contentsRetrieved)) {
+        if (Arrays.equals(exchangeRateAsBytes, contentsRetrieved)) {
             LOGGER.error(Exchange.EXCHANGE_FILTER, UPDATE_ERROR_MESSAGE);
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
@@ -68,21 +71,14 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
-    private static Rate getMidnightRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
-        ExchangeRate exchangeRate = exchangeDb.getLatestMidnightExchangeRate();
-        if (exchangeRate != null) {
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest midnight exchange rate as current exchange rate");
-            return exchangeRate.getNextRate();
-        }
-
-        /*exchangeRate = exchangeDb.getLatestExchangeRate();
+    private static Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
+        final ExchangeRate exchangeRate = exchangeDb.getLatestExchangeRate();
         if (exchangeRate != null) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
             return exchangeRate.getNextRate();
         }
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
-        return params.getDefaultRate();*/
-        return  null;
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Using default exchange rate as current exchange rate");
+        return params.getDefaultRate();
     }
 }

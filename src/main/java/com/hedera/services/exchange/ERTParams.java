@@ -43,13 +43,13 @@ public class ERTParams {
     @JsonProperty("exchanges")
     private Map<String, String> exchanges;
 
-    @JsonProperty("maxDelta")
+    @JsonProperty("maxDeltaPercentage")
     private double maxDelta;
 
     @JsonProperty("Nodes")
     private Map<String, String> nodes;
 
-    @JsonProperty("payAccount")
+    @JsonProperty("payerAccount")
     private String payAccount;
 
     @JsonProperty("maxTransactionFee")
@@ -112,6 +112,7 @@ public class ERTParams {
         final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
 
         try (final S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key))) {
+            OBJECT_MAPPER.readValue(fullObject.getObjectContent(), ERTproc.class);
             final ERTParams ertParams = OBJECT_MAPPER.readValue(fullObject.getObjectContent(), ERTParams.class);
             return ertParams;
         }

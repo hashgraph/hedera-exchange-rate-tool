@@ -54,6 +54,7 @@ public class Rate implements Comparable<Double >{
     }
 
     public boolean isValid(final double maxDelta, final Rate nextRate){
+
         final double currentExchangeRate = toTinyCents(this.getHBarValueInDecimal());
         final double nextExchangeRate = toTinyCents(nextRate.getHBarValueInDecimal());
 
