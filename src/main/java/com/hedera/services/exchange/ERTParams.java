@@ -43,7 +43,7 @@ public class ERTParams {
     @JsonProperty("exchanges")
     private Map<String, String> exchanges;
 
-    @JsonProperty("maxDelta")
+    @JsonProperty("maxDeltaPercentage")
     private double maxDelta;
 
     @JsonProperty("Nodes")
