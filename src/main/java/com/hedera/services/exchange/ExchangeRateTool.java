@@ -60,6 +60,7 @@ public class ExchangeRateTool {
         }
 
         if(exchangeRate.isMidnightTime()){
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
             exchangeDb.pushMidnightRate(exchangeRate);
         }
         exchangeDb.pushExchangeRate(exchangeRate);

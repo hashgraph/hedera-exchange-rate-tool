@@ -105,6 +105,6 @@ public class Rate implements Comparable<Double >{
     private long getCurrentExpirationTime() {
         long currentTime = System.currentTimeMillis();
         long nextHour = ( currentTime - (currentTime % 3600000) ) + 3600000;
-        return nextHour;
+        return nextHour / 1000 ;
     }
 }
