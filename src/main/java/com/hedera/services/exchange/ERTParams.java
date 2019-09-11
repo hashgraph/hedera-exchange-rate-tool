@@ -52,6 +52,9 @@ public class ERTParams {
     @JsonProperty("payerAccount")
     private String payAccount;
 
+    @JsonProperty("frequencyInSeconds")
+    private long frequencyInSeconds;
+
     @JsonProperty("maxTransactionFee")
     private long maxTransactionFee;
 
@@ -176,6 +179,8 @@ public class ERTParams {
         return this.defaultHbarEquiv;
     }
 
+    public long getFrequencyInSeconds() { return this.frequencyInSeconds;}
+
     public Map<AccountId, String> getNodes() {
         final Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
         for (final Map.Entry<String, String> node : this.nodes.entrySet()) {
@@ -211,7 +216,7 @@ public class ERTParams {
         return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, this.getCurrentExpirationTime());
     }
 
-    private long getCurrentExpirationTime() {
+    public static long getCurrentExpirationTime() {
         final long currentTime = System.currentTimeMillis();
         final long currentHourOnTheDot = currentTime - (currentTime % 3_600_000);
         final long currentExpirationTime = currentHourOnTheDot + 3_600_000;

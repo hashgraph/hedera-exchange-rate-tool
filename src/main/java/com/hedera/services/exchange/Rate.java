@@ -24,7 +24,7 @@ public class Rate implements Comparable<Double >{
     private final int centEquiv;
 
     @JsonProperty("expirationTime")
-    private final long expirationTime;
+    private long expirationTime;
 
     public Rate(final int hbarEquiv, final Double centEquiv, final long expirationTimeInSeconds) {
         this(hbarEquiv, (int) (hbarEquiv * centEquiv), expirationTimeInSeconds);
@@ -35,6 +35,10 @@ public class Rate implements Comparable<Double >{
         this.hbarEquiv = hbarEquiv;
         this.centEquiv = centEquiv;
         this.expirationTime =  expirationTimeInSeconds;
+    }
+
+    public void setExpirationTime(long expirationTime) {
+        this.expirationTime = expirationTime;
     }
 
     @JsonIgnore

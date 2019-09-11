@@ -5,6 +5,7 @@
   },
   "defaultCentEquiv" : 1200,
   "defaultHbarEquiv": 100000,
+  "frequencyInSeconds" : 3600,
   "maxDeltaPercentage": "5.0",
   "Nodes": {
     "0.0.4": "1.testnet.hedera.com:71322",

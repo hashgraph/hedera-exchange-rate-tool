@@ -27,6 +27,8 @@ public class ExchangeRateTool {
 
         final ExchangeDB exchangeDb = params.getExchangeDB();
 
+        final long frequencyInSeconds = params.getFrequencyInSeconds();
+
         final ExchangeRate midnightExchangeRate = exchangeDb.getLatestMidnightExchangeRate();
         final Rate midnightRate = midnightExchangeRate == null ? null : midnightExchangeRate.getNextRate();
         final Rate currentRate = getCurrentRate(exchangeDb, params);
@@ -34,7 +36,8 @@ public class ExchangeRateTool {
                 params.getExchangeAPIList(),
                 params.getMaxDelta(),
                 midnightRate,
-                currentRate);
+                currentRate,
+                frequencyInSeconds);
 
         ExchangeRate exchangeRate = proc.call();
         if (exchangeRate == null) {

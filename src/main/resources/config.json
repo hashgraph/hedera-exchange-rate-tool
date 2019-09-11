@@ -7,6 +7,7 @@
 	},
     "defaultCentEquiv" : 12000000,
     "defaultHbarEquiv": 1000000,
+	"frequencyInSeconds" : 3600,
     "fileId": "0.0.112",
     "maxTransactionFee": 1000000000,
 	"maxDeltaPercentage": "5.0",
