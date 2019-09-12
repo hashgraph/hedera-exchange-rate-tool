@@ -160,7 +160,7 @@ echo "Creating S3 bucket ${S3_BUCKET}"
 
 aws s3 mb "s3://${S3_BUCKET}"
 
-echo "Uploading ${CONFIG_URI} to s3://${S3_BUCKET}/config.json"
+echo "Uploading ${CONFIG_FILE} to s3://${S3_BUCKET}/config.json"
 
 aws s3 cp "$CONFIG_FILE" s3://"${S3_BUCKET}"/config.json
 
