@@ -72,6 +72,8 @@ do
   esac
 done
 
+NAME=$(echo "$NAME" | tr '[:upper:]' '[:lower:]')
+
 if [ -z "$NAME" ]; then
   echo "You must provide a name with the -n/--name option"
   exit 1
@@ -94,6 +96,8 @@ fi
 
 echo "Required parameters provided"
 echo "Using region: ${REGION}"
+echo "Using name: ${NAME}"
+
 
 read -s -p "Enter database password (at least 8 characters): " PASSWORD
 echo
