@@ -144,7 +144,7 @@
                 <version>2.22.2</version>
                 <configuration>
                     <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
-                    <failIfNoTests>false</failIfNoTests>
+                    <failIfNoTests>true</failIfNoTests>
                     <forkCount>0</forkCount>
                     <reuseForks>true</reuseForks>
                     <useSystemClassLoader>false</useSystemClassLoader>
@@ -168,7 +168,7 @@
                 </executions>
             </plugin>
 
-<!--            <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
                 <version>2.5.1</version>
@@ -189,7 +189,7 @@
                         <phase>validate</phase>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
 
         </plugins>
 
