@@ -2,7 +2,6 @@ package com.hedera.services.exchange;
 
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.services.exchange.database.ExchangeDB;
-import com.hedera.services.exchange.database.ExchangeRateAWSRD;
 import com.hedera.services.exchange.exchanges.AbstractExchange;
 import mockit.Mock;
 import mockit.MockUp;
@@ -33,7 +32,7 @@ public class ERTprocTestCases {
         final ExchangeDB exchangeDb = params.getExchangeDB();
         final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
-                params.getMaxDelta(),
+                params.getBound(),
                 params.getDefaultRate(),
                 params.getDefaultRate(),
                 params.getFrequencyInSeconds());

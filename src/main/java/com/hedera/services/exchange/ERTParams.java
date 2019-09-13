@@ -32,7 +32,6 @@ import java.util.Map;
 /**
  * This class reads the parameters from the config file
  */
-
 public class ERTParams {
 
     private static final Logger LOGGER = LogManager.getLogger(ERTParams.class);
@@ -43,8 +42,8 @@ public class ERTParams {
     @JsonProperty("exchanges")
     private Map<String, String> exchanges;
 
-    @JsonProperty("maxDeltaPercentage")
-    private double maxDelta;
+    @JsonProperty("exchangeRateAllowedPercentage")
+    private long bound;
 
     @JsonProperty("Nodes")
     private Map<String, String> nodes;
@@ -167,8 +166,8 @@ public class ERTParams {
         return exchanges;
     }
 
-    public double getMaxDelta() {
-        return maxDelta;
+    public long getBound() {
+        return bound;
     }
 
     public Map<String, String> getNetworkNodes() {

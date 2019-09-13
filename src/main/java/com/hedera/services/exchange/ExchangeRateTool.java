@@ -34,7 +34,7 @@ public class ExchangeRateTool {
         final Rate currentRate = getCurrentRate(exchangeDb, params);
         final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
-                params.getMaxDelta(),
+                params.getBound(),
                 midnightRate,
                 currentRate,
                 frequencyInSeconds);

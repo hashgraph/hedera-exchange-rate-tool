@@ -70,8 +70,8 @@ public class ExchangeRate {
 						.setExpirationTime(TimestampSeconds.newBuilder()
 								.setSeconds(this.currentRate.getExpirationTimeInSeconds()
 						).build())
-						.setCentEquiv(this.currentRate.getCentEquiv())
-						.setHbarEquiv(this.currentRate.getHBarEquiv())
+						.setCentEquiv((int)this.currentRate.getCentEquiv())
+						.setHbarEquiv((int)this.currentRate.getHBarEquiv())
 						.build();
 
 		final com.hedera.hashgraph.sdk.proto.ExchangeRate nextRate =
@@ -79,8 +79,8 @@ public class ExchangeRate {
 						.setExpirationTime(TimestampSeconds.newBuilder()
 								.setSeconds(this.nextRate.getExpirationTimeInSeconds()
 								).build())
-						.setCentEquiv(this.nextRate.getCentEquiv())
-						.setHbarEquiv(this.nextRate.getHBarEquiv())
+						.setCentEquiv((int)this.nextRate.getCentEquiv())
+						.setHbarEquiv((int)this.nextRate.getHBarEquiv())
 						.build();
 
 		return ExchangeRateSet.newBuilder().setCurrentRate(currentRate).setNextRate(nextRate).build();

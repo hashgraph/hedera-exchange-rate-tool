@@ -25,7 +25,7 @@ public class ERTproc {
     }
 
     private final Map<String, String> exchangeApis;
-    private final double maxDelta;
+    private final long bound;
     private List<Exchange> exchanges;
     private final Rate midnightExchangeRate;
     private final Rate currentExchangeRate;
@@ -34,13 +34,13 @@ public class ERTproc {
 
     public ERTproc(final int hbarEquiv,
             final Map<String, String> exchangeApis,
-            final double maxDelta,
+            final long bound,
             final Rate midnightExchangeRate,
             final Rate currentExchangeRate,
             final long frequencyInSeconds) {
         this.hbarEquiv = hbarEquiv;
         this.exchangeApis = exchangeApis;
-        this.maxDelta = maxDelta;
+        this.bound = bound;
         this.midnightExchangeRate = midnightExchangeRate;
         this.currentExchangeRate = currentExchangeRate;
         this.frequencyInSeconds = frequencyInSeconds;
@@ -72,16 +72,8 @@ public class ERTproc {
 
             if(midnightExchangeRate != null){
                 LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the median with {}", midnightExchangeRate.toJson());
-                if (!midnightExchangeRate.isValid(maxDelta, nextRate)){
-                    if (this.midnightExchangeRate.compareTo(medianExRate) > 0) {
-                        medianExRate = this.midnightExchangeRate.getMinExchangeRate(maxDelta);
-                    } else {
-                        medianExRate = this.midnightExchangeRate.getMaxExchangeRate(maxDelta);
-                    }
-
-                    nextRate = new Rate(this.hbarEquiv,
-                            (int) (medianExRate * 100 * this.hbarEquiv),
-                            nextExpirationTimeInSeconds);
+                if (!midnightExchangeRate.isSmallChange(bound, nextRate)){
+                    nextRate = midnightExchangeRate.clipRate(nextRate, this.bound);
                 }
             }
             else {
