@@ -3,8 +3,8 @@
     "bitrex": "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC",
     "coinbase": "https://api.coinbase.com/v2/exchange-rates"
   },
-  "defaultCentEquiv" : 780,
-  "defaultHbarEquiv": 100000,
+  "defaultCentEquiv" : 360000,
+  "defaultHbarEquiv": 30000,
   "frequencyInSeconds" : 3600,
   "exchangeRateAllowedPercentage": "25",
   "Nodes": {
