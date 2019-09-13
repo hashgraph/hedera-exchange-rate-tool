@@ -9,7 +9,7 @@
     "defaultCentEquiv" : 93600,
     "defaultHbarEquiv": 1000000,
 	"frequencyInSeconds" : 3600,
-	"maxDeltaPercentage": "5.0",
+  	"exchangeRateAllowedPercentage": "25",
 	"privateKeyPath": "path",
 	"Nodes": {
 	  "0.0.4": "1.testnet.hedera.com:71322",

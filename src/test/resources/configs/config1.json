@@ -6,7 +6,7 @@
   "defaultCentEquiv" : 780,
   "defaultHbarEquiv": 100000,
   "frequencyInSeconds" : 3600,
-  "maxDeltaPercentage": "5.0",
+  "exchangeRateAllowedPercentage": "25",
   "Nodes": {
     "0.0.4": "1.testnet.hedera.com:71322",
     "0.0.5": "1.testnet.hedera.com:71322"
