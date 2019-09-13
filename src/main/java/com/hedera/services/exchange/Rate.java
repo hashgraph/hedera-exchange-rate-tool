@@ -129,14 +129,56 @@ public class Rate implements Comparable<Double >{
         return (double)this.centEquiv / (this.hbarEquiv * 100);
     }
 
-    @JsonIgnore
-    public double getMaxExchangeRate(final double maxDelta) {
-        return this.getHBarValueInDecimal() * ( 1 + (maxDelta / 100.0));
-    }
+    /**
+     * Return the exchange rate newRate, clipped to lie within the bound of oldRate. If newRate is already within the
+     * bound, then the object is returned unchanged. Otherwise, a new Rate object is instantiated and returned that lies
+     * within the bound. The new Rate will have the same hbarEquiv as newRate, but its centEquiv will be closer to the
+     * one in oldRate.
+     *
+     * In other words, newC is adjusted if needed, so that these are both satisfied:
+     *
+     * newC  <= oldC * newH * (100 + bound) / (100 * oldH)
+     * newC  > newH * oldC * 100 / (oldH * (100 + bound))
+     *
+     * With infinite precision division, the second inequality could be >= but because integer division rounds down,
+     * it needs to be a strict > to avoid errors. This means that if newC is clipped to that lower value,
+     * and if the division is exact, then it will end up being one greater than it could have been. (To use the
+     * more exact bound would be more complicated, and doesn't really make a practical difference).
+     *
+     * Note that this will return unpredictable results if the bounds would exceed the range of an int. Imagine creating
+     * a new Rate with the same hbarEquiv as newRate, but with its centEquiv set to the centEquiv of the oldRate
+     * increased or decreased by the maximum allowed by the bound. In that case, if the centEquiv overflows an int, then
+     * the result returned by this method will be incorrect. That is unlikely to happen in practice, unless
+     * hbarEquiv is too close to 0 or to Integer.MAX_VALUE.  So an hbarEquiv in the middle of the range is best. A
+     * choice of 30,000 works well if hbarEquiv is an int.
+     *
+     * @param newRate
+     * 		a proposed new rate
+     * @param bound
+     * 		the max allowed percentage increase in the rate
+     * @return if the new rate is legal, return newRate, otherwise instantiate and return a barely legal rate.
+     */
+    public Rate clipRate(final Rate newRate, long bound) {
+        final Rate oldRate = this;
+        BigInteger k100 = BigInteger.valueOf(100);
+        BigInteger b100 = BigInteger.valueOf(bound).add(k100);
+        BigInteger oC = BigInteger.valueOf(oldRate.centEquiv);
+        BigInteger oH = BigInteger.valueOf(oldRate.hbarEquiv);
+        BigInteger nH = BigInteger.valueOf(newRate.hbarEquiv);
+        long newCent = newRate.centEquiv;
+        long high = oC.multiply(nH).multiply(b100).divide(oH.multiply(k100)).longValue();
+        long low = nH.multiply(oC).multiply(k100).divide(oH.multiply(b100)).longValue();
 
-    @JsonIgnore
-    public double getMinExchangeRate(final double maxDelta) {
-        return this.getHBarValueInDecimal() * ( 1 - (maxDelta / 100.0));
+        //if it's too high, then return the upper bound
+        if (newCent > high) {
+            return new Rate(newRate.hbarEquiv, (int) high, newRate.expirationTime);
+        }
+        //if it's too low, then return the lower bound
+        if (newCent < low) {
+            return new Rate(newRate.hbarEquiv, (int) low, newRate.expirationTime);
+        }
+        //if it's OK, then return the same object that was passed in
+        return newRate;
     }
 
     public String toJson() throws JsonProcessingException {

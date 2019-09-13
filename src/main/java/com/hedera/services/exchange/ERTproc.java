@@ -73,15 +73,7 @@ public class ERTproc {
             if(midnightExchangeRate != null){
                 LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the median with {}", midnightExchangeRate.toJson());
                 if (!midnightExchangeRate.isSmallChange(bound, nextRate)){
-                    if (this.midnightExchangeRate.compareTo(medianExRate) > 0) {
-                        medianExRate = this.midnightExchangeRate.getMinExchangeRate(bound);
-                    } else {
-                        medianExRate = this.midnightExchangeRate.getMaxExchangeRate(bound);
-                    }
-
-                    nextRate = new Rate(this.hbarEquiv,
-                            (int) (medianExRate * 100 * this.hbarEquiv),
-                            nextExpirationTimeInSeconds);
+                    nextRate = midnightExchangeRate.clipRate(nextRate, this.bound);
                 }
             }
             else {
