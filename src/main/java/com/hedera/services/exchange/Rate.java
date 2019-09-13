@@ -19,10 +19,10 @@ public class Rate implements Comparable<Double >{
     private static long TINY_CENTS_IN_USD = 100_000_000;
 
     @JsonProperty("hbarEquiv")
-    private final int hbarEquiv;
+    private final long hbarEquiv;
 
     @JsonProperty("centEquiv")
-    private final int centEquiv;
+    private final long centEquiv;
 
     @JsonProperty("expirationTime")
     private long expirationTime;
@@ -32,7 +32,7 @@ public class Rate implements Comparable<Double >{
     }
 
     @JsonCreator
-    public Rate(@JsonProperty("hbarEquiv") final int hbarEquiv, @JsonProperty("centEquiv") final int centEquiv, @JsonProperty("expirationTime") final long expirationTimeInSeconds) {
+    public Rate(@JsonProperty("hbarEquiv") final long hbarEquiv, @JsonProperty("centEquiv") final long centEquiv, @JsonProperty("expirationTime") final long expirationTimeInSeconds) {
         this.hbarEquiv = hbarEquiv;
         this.centEquiv = centEquiv;
         this.expirationTime =  expirationTimeInSeconds;
@@ -47,11 +47,11 @@ public class Rate implements Comparable<Double >{
         return this.expirationTime;
     }
 
-    public int getCentEquiv() {
+    public long getCentEquiv() {
         return this.centEquiv;
     }
 
-    public int getHBarEquiv() {
+    public long getHBarEquiv() {
         return this.hbarEquiv;
     }
 
@@ -171,11 +171,11 @@ public class Rate implements Comparable<Double >{
 
         //if it's too high, then return the upper bound
         if (newCent > high) {
-            return new Rate(newRate.hbarEquiv, (int) high, newRate.expirationTime);
+            return new Rate(newRate.hbarEquiv, high, newRate.expirationTime);
         }
         //if it's too low, then return the lower bound
         if (newCent < low) {
-            return new Rate(newRate.hbarEquiv, (int) low, newRate.expirationTime);
+            return new Rate(newRate.hbarEquiv, low, newRate.expirationTime);
         }
         //if it's OK, then return the same object that was passed in
         return newRate;
