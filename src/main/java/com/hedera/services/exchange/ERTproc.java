@@ -29,10 +29,10 @@ public class ERTproc {
     private List<Exchange> exchanges;
     private final Rate midnightExchangeRate;
     private final Rate currentExchangeRate;
-    private final int hbarEquiv;
+    private final long hbarEquiv;
     private final long frequencyInSeconds;
 
-    public ERTproc(final int hbarEquiv,
+    public ERTproc(final long hbarEquiv,
             final Map<String, String> exchangeApis,
             final long bound,
             final Rate midnightExchangeRate,

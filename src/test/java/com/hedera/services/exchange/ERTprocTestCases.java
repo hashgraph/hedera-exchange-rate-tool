@@ -1,11 +1,9 @@
 package com.hedera.services.exchange;
 
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
-import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.AbstractExchange;
 import mockit.Mock;
 import mockit.MockUp;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -25,7 +23,7 @@ public class ERTprocTestCases {
     @CsvSource({"src/test/resources/configs/config.json,360000,288000",
                 "src/test/resources/configs/config1.json,252000000,201600000",
                 "src/test/resources/configs/config2.json,25920000,20736000"})
-    public void testMedian(final String configPath, final int currentCentEquiv, final int expectedCentEquiv) throws Exception {
+    public void testMedianWithDefaultAsMidnight(final String configPath, final int currentCentEquiv, final int expectedCentEquiv) throws Exception {
         this.setExchanges();
 
         final ERTParams params = ERTParams.readConfig(configPath);
@@ -47,6 +45,90 @@ public class ERTprocTestCases {
                 expectedCentEquiv,
                 exchangeRate.getNextExpirationTimeInSeconds());
         assertEquals(expectedJson, exchangeRate.toJson());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"src/test/resources/configs/config.json,360000,28624",
+            "src/test/resources/configs/config1.json,252000000,29012",
+            "src/test/resources/configs/config2.json,25920000,29012"})
+    public void testMedianWithNullMidnightValue(final String configPath, final int currentCentEquiv, final int expectedCentEquiv) throws Exception {
+        this.setExchanges();
+
+        final ERTParams params = ERTParams.readConfig(configPath);
+        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+                params.getExchangeAPIList(),
+                params.getBound(),
+                null,
+                params.getDefaultRate(),
+                params.getFrequencyInSeconds());
+        final ExchangeRate exchangeRate = ertProcess.call();
+        final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
+        assertEquals(expectedCentEquiv, exchangeRateSet.getNextRate().getCentEquiv());
+        assertEquals(30_000, exchangeRateSet.getNextRate().getHbarEquiv());
+        final String expectedJson = String.format("[{"+
+                        "\"CurrentRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}," +
+                        "\"NextRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}}]",
+                currentCentEquiv,
+                exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                expectedCentEquiv,
+                exchangeRate.getNextExpirationTimeInSeconds());
+        assertEquals(expectedJson, exchangeRate.toJson());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"src/test/resources/configs/configSimple.json,1,1000,1,1250,15.00"})
+    public void testMedianWithCurrentEqualsMidnight(final String configPath,
+            final long currentHBarEquiv,
+            final long currentCentEquiv,
+            final long expectedHBarEquiv,
+            final long expectedCentEquiv,
+            final double bitrexValue) throws Exception {
+        this.setOnlyBitrex(bitrexValue);
+        final long currentExpirationInSeconds = ERTParams.getCurrentExpirationTime();
+        final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
+        final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
+
+        final ERTParams params = ERTParams.readConfig(configPath);
+        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+                params.getExchangeAPIList(),
+                params.getBound(),
+                currentRate,
+                currentRate,
+                params.getFrequencyInSeconds());
+        final ExchangeRate exchangeRate = ertProcess.call();
+        final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
+        assertEquals(expectedRate.getCentEquiv(), exchangeRateSet.getNextRate().getCentEquiv());
+        assertEquals(expectedRate.getHBarEquiv(), exchangeRateSet.getNextRate().getHbarEquiv());
+        final String expectedJson = String.format("[{"+
+                        "\"CurrentRate\":{\"hbarEquiv\":%d,\"centEquiv\":%d,\"expirationTime\":%d}," +
+                        "\"NextRate\":{\"hbarEquiv\":%d,\"centEquiv\":%d,\"expirationTime\":%d}}]",
+                currentHBarEquiv,
+                currentCentEquiv,
+                exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                expectedHBarEquiv,
+                expectedCentEquiv,
+                exchangeRate.getNextExpirationTimeInSeconds());
+        assertEquals(expectedJson, exchangeRate.toJson());
+    }
+
+    private void setOnlyBitrex(final double value) throws IOException {
+        final String bitrexResult = String.format("{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.00753996," +
+                "\"Last\":%.8f}}", value);
+        final InputStream bitrexJson = new ByteArrayInputStream(bitrexResult.getBytes());
+        final HttpURLConnection bitrexConnection = mock(HttpURLConnection.class);
+        when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
+
+        new MockUp<AbstractExchange>() {
+            @Mock
+            HttpURLConnection getConnection(final URL url) {
+                final String host = url.getHost();
+                if (host.contains("bittrex")) {
+                    return bitrexConnection;
+                }
+
+                return null;
+            }
+        };
     }
 
     private void setExchanges() throws IOException {
