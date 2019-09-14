@@ -61,10 +61,11 @@ public class ERTproc {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
             exchanges = generateExchanges();
 
-            Double medianExRate = calculateMedianRate(exchanges);
+            final Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : {}", medianExRate);
             if (medianExRate == null){
-                LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed. Using current rate as next rate: {}", this.currentExchangeRate.toJson());
+                LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed. Using current rate as next rate: {}",
+                        this.currentExchangeRate.toJson());
                 return new ExchangeRate(this.currentExchangeRate, this.currentExchangeRate);
             }
 
@@ -78,15 +79,13 @@ public class ERTproc {
                     (int) (medianExRate * 100 * this.hbarEquiv),
                     nextExpirationTimeInSeconds);
 
-            if(midnightExchangeRate != null){
-                LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the median with {}", midnightExchangeRate.toJson());
-                if (!midnightExchangeRate.isSmallChange(bound, nextRate)){
+            if(midnightExchangeRate != null && !midnightExchangeRate.isSmallChange(bound, nextRate)) {
+                LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the median with {}",
+                        midnightExchangeRate.toJson());
                     nextRate = midnightExchangeRate.clipRate(nextRate, this.bound);
-                }
-            }
-            else {
+            } else {
                 LOGGER.debug(Exchange.EXCHANGE_FILTER, "No midnight value found. " +
-                        "skipping validation of the calculated median");
+                        "Skipping validation of the calculated median");
             }
 
             return new ExchangeRate(currentExchangeRate, nextRate);
@@ -108,7 +107,8 @@ public class ERTproc {
         exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
         LOGGER.info(Exchange.EXCHANGE_FILTER, "find the median");
         if (exchanges.size() % 2 == 0 ) {
-            return (exchanges.get(exchanges.size() / 2).getHBarValue() + exchanges.get(exchanges.size() / 2 - 1).getHBarValue()) / 2;
+            return (exchanges.get(exchanges.size() / 2).getHBarValue() +
+                    exchanges.get(exchanges.size() / 2 - 1).getHBarValue()) / 2;
         }
         else {
             return exchanges.get(exchanges.size() / 2).getHBarValue();
