@@ -76,7 +76,8 @@ public class ERTprocTestCases {
     }
 
     @ParameterizedTest
-    @CsvSource({"src/test/resources/configs/configSimple.json,1,1000,1,1250,15.00",
+    @CsvSource({
+                "src/test/resources/configs/configSimple.json,1,1000,1,1250,15.00",
                 "src/test/resources/configs/configSimple.json,1,1000,1,800,6.00",
                 "src/test/resources/configs/configSimple.json,1,1000,1,950,9.50",
                 "src/test/resources/configs/configSimple.json,1,1000,1,1220,12.20",
