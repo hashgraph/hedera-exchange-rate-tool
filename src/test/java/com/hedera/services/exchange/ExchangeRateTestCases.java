@@ -21,7 +21,7 @@ public class ExchangeRateTestCases {
 		assertEquals(1567490400000L, exchangeRate.getCurrentRate().getExpirationTimeInSeconds());
 
 		assertEquals(1000000, exchangeRate.getNextRate().getHBarEquiv());
-		assertEquals(6780, exchangeRate.getNextRate().getCentEquiv());
+		assertEquals(67800, exchangeRate.getNextRate().getCentEquiv());
 		assertEquals(1567490403600L, exchangeRate.getNextRate().getExpirationTimeInSeconds());
 	}
 

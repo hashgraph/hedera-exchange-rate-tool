@@ -92,9 +92,4 @@ public class ExchangeRate {
 		expiration.setTimeInMillis(this.getNextExpirationTimeInSeconds() * 1000);
 		return expiration.get(Calendar.HOUR_OF_DAY) == 0 && expiration.get(Calendar.MINUTE) == 0 && expiration.get(Calendar.SECOND) == 0;
 	}
-
-	@JsonIgnore
-	public double getNextRateCentEqu(){
-		return nextRate.getHBarValueInDecimal();
-	}
 }

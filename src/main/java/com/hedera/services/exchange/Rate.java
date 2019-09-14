@@ -11,7 +11,7 @@ import java.math.BigInteger;
 
 import static com.hedera.services.exchange.exchanges.Exchange.OBJECT_MAPPER;
 
-public class Rate implements Comparable<Double >{
+public class Rate {
 
     private static final Logger LOGGER = LogManager.getLogger(Rate.class);
 
@@ -116,12 +116,6 @@ public class Rate implements Comparable<Double >{
                         && oH.multiply(nC).multiply(b100).subtract(
                         nH.multiply(oC).multiply(k100)
                 ).signum() >= 0;
-    }
-
-    @Override
-    public int compareTo(final Double hbarValue) {
-        final Double currentValue = this.getHBarValueInDecimal();
-        return currentValue.compareTo(hbarValue);
     }
 
     @JsonIgnore

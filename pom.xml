@@ -8,6 +8,11 @@
     <artifactId>Exchange-Rate-Tool</artifactId>
     <version>0.0.1</version>
 
+
+    <properties>
+        <junit-platform.version>5.5.0</junit-platform.version>
+    </properties>
+
     <!-- Dependencies -->
     <dependencies>
         <!-- Log4j -->
@@ -37,19 +42,19 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.5.0</version>
+            <version>${junit-platform.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>5.5.0</version>
+            <version>${junit-platform.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.5.0</version>
+            <version>${junit-platform.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -141,13 +146,24 @@
 
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>3.0.0-M3</version>
                 <configuration>
                     <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
                     <failIfNoTests>true</failIfNoTests>
                     <forkCount>0</forkCount>
                     <reuseForks>true</reuseForks>
                     <useSystemClassLoader>false</useSystemClassLoader>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.22.0</version>
+                <configuration>
+                    <argLine>
+                        --illegal-access=permit
+                    </argLine>
                 </configuration>
             </plugin>
 
