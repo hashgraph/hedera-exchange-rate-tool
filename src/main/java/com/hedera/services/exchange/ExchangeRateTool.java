@@ -18,11 +18,32 @@ public class ExchangeRateTool {
 
     private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates weren't updated successfully";
 
+    private static final int DEFAULT_RETRIES = 10;
+
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
 
-    public static void main(final String ... args) throws Exception {
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
+    public static void main(final String ... args) {
+        run(args);
+    }
 
+    private static void run(final String ... args) {
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
+        final int maxRetries = DEFAULT_RETRIES;
+        int currentTries = 0;
+        while (currentTries <  maxRetries) {
+            try {
+                execute(args);
+                return;
+            } catch (final Exception ex) {
+                currentTries++;
+                LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute at try {}/{} with exception {}. Retrying", currentTries, maxRetries, ex);
+            }
+        }
+
+        LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute after {} retries", maxRetries);
+    }
+
+    private static void execute(final String ... args) throws Exception {
         final ERTParams params = ERTParams.readConfig(args);
 
         final ExchangeDB exchangeDb = params.getExchangeDB();
@@ -48,7 +69,7 @@ public class ExchangeRateTool {
         final Client client = new Client(params.getNodes())
                 .setMaxTransactionFee(params.getMaxTransactionFee())
                 .setOperator(operatorId, privateOperatorKey);
-        
+
         final FileUpdateTransaction fileUpdateTransaction = new FileUpdateTransaction(client)
                 .setFileId(fileId)
                 .setContents(exchangeRateAsBytes)
