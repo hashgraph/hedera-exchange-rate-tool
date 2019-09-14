@@ -36,7 +36,7 @@ public class ExchangeRateTool {
                 return;
             } catch (final Exception ex) {
                 currentTries++;
-                LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute at try {} with exception {}. Retrying", currentTries, ex);
+                LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute at try {}/{} with exception {}. Retrying", currentTries, maxRetries, ex);
             }
         }
 
