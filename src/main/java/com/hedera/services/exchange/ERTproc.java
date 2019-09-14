@@ -1,11 +1,19 @@
 package com.hedera.services.exchange;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hedera.services.exchange.exchanges.*;
+import com.hedera.services.exchange.exchanges.Bitrex;
+import com.hedera.services.exchange.exchanges.Coinbase;
+import com.hedera.services.exchange.exchanges.Exchange;
+import com.hedera.services.exchange.exchanges.Liquid;
+import com.hedera.services.exchange.exchanges.UpBit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -56,8 +64,8 @@ public class ERTproc {
             Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : {}", medianExRate);
             if (medianExRate == null){
-                LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed" );
-                return null;
+                LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed. Using current rate as next rate: {}", this.currentExchangeRate.toJson());
+                return new ExchangeRate(this.currentExchangeRate, this.currentExchangeRate);
             }
 
             currentExchangeRate.setExpirationTime(ERTParams.getCurrentExpirationTime());
@@ -82,9 +90,8 @@ public class ERTproc {
             }
 
             return new ExchangeRate(currentExchangeRate, nextRate);
-        } catch (final Exception e) {
-            e.printStackTrace();
-            return null;
+        } catch (final Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 

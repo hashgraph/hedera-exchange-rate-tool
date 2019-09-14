@@ -79,14 +79,17 @@ public class ERTprocTestCases {
     @CsvSource({"src/test/resources/configs/configSimple.json,1,1000,1,1250,15.00",
                 "src/test/resources/configs/configSimple.json,1,1000,1,800,6.00",
                 "src/test/resources/configs/configSimple.json,1,1000,1,950,9.50",
-            "src/test/resources/configs/configSimple.json,1,1000,1,1220,12.20"})
-    public void testMedianWithCurrentEqualsMidnight(final String configPath,
+                "src/test/resources/configs/configSimple.json,1,1000,1,1220,12.20",
+                "src/test/resources/configs/configSimple.json,1,1000,1,1000,0.0"})
+    public void testMedianWithCurrentRateSameAsRate(final String configPath,
             final long currentHBarEquiv,
             final long currentCentEquiv,
             final long expectedHBarEquiv,
             final long expectedCentEquiv,
             final double bitrexValue) throws Exception {
         this.setOnlyBitrex(bitrexValue);
+        final String exchangesInJson = bitrexValue == 0.0 ? "[]" : String.format("[{\"Query\":\"https://api.bittrex.com/api/v1" +
+                ".1/public/getticker?market=BTC-LTC\",\"HBAR\":%.1f}]", bitrexValue);
         final long currentExpirationInSeconds = ERTParams.getCurrentExpirationTime();
         final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
         final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
@@ -98,7 +101,9 @@ public class ERTprocTestCases {
                 currentRate,
                 currentRate,
                 params.getFrequencyInSeconds());
+
         final ExchangeRate exchangeRate = ertProcess.call();
+
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
         assertEquals(expectedRate.getCentEquiv(), exchangeRateSet.getNextRate().getCentEquiv());
         assertEquals(expectedRate.getHBarEquiv(), exchangeRateSet.getNextRate().getHbarEquiv());
@@ -112,6 +117,7 @@ public class ERTprocTestCases {
                 expectedCentEquiv,
                 exchangeRate.getNextExpirationTimeInSeconds());
         assertEquals(expectedJson, exchangeRate.toJson());
+        assertEquals(exchangesInJson, ertProcess.getExchangeJson());
     }
 
     private void setOnlyBitrex(final double value) throws IOException {

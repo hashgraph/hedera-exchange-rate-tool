@@ -39,12 +39,7 @@ public class ExchangeRateTool {
                 currentRate,
                 frequencyInSeconds);
 
-        ExchangeRate exchangeRate = proc.call();
-        if (exchangeRate == null) {
-            LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed. Using current rate as next rate: {}", currentRate.toJson());
-            exchangeRate = new ExchangeRate(currentRate, currentRate);
-        }
-
+        final ExchangeRate exchangeRate = proc.call();
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
         final AccountId operatorId = AccountId.fromString(params.getOperatorId());
 
