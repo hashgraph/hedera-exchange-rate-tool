@@ -149,7 +149,7 @@
                 <version>3.0.0-M3</version>
                 <configuration>
                     <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
-                    <failIfNoTests>true</failIfNoTests>
+                    <failIfNoTests>false</failIfNoTests>
                     <forkCount>0</forkCount>
                     <reuseForks>true</reuseForks>
                     <useSystemClassLoader>false</useSystemClassLoader>
