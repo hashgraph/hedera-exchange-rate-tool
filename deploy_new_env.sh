@@ -104,10 +104,6 @@ echo
 read -s -p "Enter operator key: " OPERATOR_KEY
 echo
 
-
-echo "Passowrd: $PASSWORD"
-echo "OPERATOR KEY: $OPERATOR_KEY"
-
 DATABASE_NAME="$DATABASE_NAME$NAME"
 
 echo "Creating database instance ${DATABASE_NAME}"
