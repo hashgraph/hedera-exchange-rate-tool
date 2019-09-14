@@ -80,6 +80,7 @@ public class ERTprocTestCases {
                 "src/test/resources/configs/configSimple.json,1,1000,1,800,6.00",
                 "src/test/resources/configs/configSimple.json,1,1000,1,950,9.50",
                 "src/test/resources/configs/configSimple.json,1,1000,1,1220,12.20",
+                "src/test/resources/configs/configSimpleWithProdParams.json,1000000,662996,30000,24862,0.8618948",
                 "src/test/resources/configs/configSimple.json,1,1000,1,1000,0.0"})
     public void testMedianWithCurrentRateSameAsRate(final String configPath,
             final long currentHBarEquiv,
