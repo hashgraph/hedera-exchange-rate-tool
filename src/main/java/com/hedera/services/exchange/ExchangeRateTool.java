@@ -96,7 +96,7 @@ public class ExchangeRateTool {
         LOGGER.info("The contents retrieved has {} bytes and hash code {}",
                 contentsRetrieved.length,
                 Arrays.hashCode(contentsRetrieved));
-        if (Arrays.equals(exchangeRateAsBytes, contentsRetrieved)) {
+        if (!Arrays.equals(exchangeRateAsBytes, contentsRetrieved)) {
             LOGGER.error(Exchange.EXCHANGE_FILTER, UPDATE_ERROR_MESSAGE);
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
@@ -105,7 +105,7 @@ public class ExchangeRateTool {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
             exchangeDb.pushMidnightRate(exchangeRate);
         }
-        
+
         exchangeDb.pushExchangeRate(exchangeRate);
         exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
