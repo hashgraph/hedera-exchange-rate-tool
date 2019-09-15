@@ -73,6 +73,8 @@ public class ExchangeRateTool {
                 .setMaxTransactionFee(params.getMaxTransactionFee())
                 .setOperator(operatorId, privateOperatorKey);
 
+        final long currentBalance = client.getAccountBalance(operatorId);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before updating the file: {}", currentBalance);
         final FileUpdateTransaction fileUpdateTransaction = new FileUpdateTransaction(client)
                 .setFileId(fileId)
                 .setContents(exchangeRateAsBytes)
@@ -87,6 +89,9 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has valid start {}, account {}",
                 firstTry.getValidStart(),
                 firstTry.getAccountId());
+
+        final long newBalance = client.getAccountBalance(operatorId);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the file: {}", newBalance);
 
         final FileGetContentsResponse contentsResponse = new FileContentsQuery(client).setFileId(fileId).execute();
         final long costPerCheck = contentsResponse.getHeader().getCost();
