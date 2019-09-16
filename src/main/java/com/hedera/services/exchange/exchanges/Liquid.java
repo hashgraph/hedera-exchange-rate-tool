@@ -19,12 +19,12 @@ public class Liquid extends AbstractExchange {
 		return this.exchangeRate;
 	}
 
-	String getProductType() {
-		return this.productType;
+	public String getProductType() {
+		return productType;
 	}
 
-	String getCode() {
-		return this.code;
+	public String getCode() {
+		return code;
 	}
 
 	public static Liquid load(final String endpoint) {
