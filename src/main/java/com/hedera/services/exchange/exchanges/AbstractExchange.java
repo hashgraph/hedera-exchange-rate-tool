@@ -28,7 +28,7 @@ public abstract class AbstractExchange implements Exchange {
 			con.disconnect();
 			return exchange;
 		} catch (final Exception exception) {
-			System.out.println(exception.getMessage());
+			LOGGER.debug(Exchange.EXCHANGE_FILTER, "exchange loading failed : {}", exception.getMessage());
 			return null;
 		}
 	}
