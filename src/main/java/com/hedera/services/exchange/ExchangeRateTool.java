@@ -1,6 +1,7 @@
 package com.hedera.services.exchange;
 
 import com.hedera.hashgraph.sdk.Client;
+import com.hedera.hashgraph.sdk.TransactionId;
 import com.hedera.hashgraph.sdk.account.AccountId;
 import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
 import com.hedera.hashgraph.sdk.file.FileContentsQuery;
@@ -40,7 +41,9 @@ public class ExchangeRateTool {
             }
         }
 
-        LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute after {} retries", maxRetries);
+        final String errorMessage = String.format("Failed to execute after %d retries", maxRetries);
+        LOGGER.error(Exchange.EXCHANGE_FILTER, errorMessage);
+        throw new RuntimeException(errorMessage);
     }
 
     private static void execute(final String ... args) throws Exception {
@@ -70,18 +73,35 @@ public class ExchangeRateTool {
                 .setMaxTransactionFee(params.getMaxTransactionFee())
                 .setOperator(operatorId, privateOperatorKey);
 
+        final long currentBalance = client.getAccountBalance(operatorId);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before updating the file: {}", currentBalance);
         final FileUpdateTransaction fileUpdateTransaction = new FileUpdateTransaction(client)
                 .setFileId(fileId)
                 .setContents(exchangeRateAsBytes)
                 .addKey(privateOperatorKey.getPublicKey());
 
-        fileUpdateTransaction.execute();
+        final TransactionId firstTry = fileUpdateTransaction.execute();
+
+        LOGGER.info("Exchange rate file hash {} bytes and hash code {}",
+                exchangeRateAsBytes.length,
+                Arrays.hashCode(exchangeRateAsBytes));
+
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has valid start {}, account {}",
+                firstTry.getValidStart(),
+                firstTry.getAccountId());
+
+        final long newBalance = client.getAccountBalance(operatorId);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the file: {}", newBalance);
 
         final FileGetContentsResponse contentsResponse = new FileContentsQuery(client).setFileId(fileId).execute();
         final long costPerCheck = contentsResponse.getHeader().getCost();
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Cost to validate file contents is {}", costPerCheck);
         final byte[] contentsRetrieved = contentsResponse.getFileContents().getContents().toByteArray();
-        if (Arrays.equals(exchangeRateAsBytes, contentsRetrieved)) {
+
+        LOGGER.info("The contents retrieved has {} bytes and hash code {}",
+                contentsRetrieved.length,
+                Arrays.hashCode(contentsRetrieved));
+        if (!Arrays.equals(exchangeRateAsBytes, contentsRetrieved)) {
             LOGGER.error(Exchange.EXCHANGE_FILTER, UPDATE_ERROR_MESSAGE);
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
@@ -90,6 +110,7 @@ public class ExchangeRateTool {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
             exchangeDb.pushMidnightRate(exchangeRate);
         }
+
         exchangeDb.pushExchangeRate(exchangeRate);
         exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");

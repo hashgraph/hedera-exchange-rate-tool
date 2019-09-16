@@ -60,21 +60,25 @@ public class ERTproc {
         try {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
             exchanges = generateExchanges();
+            currentExchangeRate.setExpirationTime(ERTParams.getCurrentExpirationTime());
+            LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next hour as current expiration time :{}",
+                    currentExchangeRate.getExpirationTimeInSeconds());
+            final long nextExpirationTimeInSeconds = currentExchangeRate.getExpirationTimeInSeconds() + frequencyInSeconds;
+
+            LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next-next hour as next expiration time :{}",
+                    nextExpirationTimeInSeconds);
 
             final Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : {}", medianExRate);
             if (medianExRate == null){
                 LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed. Using current rate as next rate: {}",
                         this.currentExchangeRate.toJson());
-                return new ExchangeRate(this.currentExchangeRate, this.currentExchangeRate);
+                final Rate nextRate = new Rate(this.currentExchangeRate.getHBarEquiv(),
+                        this.currentExchangeRate.getCentEquiv() ,
+                        nextExpirationTimeInSeconds);
+                return new ExchangeRate(this.currentExchangeRate, nextRate);
             }
 
-            currentExchangeRate.setExpirationTime(ERTParams.getCurrentExpirationTime());
-            LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next hour as current expiration time :{}",
-                    currentExchangeRate.getExpirationTimeInSeconds());
-            final long nextExpirationTimeInSeconds = currentExchangeRate.getExpirationTimeInSeconds() + frequencyInSeconds;
-            LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next-next hour as next expiration time :{}",
-                    nextExpirationTimeInSeconds);
             Rate nextRate = new Rate(this.hbarEquiv,
                     (int) (medianExRate * 100 * this.hbarEquiv),
                     nextExpirationTimeInSeconds);
