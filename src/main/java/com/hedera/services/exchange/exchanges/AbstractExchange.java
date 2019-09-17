@@ -20,11 +20,15 @@ public abstract class AbstractExchange implements Exchange {
 		try {
 			final URL url = new URL(endpoint);
 			final HttpURLConnection con = getConnection(url);
+			if(type.getName() == "com.hedera.services.exchange.exchanges.OkCoin") {
+				con.setRequestProperty("X-CoinAPI-Key", OkCoin.APIKEY);
+			}
 			final T exchange =  OBJECT_MAPPER.readValue(con.getInputStream(), type);
 			exchange.setEndPoint(endpoint);
 			con.disconnect();
 			return exchange;
 		} catch (final Exception exception) {
+			LOGGER.debug(Exchange.EXCHANGE_FILTER, "exchange loading failed : {}", exception.getMessage());
 			return null;
 		}
 	}

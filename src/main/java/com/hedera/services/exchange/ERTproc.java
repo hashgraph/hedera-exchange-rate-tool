@@ -1,11 +1,7 @@
 package com.hedera.services.exchange;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hedera.services.exchange.exchanges.Bitrex;
-import com.hedera.services.exchange.exchanges.Coinbase;
-import com.hedera.services.exchange.exchanges.Exchange;
-import com.hedera.services.exchange.exchanges.Liquid;
-import com.hedera.services.exchange.exchanges.UpBit;
+import com.hedera.services.exchange.exchanges.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +26,7 @@ public class ERTproc {
         EXCHANGES.put("liquid", Liquid::load);
         EXCHANGES.put("coinbase", Coinbase::load);
         EXCHANGES.put("upbit", UpBit::load);
+        EXCHANGES.put("okcoin", OkCoin::load);
     }
 
     private final Map<String, String> exchangeApis;
