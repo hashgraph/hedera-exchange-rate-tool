@@ -15,7 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class LiquidTestCases {
-
+    
     @Test
     public void retrieveLiquidDataTest() throws IOException {
         final String result = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", \"last_traded_price\": 0.0093}";
