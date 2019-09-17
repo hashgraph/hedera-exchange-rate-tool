@@ -48,7 +48,7 @@ public class ERTprocTestCases {
     }
 
     @ParameterizedTest
-    @CsvSource({"src/test/resources/configs/config.json,360000,28624",
+    @CsvSource({"src/test/resources/configs/config.json,360000,28262",
             "src/test/resources/configs/config1.json,252000000,29012",
             "src/test/resources/configs/config2.json,25920000,29012"})
     public void testMedianWithNullMidnightValue(final String configPath, final int currentCentEquiv, final int expectedCentEquiv) throws Exception {
@@ -89,7 +89,7 @@ public class ERTprocTestCases {
             final double bitrexValue) throws Exception {
         this.setOnlyBitrex(bitrexValue);
         final String exchangesInJson = bitrexValue == 0.0 ? "[]" : String.format("[{\"Query\":\"https://api.bittrex.com/api/v1" +
-                ".1/public/getticker?market=BTC-LTC\",\"HBAR\":%.1f}]", bitrexValue);
+                ".1/public/getticker?market=USD-HBAR\",\"HBAR\":%.1f}]", bitrexValue);
         final long currentExpirationInSeconds = ERTParams.getCurrentExpirationTime();
         final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
         final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
@@ -153,10 +153,15 @@ public class ERTprocTestCases {
         final HttpURLConnection coinbaseConnection = mock(HttpURLConnection.class);
         when(coinbaseConnection.getInputStream()).thenReturn(coinbaseJson);
 
-        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", \"exchange_rate\": 0.0093}";
+        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", \"last_traded_price\": 0.0093}";
         final InputStream liquidJson = new ByteArrayInputStream(liquidResult.getBytes());
         final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
         when(liquidConnection.getInputStream()).thenReturn(liquidJson);
+
+        final String okCoinResult = "{\"asset_id_base\": \"HBAR\",\"asset_id_quote\": \"USD\",\"rate\": 0.0093}";
+        final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
+        final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
+        when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);
         new MockUp<AbstractExchange>() {
             @Mock
             HttpURLConnection getConnection(final URL url) {
@@ -171,6 +176,10 @@ public class ERTprocTestCases {
 
                 if (host.contains("coinbase")) {
                     return coinbaseConnection;
+                }
+
+                if (host.contains("coinapi")) {
+                    return okCoinConnection;
                 }
 
                 return null;
