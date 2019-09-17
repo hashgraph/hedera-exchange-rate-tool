@@ -153,7 +153,7 @@ public class ERTprocTestCases {
         final HttpURLConnection coinbaseConnection = mock(HttpURLConnection.class);
         when(coinbaseConnection.getInputStream()).thenReturn(coinbaseJson);
 
-        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", \"exchange_rate\": 0.0093}";
+        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", \"last_traded_price\": 0.0093}";
         final InputStream liquidJson = new ByteArrayInputStream(liquidResult.getBytes());
         final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
         when(liquidConnection.getInputStream()).thenReturn(liquidJson);
