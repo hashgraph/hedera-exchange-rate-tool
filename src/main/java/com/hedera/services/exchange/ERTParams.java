@@ -214,6 +214,7 @@ public class ERTParams {
     public String getOperatorKey() {
         // return ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS(OPERATOR_KEY_ENV_VAL);
         return "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137";
+        // return "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087136";
     }
 
     public Rate getDefaultRate() {
