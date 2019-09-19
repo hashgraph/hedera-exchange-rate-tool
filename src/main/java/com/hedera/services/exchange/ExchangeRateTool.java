@@ -19,7 +19,7 @@ public class ExchangeRateTool {
 
     private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates weren't updated successfully";
 
-    private static final int DEFAULT_RETRIES = 10;
+    private static final int DEFAULT_RETRIES = 1;
 
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
 
@@ -36,6 +36,7 @@ public class ExchangeRateTool {
                 execute(args);
                 return;
             } catch (final Exception ex) {
+                ex.printStackTrace();
                 currentTries++;
                 LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute at try {}/{} with exception {}. Retrying", currentTries, maxRetries, ex);
             }

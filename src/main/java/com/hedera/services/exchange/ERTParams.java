@@ -39,6 +39,10 @@ public class ERTParams {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
             false);
 
+    public static final String DEFAULT_CONFIG_URI_ENV_VAL = "DEFAULT_CONFIG_URI";
+
+    public static final String OPERATOR_KEY_ENV_VAL = "OPERATOR_KEY";
+
     @JsonProperty("exchanges")
     private Map<String, String> exchanges;
 
@@ -93,7 +97,7 @@ public class ERTParams {
     }
 
     private static ERTParams readDefaultConfig() throws IOException {
-        final String defaultConfigUri = ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
+        final String defaultConfigUri = ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS(DEFAULT_CONFIG_URI_ENV_VAL);
         return readConfigFromAWSS3(defaultConfigUri);
     }
 
@@ -208,7 +212,8 @@ public class ERTParams {
 
     @JsonIgnore
     public String getOperatorKey() {
-        return ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY");
+        // return ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS(OPERATOR_KEY_ENV_VAL);
+        return "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137";
     }
 
     public Rate getDefaultRate() {

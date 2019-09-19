@@ -1,6 +1,7 @@
 package com.hedera.services.exchange;
 
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
+import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.AbstractExchange;
 import mockit.Mock;
 import mockit.MockUp;
