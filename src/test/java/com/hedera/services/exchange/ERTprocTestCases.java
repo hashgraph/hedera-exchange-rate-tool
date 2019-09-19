@@ -4,6 +4,7 @@ import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.services.exchange.exchanges.AbstractExchange;
 import mockit.Mock;
 import mockit.MockUp;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -30,6 +31,7 @@ public class ERTprocTestCases {
         final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getBound(),
+                params.getFloor(),
                 params.getDefaultRate(),
                 params.getDefaultRate(),
                 params.getFrequencyInSeconds());
@@ -48,9 +50,9 @@ public class ERTprocTestCases {
     }
 
     @ParameterizedTest
-    @CsvSource({"src/test/resources/configs/config.json,360000,28262",
-            "src/test/resources/configs/config1.json,252000000,29012",
-            "src/test/resources/configs/config2.json,25920000,29012"})
+    @CsvSource({"src/test/resources/configs/config.json,360000,282624",
+            "src/test/resources/configs/config1.json,252000000,290124",
+            "src/test/resources/configs/config2.json,25920000,290124"})
     public void testMedianWithNullMidnightValue(final String configPath, final int currentCentEquiv, final int expectedCentEquiv) throws Exception {
         this.setExchanges();
 
@@ -58,6 +60,7 @@ public class ERTprocTestCases {
         final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getBound(),
+                params.getFloor(),
                 null,
                 params.getDefaultRate(),
                 params.getFrequencyInSeconds());
@@ -98,6 +101,7 @@ public class ERTprocTestCases {
         final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getBound(),
+                params.getFloor(),
                 currentRate,
                 currentRate,
                 params.getFrequencyInSeconds());
@@ -119,6 +123,33 @@ public class ERTprocTestCases {
         assertEquals(expectedJson, exchangeRate.toJson());
         assertEquals(exchangesInJson, ertProcess.getExchangeJson());
     }
+
+    @ParameterizedTest
+    @CsvSource({"src/test/resources/configs/config.json,360000,180000"})
+    public void testFloor(String configPath, long currentCentEquiv, long expectedCentEquiv) throws IOException {
+        this.setFloorExchanges();
+        final ERTParams params = ERTParams.readConfig(configPath);
+        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+                params.getExchangeAPIList(),
+                params.getBound(),
+                params.getFloor(),
+                params.getDefaultRate(),
+                params.getDefaultRate(),
+                params.getFrequencyInSeconds());
+        final ExchangeRate exchangeRate = ertProcess.call();
+        final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
+        assertEquals(expectedCentEquiv, exchangeRateSet.getNextRate().getCentEquiv());
+        assertEquals(30_000, exchangeRateSet.getNextRate().getHbarEquiv());
+        final String expectedJson = String.format("[{"+
+                        "\"CurrentRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}," +
+                        "\"NextRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}}]",
+                currentCentEquiv,
+                exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                expectedCentEquiv,
+                exchangeRate.getNextExpirationTimeInSeconds());
+        assertEquals(expectedJson, exchangeRate.toJson());
+    }
+
 
     private void setOnlyBitrex(final double value) throws IOException {
         final String bitrexResult = String.format("{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.00753996," +
@@ -142,23 +173,70 @@ public class ERTprocTestCases {
 
     private void setExchanges() throws IOException {
         final String bitrexResult = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.00753996," +
-                "\"Last\":0.00954162}}";
+                "\"Last\":0.0954162}}";
         final InputStream bitrexJson = new ByteArrayInputStream(bitrexResult.getBytes());
         final HttpURLConnection bitrexConnection = mock(HttpURLConnection.class);
         when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
 
 
-        final String coinbaseResult = "{\"data\":{\"currency\":\"USD\", \"rates\":{\"HBAR\":\"0.0098\"}}}";
+        final String coinbaseResult = "{\"data\":{\"currency\":\"USD\", \"rates\":{\"HBAR\":\"0.098\"}}}";
         final InputStream coinbaseJson = new ByteArrayInputStream(coinbaseResult.getBytes());
         final HttpURLConnection coinbaseConnection = mock(HttpURLConnection.class);
         when(coinbaseConnection.getInputStream()).thenReturn(coinbaseJson);
 
-        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", \"last_traded_price\": 0.0093}";
+        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", \"last_traded_price\": 0.093}";
         final InputStream liquidJson = new ByteArrayInputStream(liquidResult.getBytes());
         final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
         when(liquidConnection.getInputStream()).thenReturn(liquidJson);
 
-        final String okCoinResult = "{\"asset_id_base\": \"HBAR\",\"asset_id_quote\": \"USD\",\"rate\": 0.0093}";
+        final String okCoinResult = "{\"asset_id_base\": \"HBAR\",\"asset_id_quote\": \"USD\",\"rate\": 0.093}";
+        final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
+        final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
+        when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);
+        new MockUp<AbstractExchange>() {
+            @Mock
+            HttpURLConnection getConnection(final URL url) {
+                final String host = url.getHost();
+                if (host.contains("bittrex")) {
+                    return bitrexConnection;
+                }
+
+                if (host.contains("liquid")) {
+                    return liquidConnection;
+                }
+
+                if (host.contains("coinbase")) {
+                    return coinbaseConnection;
+                }
+
+                if (host.contains("coinapi")) {
+                    return okCoinConnection;
+                }
+
+                return null;
+            }
+        };
+    }
+
+    private void setFloorExchanges() throws IOException {
+        final String bitrexResult = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.0553996," +
+                "\"Last\":0.0554162}}";
+        final InputStream bitrexJson = new ByteArrayInputStream(bitrexResult.getBytes());
+        final HttpURLConnection bitrexConnection = mock(HttpURLConnection.class);
+        when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
+
+
+        final String coinbaseResult = "{\"data\":{\"currency\":\"USD\", \"rates\":{\"HBAR\":\"0.058\"}}}";
+        final InputStream coinbaseJson = new ByteArrayInputStream(coinbaseResult.getBytes());
+        final HttpURLConnection coinbaseConnection = mock(HttpURLConnection.class);
+        when(coinbaseConnection.getInputStream()).thenReturn(coinbaseJson);
+
+        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", \"last_traded_price\": 0.053}";
+        final InputStream liquidJson = new ByteArrayInputStream(liquidResult.getBytes());
+        final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
+        when(liquidConnection.getInputStream()).thenReturn(liquidJson);
+
+        final String okCoinResult = "{\"asset_id_base\": \"HBAR\",\"asset_id_quote\": \"USD\",\"rate\": 0.053}";
         final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
         final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
         when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);

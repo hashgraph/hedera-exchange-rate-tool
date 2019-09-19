@@ -10,6 +10,7 @@
   	"defaultCentEquiv" : 12,
   	"defaultHbarEquiv": 1,
 	"frequencyInSeconds" : 3600,
+	"floorCentsPerHbar": 6,
   	"maxTransactionFee": 10000000,
   	"exchangeRateAllowedPercentage": "25",
 	"privateKeyPath": "path",

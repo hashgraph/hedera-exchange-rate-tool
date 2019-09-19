@@ -31,6 +31,7 @@ public class ERTproc {
 
     private final Map<String, String> exchangeApis;
     private final long bound;
+    private final long floor;
     private List<Exchange> exchanges;
     private final Rate midnightExchangeRate;
     private final Rate currentExchangeRate;
@@ -40,12 +41,14 @@ public class ERTproc {
     public ERTproc(final long hbarEquiv,
             final Map<String, String> exchangeApis,
             final long bound,
+            final long floor,
             final Rate midnightExchangeRate,
             final Rate currentExchangeRate,
             final long frequencyInSeconds) {
         this.hbarEquiv = hbarEquiv;
         this.exchangeApis = exchangeApis;
         this.bound = bound;
+        this.floor = floor;
         this.midnightExchangeRate = midnightExchangeRate;
         this.currentExchangeRate = currentExchangeRate;
         this.frequencyInSeconds = frequencyInSeconds;
@@ -83,7 +86,7 @@ public class ERTproc {
             if(midnightExchangeRate != null && !midnightExchangeRate.isSmallChange(bound, nextRate)) {
                 LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the median with {}",
                         midnightExchangeRate.toJson());
-                    nextRate = midnightExchangeRate.clipRate(nextRate, this.bound);
+                    nextRate = midnightExchangeRate.clipRate(nextRate, this.bound, floor);
             } else {
                 LOGGER.debug(Exchange.EXCHANGE_FILTER, "No midnight value found. " +
                         "Skipping validation of the calculated median");

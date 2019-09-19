@@ -59,6 +59,7 @@ public class ExchangeRateTool {
         final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getBound(),
+                params.getFloor(),
                 midnightRate,
                 currentRate,
                 frequencyInSeconds);

@@ -57,6 +57,9 @@ public class ERTParams {
     @JsonProperty("maxTransactionFee")
     private long maxTransactionFee;
 
+    @JsonProperty("floorCentsPerHbar")
+    private long floor;
+
     @JsonProperty("fileId")
     private String fileId;
 
@@ -205,6 +208,8 @@ public class ERTParams {
     public String getOperatorId() {
         return this.operatorId;
     }
+
+    public long getFloor(){ return this.floor; }
 
     @JsonIgnore
     public String getOperatorKey() {

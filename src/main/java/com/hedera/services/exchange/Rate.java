@@ -152,7 +152,7 @@ public class Rate {
      * 		the max allowed percentage increase in the rate
      * @return if the new rate is legal, return newRate, otherwise instantiate and return a barely legal rate.
      */
-    public Rate clipRate(final Rate newRate, long bound) {
+    public Rate clipRate(final Rate newRate, long bound, long floor) {
         final Rate oldRate = this;
         BigInteger k100 = BigInteger.valueOf(100);
         BigInteger b100 = BigInteger.valueOf(bound).add(k100);
@@ -168,8 +168,11 @@ public class Rate {
             return new Rate(newRate.hbarEquiv, high, newRate.expirationTime);
         }
         //if it's too low, then return the lower bound
-        if (newCent < low) {
+        else if (newCent < low && newCent > (floor * oldRate.hbarEquiv)  ) {
             return new Rate(newRate.hbarEquiv, low, newRate.expirationTime);
+        }
+        else if( newCent <= (floor * oldRate.hbarEquiv)){
+            return new Rate(newRate.hbarEquiv, (floor * oldRate.hbarEquiv), newRate.expirationTime);
         }
         //if it's OK, then return the same object that was passed in
         return newRate;
