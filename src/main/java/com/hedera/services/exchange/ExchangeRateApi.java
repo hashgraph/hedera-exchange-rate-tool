@@ -9,6 +9,12 @@ import java.util.Map;
 
 public class ExchangeRateApi {
 
+	private static Map<String, String> HEADERS = new HashMap<>();
+
+	static {
+		HEADERS.put("Access-Control-Allow-Origin", "*");
+	}
+
 	public static LambdaResponse getLatest() throws Exception {
 		final ExchangeDB exchangeDb = new ExchangeRateAWSRD(new AWSDBParams());
 		final ExchangeRate latestExchangeRate = exchangeDb.getLatestExchangeRate();
@@ -42,7 +48,7 @@ public class ExchangeRateApi {
 		}
 
 		public Map<String, String> getHeaders() {
-			return new HashMap<>();
+			return HEADERS;
 		}
 	}
 }
