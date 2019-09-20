@@ -69,6 +69,9 @@ public class ERTParams {
     @JsonProperty("defaultHbarEquiv")
     private int defaultHbarEquiv;
 
+    @JsonProperty("validationDelayInMilliseconds")
+    private int validationDelayInMilliseconds;
+
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
             return readDefaultConfig();
@@ -213,6 +216,10 @@ public class ERTParams {
 
     public Rate getDefaultRate() {
         return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, this.getCurrentExpirationTime());
+    }
+
+    public long getValidationDelayInMilliseconds() {
+        return this.validationDelayInMilliseconds;
     }
 
     public static long getCurrentExpirationTime() {
