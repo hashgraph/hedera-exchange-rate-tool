@@ -8,6 +8,8 @@ import com.hedera.hashgraph.sdk.account.AccountId;
 import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
 import com.hedera.hashgraph.sdk.file.FileContentsQuery;
 import com.hedera.hashgraph.sdk.file.FileId;
+import com.hedera.hashgraph.sdk.file.FileInfo;
+import com.hedera.hashgraph.sdk.file.FileInfoQuery;
 import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.hashgraph.sdk.proto.FileGetContentsResponse;
@@ -88,18 +90,20 @@ public class ExchangeRateTool {
         final FileUpdateTransaction fileUpdateTransaction = new FileUpdateTransaction(client)
                 .setFileId(fileId)
                 .setTransactionValidDuration(duration)
-                .setTransactionFee(1_000_000)
+                //.setExpirationTime(Instant.ofEpochSecond(exchangeRate.getNextExpirationTimeInSeconds()))
+                .setTransactionFee(1)
                 .setContents(exchangeRateAsBytes)
                 .addKey(privateOperatorKey.getPublicKey());
 
-        final TransactionId firstTry = fileUpdateTransaction.execute();
+        final TransactionReceipt firstTry = fileUpdateTransaction.executeForReceipt();
+
 
         LOGGER.info("Exchange rate file hash {} bytes and hash code {}",
                 exchangeRateAsBytes.length,
                 Arrays.hashCode(exchangeRateAsBytes));
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has valid start {}, account {}",
-                firstTry.getValidStart(),
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has status, account {}",
+                firstTry.getStatus(),
                 firstTry.getAccountId());
 
 
@@ -107,6 +111,10 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the file: {}", newBalance);
 
         final FileGetContentsResponse contentsResponse = new FileContentsQuery(client).setFileId(fileId).execute();
+        final FileInfo fileInfo = new FileInfoQuery(client).setFileId(fileId).execute();
+        final Instant expirationTimeRetrieved = fileInfo.getExpirationTime();
+        LOGGER.info(Exchange.EXCHANGE_FILTER,"Expiration time retrieved: {}", expirationTimeRetrieved);
+
         final long costPerCheck = contentsResponse.getHeader().getCost();
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Cost to validate file contents is {}", costPerCheck);
         final byte[] contentsRetrieved = contentsResponse.getFileContents().getContents().toByteArray();
