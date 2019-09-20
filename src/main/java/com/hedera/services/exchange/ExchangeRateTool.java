@@ -90,6 +90,8 @@ public class ExchangeRateTool {
                 firstTry.getValidStart(),
                 firstTry.getAccountId());
 
+        Thread.sleep(params.getValidationDelayInMilliseconds());
+
         final long newBalance = client.getAccountBalance(operatorId);
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the file: {}", newBalance);
 
