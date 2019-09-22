@@ -44,7 +44,7 @@
 		<!-- </File> -->
 	</Appenders>
 	<Loggers>
-		<Root level="all">
+		<Root level="INFO">
 			<AppenderRef ref="fileLog"/>
 			<AppenderRef ref="Lambda" />
 			<!-- uncomment the following to also enable output to standard output -->
