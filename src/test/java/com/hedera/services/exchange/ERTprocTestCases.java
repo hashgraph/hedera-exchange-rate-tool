@@ -125,7 +125,7 @@ public class ERTprocTestCases {
     }
 
     @ParameterizedTest
-    @CsvSource({"src/test/resources/configs/config.json,360000,180000"})
+    @CsvSource({"src/test/resources/configs/config.json,360000,288000"})
     public void testFloor(String configPath, long currentCentEquiv, long expectedCentEquiv) throws IOException {
         this.setFloorExchanges();
         final ERTParams params = ERTParams.readConfig(configPath);
