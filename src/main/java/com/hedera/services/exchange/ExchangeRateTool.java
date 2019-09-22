@@ -36,6 +36,7 @@ public class ExchangeRateTool {
                 execute(args);
                 return;
             } catch (final Exception ex) {
+                ex.printStackTrace();
                 currentTries++;
                 LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute at try {}/{} with exception {}. Retrying", currentTries, maxRetries, ex);
             }
@@ -81,15 +82,14 @@ public class ExchangeRateTool {
                 .setContents(exchangeRateAsBytes)
                 .addKey(privateOperatorKey.getPublicKey());
 
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Pushing new ExchangeRate {}", exchangeRate.toJson());
         final TransactionReceipt firstTry = fileUpdateTransaction.executeForReceipt();
 
         LOGGER.info("Exchange rate file hash {} bytes and hash code {}",
                 exchangeRateAsBytes.length,
                 Arrays.hashCode(exchangeRateAsBytes));
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has status {}, account {}",
-                firstTry.getStatus(),
-                firstTry.getAccountId());
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has status {}", firstTry.getStatus());
 
         Thread.sleep(params.getValidationDelayInMilliseconds());
 
