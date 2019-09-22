@@ -9,6 +9,7 @@
   	"defaultCentEquiv" : 360000,
   	"defaultHbarEquiv": 30000,
 	"frequencyInSeconds" : 3600,
+	"floorCentsPerHbar": 180000,
     "fileId": "0.0.112",
   	"maxTransactionFee": 10000000,
   	"exchangeRateAllowedPercentage": "25",
