@@ -10,6 +10,8 @@
   	"defaultCentEquiv" : 12,
   	"defaultHbarEquiv": 1,
 	"frequencyInSeconds" : 3600,
+	"floorCentsPerHbar": 6,
+  	"maxTransactionFee": 10000000,
   	"exchangeRateAllowedPercentage": "25",
 	"privateKeyPath": "path",
 	"Nodes": {
@@ -17,5 +19,6 @@
 	  "0.0.5": "1.testnet.hedera.com:71322"
 	},
 	"payerAccount": "0.0.57",
-	"fileId": "0.0.112"
+	"fileId": "0.0.112",
+  	"validationDelayInMilliseconds": 15000
 }

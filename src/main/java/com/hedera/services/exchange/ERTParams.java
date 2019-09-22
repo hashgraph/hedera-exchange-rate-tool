@@ -61,6 +61,9 @@ public class ERTParams {
     @JsonProperty("maxTransactionFee")
     private long maxTransactionFee;
 
+    @JsonProperty("floorCentsPerHbar")
+    private long floor;
+
     @JsonProperty("fileId")
     private String fileId;
 
@@ -72,6 +75,9 @@ public class ERTParams {
 
     @JsonProperty("defaultHbarEquiv")
     private int defaultHbarEquiv;
+
+    @JsonProperty("validationDelayInMilliseconds")
+    private int validationDelayInMilliseconds;
 
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
@@ -210,6 +216,8 @@ public class ERTParams {
         return this.operatorId;
     }
 
+    public long getFloor(){ return this.floor; }
+
     @JsonIgnore
     public String getOperatorKey() {
         // return ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS(OPERATOR_KEY_ENV_VAL);
@@ -219,6 +227,10 @@ public class ERTParams {
 
     public Rate getDefaultRate() {
         return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, this.getCurrentExpirationTime());
+    }
+
+    public long getValidationDelayInMilliseconds() {
+        return this.validationDelayInMilliseconds;
     }
 
     public static long getCurrentExpirationTime() {

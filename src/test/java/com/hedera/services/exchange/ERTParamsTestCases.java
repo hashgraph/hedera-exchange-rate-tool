@@ -12,6 +12,7 @@ public class ERTParamsTestCases {
         assertEquals(25, ertParams.getBound());
         assertEquals("0.0.57", ertParams.getPayAccount());
         assertEquals("0.0.112", ertParams.getFileId());
+        assertEquals(15_000, ertParams.getValidationDelayInMilliseconds());
     }
 
     @Test
@@ -20,6 +21,7 @@ public class ERTParamsTestCases {
         assertEquals(25, ertParams.getBound());
         assertEquals("0.0.57", ertParams.getPayAccount());
         assertEquals(null, ertParams.getFileId());
+        assertEquals(15_000, ertParams.getValidationDelayInMilliseconds());
     }
 
 }

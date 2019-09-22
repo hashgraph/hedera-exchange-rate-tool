@@ -67,6 +67,7 @@ public class ExchangeRateTool {
         final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
                 params.getExchangeAPIList(),
                 params.getBound(),
+                params.getFloor(),
                 midnightRate,
                 currentRate,
                 frequencyInSeconds);
@@ -106,7 +107,7 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has status, account {}",
                 firstTry.getAccountId());
 
-        Thread.sleep(15_000);
+        Thread.sleep(params.getValidationDelayInMilliseconds());
 
         final long newBalance = client.getAccountBalance(operatorId);
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the file: {}", newBalance);
