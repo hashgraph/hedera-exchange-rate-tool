@@ -154,21 +154,23 @@ public class Rate {
      */
     public Rate clipRate(final Rate newRate, long bound, long floor) {
         final Rate oldRate = this;
-        BigInteger k100 = BigInteger.valueOf(100);
-        BigInteger b100 = BigInteger.valueOf(bound).add(k100);
-        BigInteger oC = BigInteger.valueOf(oldRate.centEquiv);
-        BigInteger oH = BigInteger.valueOf(oldRate.hbarEquiv);
-        BigInteger nH = BigInteger.valueOf(newRate.hbarEquiv);
-        long newCent = newRate.centEquiv;
-        long high = oC.multiply(nH).multiply(b100).divide(oH.multiply(k100)).longValue();
-        long low = nH.multiply(oC).multiply(k100).divide(oH.multiply(b100)).longValue();
+        final BigInteger k100 = BigInteger.valueOf(100);
+        final BigInteger b100 = BigInteger.valueOf(bound).add(k100);
+        final BigInteger oC = BigInteger.valueOf(oldRate.centEquiv);
+        final BigInteger oH = BigInteger.valueOf(oldRate.hbarEquiv);
+        final BigInteger nH = BigInteger.valueOf(newRate.hbarEquiv);
+        final BigInteger hardFloor = BigInteger.valueOf(floor).multiply(oH);
+        final long newCent = newRate.centEquiv;
+        final long high = oC.multiply(nH).multiply(b100).divide(oH.multiply(k100)).longValue();
+        final long boundedLow = nH.multiply(oC).multiply(k100).divide(oH.multiply(b100)).longValue();
+        final long low = Math.max(boundedLow, hardFloor.longValue());
 
         //if it's too high, then return the upper bound
         if (newCent > high) {
             return new Rate(newRate.hbarEquiv, high, newRate.expirationTime);
         }
         //if it's too low, then return the lower bound
-        else if (newCent < low && newCent > (floor * oldRate.hbarEquiv)  ) {
+        else if (newCent < low) {
             return new Rate(newRate.hbarEquiv, low, newRate.expirationTime);
         }
         else if( newCent <= (floor * oldRate.hbarEquiv)){
