@@ -7,6 +7,7 @@ import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
 import com.hedera.hashgraph.sdk.file.FileContentsQuery;
 import com.hedera.hashgraph.sdk.file.FileId;
 import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
+import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import com.hedera.hashgraph.sdk.proto.FileGetContentsResponse;
 import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Exchange;
@@ -19,7 +20,7 @@ public class ExchangeRateTool {
 
     private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates weren't updated successfully";
 
-    private static final int DEFAULT_RETRIES = 10;
+    private static final int DEFAULT_RETRIES = 3;
 
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
 
@@ -78,6 +79,7 @@ public class ExchangeRateTool {
         final FileUpdateTransaction fileUpdateTransaction = new FileUpdateTransaction(client)
                 .setFileId(fileId)
                 .setContents(exchangeRateAsBytes)
+                .setTransactionFee(10_000)
                 .addKey(privateOperatorKey.getPublicKey());
 
         final TransactionId firstTry = fileUpdateTransaction.execute();
@@ -104,6 +106,15 @@ public class ExchangeRateTool {
                 contentsRetrieved.length,
                 Arrays.hashCode(contentsRetrieved));
         if (!Arrays.equals(exchangeRateAsBytes, contentsRetrieved)) {
+            final ExchangeRateSet exchangeRateSetRetrieved = ExchangeRateSet.parseFrom(contentsRetrieved);
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Retrieved Current rate ({}, {}) with expiration {}",
+                    exchangeRateSetRetrieved.getCurrentRate().getHbarEquiv(),
+                    exchangeRateSetRetrieved.getCurrentRate().getCentEquiv(),
+                    exchangeRateSetRetrieved.getCurrentRate().getExpirationTime().getSeconds());
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Retrieved Next Rate ({}, {}) with expiration {}",
+                    exchangeRateSetRetrieved.getNextRate().getHbarEquiv(),
+                    exchangeRateSetRetrieved.getNextRate().getCentEquiv(),
+                    exchangeRateSetRetrieved.getNextRate().getExpirationTime().getSeconds());
             LOGGER.error(Exchange.EXCHANGE_FILTER, UPDATE_ERROR_MESSAGE);
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
