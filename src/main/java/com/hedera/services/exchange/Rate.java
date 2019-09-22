@@ -170,11 +170,8 @@ public class Rate {
             return new Rate(newRate.hbarEquiv, high, newRate.expirationTime);
         }
         //if it's too low, then return the lower bound
-        else if (newCent < low) {
+        if (newCent < low) {
             return new Rate(newRate.hbarEquiv, low, newRate.expirationTime);
-        }
-        else if( newCent <= (floor * oldRate.hbarEquiv)){
-            return new Rate(newRate.hbarEquiv, (floor * oldRate.hbarEquiv), newRate.expirationTime);
         }
         //if it's OK, then return the same object that was passed in
         return newRate;
