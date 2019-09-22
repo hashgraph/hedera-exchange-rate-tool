@@ -1,15 +1,15 @@
 package com.hedera.services.exchange;
 
 import com.hedera.hashgraph.sdk.Client;
-import com.hedera.hashgraph.sdk.TransactionId;
+import com.hedera.hashgraph.sdk.TransactionReceipt;
 import com.hedera.hashgraph.sdk.account.AccountId;
 import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
 import com.hedera.hashgraph.sdk.file.FileContentsQuery;
 import com.hedera.hashgraph.sdk.file.FileId;
 import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
-import com.hedera.hashgraph.sdk.proto.FileGetContentsResponse;
 import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Exchange;
+import com.hederahashgraph.api.proto.java.FileGetContentsResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,7 +19,7 @@ public class ExchangeRateTool {
 
     private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates weren't updated successfully";
 
-    private static final int DEFAULT_RETRIES = 10;
+    private static final int DEFAULT_RETRIES = 4;
 
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
 
@@ -81,14 +81,14 @@ public class ExchangeRateTool {
                 .setContents(exchangeRateAsBytes)
                 .addKey(privateOperatorKey.getPublicKey());
 
-        final TransactionId firstTry = fileUpdateTransaction.execute();
+        final TransactionReceipt firstTry = fileUpdateTransaction.executeForReceipt();
 
         LOGGER.info("Exchange rate file hash {} bytes and hash code {}",
                 exchangeRateAsBytes.length,
                 Arrays.hashCode(exchangeRateAsBytes));
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has valid start {}, account {}",
-                firstTry.getValidStart(),
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has status {}, account {}",
+                firstTry.getStatus(),
                 firstTry.getAccountId());
 
         Thread.sleep(params.getValidationDelayInMilliseconds());
