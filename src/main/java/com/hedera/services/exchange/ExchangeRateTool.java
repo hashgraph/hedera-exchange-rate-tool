@@ -3,7 +3,6 @@ package com.hedera.services.exchange;
 import com.hedera.hashgraph.sdk.Client;
 import com.hedera.hashgraph.sdk.TransactionId;
 import com.hedera.hashgraph.sdk.TransactionReceipt;
-import com.hedera.hashgraph.sdk.TransactionRecord;
 import com.hedera.hashgraph.sdk.account.AccountId;
 import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
 import com.hedera.hashgraph.sdk.file.FileContentsQuery;
@@ -11,17 +10,16 @@ import com.hedera.hashgraph.sdk.file.FileId;
 import com.hedera.hashgraph.sdk.file.FileInfo;
 import com.hedera.hashgraph.sdk.file.FileInfoQuery;
 import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
-import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
-import com.hedera.hashgraph.sdk.proto.FileGetContentsResponse;
-import com.hedera.hashgraph.sdk.proto.TimestampSeconds;
 import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Exchange;
+import com.hederahashgraph.api.proto.java.ExchangeRateSet;
+import com.hederahashgraph.api.proto.java.FileGetContentsResponse;
+import com.hederahashgraph.api.proto.java.TimestampSeconds;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
 
 public class ExchangeRateTool {
@@ -84,14 +82,17 @@ public class ExchangeRateTool {
                 .setOperator(operatorId, privateOperatorKey);
 
         final long currentBalance = client.getAccountBalance(operatorId);
+        final FileInfo fileInfo = new FileInfoQuery(client).setFileId(fileId).execute();
+
+
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before updating the file: {}", currentBalance);
         final Duration duration = Duration.ofSeconds(220);
         final Instant expirationTime = Instant.ofEpochSecond(exchangeRate.getNextExpirationTimeInSeconds());
         final FileUpdateTransaction fileUpdateTransaction = new FileUpdateTransaction(client)
                 .setFileId(fileId)
-                .setTransactionValidDuration(duration)
+                // .setTransactionValidDuration(duration)
                 //.setExpirationTime(Instant.ofEpochSecond(exchangeRate.getNextExpirationTimeInSeconds()))
-                .setTransactionFee(1)
+                .setTransactionFee(500_000_000)
                 .setContents(exchangeRateAsBytes)
                 .addKey(privateOperatorKey.getPublicKey());
 
@@ -103,16 +104,16 @@ public class ExchangeRateTool {
                 Arrays.hashCode(exchangeRateAsBytes));
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has status, account {}",
-                firstTry.getStatus(),
                 firstTry.getAccountId());
 
+        Thread.sleep(15_000);
 
         final long newBalance = client.getAccountBalance(operatorId);
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the file: {}", newBalance);
 
         final FileGetContentsResponse contentsResponse = new FileContentsQuery(client).setFileId(fileId).execute();
-        final FileInfo fileInfo = new FileInfoQuery(client).setFileId(fileId).execute();
-        final Instant expirationTimeRetrieved = fileInfo.getExpirationTime();
+        final FileInfo fileInfoAfter = new FileInfoQuery(client).setFileId(fileId).execute();
+        final Instant expirationTimeRetrieved = fileInfoAfter.getExpirationTime();
         LOGGER.info(Exchange.EXCHANGE_FILTER,"Expiration time retrieved: {}", expirationTimeRetrieved);
 
         final long costPerCheck = contentsResponse.getHeader().getCost();
@@ -124,8 +125,8 @@ public class ExchangeRateTool {
                 Arrays.hashCode(contentsRetrieved));
 
         final ExchangeRateSet exchangeRateSet = ExchangeRateSet.parseFrom(contentsRetrieved);
-        final com.hedera.hashgraph.sdk.proto.ExchangeRate currentRateInNet = exchangeRateSet.getCurrentRate();
-        final com.hedera.hashgraph.sdk.proto.ExchangeRate nextRateInNet = exchangeRateSet.getNextRate();
+        final com.hederahashgraph.api.proto.java.ExchangeRate currentRateInNet = exchangeRateSet.getCurrentRate();
+        final com.hederahashgraph.api.proto.java.ExchangeRate nextRateInNet = exchangeRateSet.getNextRate();
 
         final TimestampSeconds timestampSeconds = nextRateInNet.getExpirationTime();
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Next expiration time in seconds: {}", timestampSeconds.getSeconds());
