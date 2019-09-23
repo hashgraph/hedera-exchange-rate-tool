@@ -188,7 +188,7 @@ public class ERTprocTestCases {
         final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
         when(liquidConnection.getInputStream()).thenReturn(liquidJson);
 
-        final String okCoinResult = "{\"asset_id_base\": \"HBAR\",\"asset_id_quote\": \"USD\",\"rate\": 0.093}";
+        final String okCoinResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.093}";
         final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
         final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
         when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);
@@ -235,7 +235,7 @@ public class ERTprocTestCases {
         final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
         when(liquidConnection.getInputStream()).thenReturn(liquidJson);
 
-        final String okCoinResult = "{\"asset_id_base\": \"HBAR\",\"asset_id_quote\": \"USD\",\"rate\": 0.053}";
+        final String okCoinResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.053}";
         final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
         final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
         when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);

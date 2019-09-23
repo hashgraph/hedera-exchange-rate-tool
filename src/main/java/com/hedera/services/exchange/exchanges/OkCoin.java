@@ -6,13 +6,13 @@ public final class OkCoin extends AbstractExchange {
 
     public static final String APIKEY = "A1E5E418-E7CA-4A6A-B2CC-01D6BF3772B9";
 
-    @JsonProperty(value="asset_id_base", access = JsonProperty.Access.WRITE_ONLY)
-    private String base;
+    @JsonProperty(value="product_id", access = JsonProperty.Access.WRITE_ONLY)
+    private String product_id;
 
-    @JsonProperty(value="asset_id_quote", access = JsonProperty.Access.WRITE_ONLY)
-    private String quote;
+    @JsonProperty(value="instrument_id", access = JsonProperty.Access.WRITE_ONLY)
+    private String instrument_id;
 
-    @JsonProperty(value="rate", access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(value="last", access = JsonProperty.Access.WRITE_ONLY)
     private double rate;
 
     @Override
@@ -20,12 +20,12 @@ public final class OkCoin extends AbstractExchange {
         return rate;
     }
 
-    public String getBase() {
-        return base;
+    public String getProduct_id() {
+        return product_id;
     }
 
-    public String getQuote() {
-        return quote;
+    public String getInstrument_id() {
+        return instrument_id;
     }
 
     public static OkCoin load(final String endpoint) {
