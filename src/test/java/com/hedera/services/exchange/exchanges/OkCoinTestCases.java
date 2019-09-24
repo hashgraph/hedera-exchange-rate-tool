@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 public class OkCoinTestCases {
     @Test
     public void retrieveOkCoinDataTest() throws IOException {
-        final String result = "{\"asset_id_base\":\"HBAR\", \"asset_id_quote\":\"USD\", \"rate\": 0.008754}";
+        final String result = "{\"product_id\":\"HBAR-USD\", \"instrument_id\":\"HBAR-USD\", \"last\": 0.008754}";
         final InputStream json = new ByteArrayInputStream(result.getBytes());
         final HttpURLConnection connection = mock(HttpURLConnection.class);
         when(connection.getInputStream()).thenReturn(json);
@@ -31,13 +31,13 @@ public class OkCoinTestCases {
 
         final OkCoin okcoin = OkCoin.load("https://rest.coinapi.io/v1/exchangerate/HBAR/USD");
         assertEquals(0.008754, okcoin.getHBarValue());
-        assertEquals("USD", okcoin.getQuote());
-        assertEquals("HBAR", okcoin.getBase());
+        assertEquals("HBAR-USD", okcoin.getInstrumentid());
+        assertEquals("HBAR-USD", okcoin.getProductid());
     }
 
     @Test
     public void fetchOkCoinWithNullResultTest() throws IOException {
-        final String result = "{\"asset_id_base\":null, \"asset_id_quote\":\"USD\", \"rate\": null}";
+        final String result = "{\"product_id\":null, \"instrument_id\":\"HBAR-USD\", \"last\": null}";
         final InputStream json = new ByteArrayInputStream(result.getBytes());
         final HttpURLConnection connection = mock(HttpURLConnection.class);
         when(connection.getInputStream()).thenReturn(json);
@@ -49,8 +49,8 @@ public class OkCoinTestCases {
         };
 
         final OkCoin okcoin = OkCoin.load("https://rest.coinapi.io/v1/exchangerate/HBAR/USD");
-        assertEquals("USD", okcoin.getQuote());
+        assertEquals("HBAR-USD", okcoin.getInstrumentid());
         assertEquals(0.0, okcoin.getHBarValue());
-        assertNull(okcoin.getBase());
+        assertNull(okcoin.getProductid());
     }
 }

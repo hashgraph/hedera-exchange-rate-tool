@@ -11,7 +11,7 @@ public class RateTestCases {
 		final long expiration = System.currentTimeMillis() / 1_000 + 3600;
 		final Rate rate = new Rate(1, 10, expiration);
 		final Rate newRate = new Rate(1, 11, expiration);
-		final Rate clippedRate = rate.clipRate(newRate, 25,4);
+		final Rate clippedRate = rate.clipRate(newRate, 25);
 		assertEquals(11, clippedRate.getCentEquiv());
 	}
 
@@ -20,7 +20,7 @@ public class RateTestCases {
 		final long expiration = System.currentTimeMillis() / 1_000 + 3600;
 		final Rate rate = new Rate(1, 10, expiration);
 		final Rate newRate = new Rate(1, 20, expiration);
-		final Rate clippedRate = rate.clipRate(newRate, 25,4);
+		final Rate clippedRate = rate.clipRate(newRate, 25);
 		assertEquals(12, clippedRate.getCentEquiv());
 	}
 
@@ -29,7 +29,7 @@ public class RateTestCases {
 		final long expiration = System.currentTimeMillis() / 1_000 + 3600;
 		final Rate rate = new Rate(1, 10, expiration);
 		final Rate newRate = new Rate(1, 2, expiration);
-		final Rate clippedRate = rate.clipRate(newRate, 25,4);
+		final Rate clippedRate = rate.clipRate(newRate, 25);
 		assertEquals(8, clippedRate.getCentEquiv());
 	}
 
@@ -38,8 +38,8 @@ public class RateTestCases {
 		final long expiration = System.currentTimeMillis() / 1_000 + 3600;
 		final Rate rate = new Rate(1, 5, expiration);
 		final Rate newRate = new Rate(1, 1, expiration);
-		final Rate clippedRate = rate.clipRate(newRate, 50,4);
-		assertEquals(4, clippedRate.getCentEquiv());
+		final Rate clippedRate = rate.clipRate(newRate, 50);
+		assertEquals(3, clippedRate.getCentEquiv());
 	}
 
 	@Test
@@ -47,7 +47,7 @@ public class RateTestCases {
 		final long expiration = System.currentTimeMillis() / 1_000 + 3600;
 		final Rate rate = new Rate(1, 5, expiration);
 		final Rate newRate = new Rate(1, 1, expiration);
-		final Rate clippedRate = rate.clipRate(newRate, 50,1);
+		final Rate clippedRate = rate.clipRate(newRate, 50);
 		assertEquals(3, clippedRate.getCentEquiv());
 	}
 }

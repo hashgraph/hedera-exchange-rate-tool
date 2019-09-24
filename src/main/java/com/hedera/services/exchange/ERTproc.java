@@ -5,6 +5,7 @@ import com.hedera.services.exchange.exchanges.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -83,14 +84,19 @@ public class ERTproc {
                     (int) (medianExRate * 100 * this.hbarEquiv),
                     nextExpirationTimeInSeconds);
 
-            if(midnightExchangeRate != null && !midnightExchangeRate.isSmallChange(bound, nextRate)) {
+            if(midnightExchangeRate != null && !midnightExchangeRate.isSmallChange(this.bound, nextRate)) {
                 LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the median with {}",
                         midnightExchangeRate.toJson());
-                    nextRate = midnightExchangeRate.clipRate(nextRate, this.bound, floor);
+                    nextRate = midnightExchangeRate.clipRate(nextRate, this.bound);
             } else {
-                LOGGER.debug(Exchange.EXCHANGE_FILTER, "No midnight value found. " +
+                LOGGER.debug(Exchange.EXCHANGE_FILTER, "No midnight value found, or the median is not far off " +
                         "Skipping validation of the calculated median");
             }
+
+            LOGGER.debug(Exchange.EXCHANGE_FILTER, "checking floor");
+            long newCentEquiv = Math.max(nextRate.getCentEquiv(), floor * nextRate.getHBarEquiv());
+            nextRate = new Rate(nextRate.getHBarEquiv(), newCentEquiv,
+                    nextExpirationTimeInSeconds);
 
             return new ExchangeRate(currentExchangeRate, nextRate);
         } catch (final Exception ex) {

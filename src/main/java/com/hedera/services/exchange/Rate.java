@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.math.BigInteger;
 
+import static com.hedera.services.exchange.exchanges.Exchange.EXCHANGE_FILTER;
 import static com.hedera.services.exchange.exchanges.Exchange.OBJECT_MAPPER;
 
 public class Rate {
@@ -152,25 +154,27 @@ public class Rate {
      * 		the max allowed percentage increase in the rate
      * @return if the new rate is legal, return newRate, otherwise instantiate and return a barely legal rate.
      */
-    public Rate clipRate(final Rate newRate, long bound, long floor) {
+    public Rate clipRate(final Rate newRate, long bound) {
         final Rate oldRate = this;
         final BigInteger k100 = BigInteger.valueOf(100);
         final BigInteger b100 = BigInteger.valueOf(bound).add(k100);
         final BigInteger oC = BigInteger.valueOf(oldRate.centEquiv);
         final BigInteger oH = BigInteger.valueOf(oldRate.hbarEquiv);
         final BigInteger nH = BigInteger.valueOf(newRate.hbarEquiv);
-        final BigInteger hardFloor = BigInteger.valueOf(floor).multiply(oH);
         final long newCent = newRate.centEquiv;
         final long high = oC.multiply(nH).multiply(b100).divide(oH.multiply(k100)).longValue();
-        final long boundedLow = nH.multiply(oC).multiply(k100).divide(oH.multiply(b100)).longValue();
-        final long low = Math.max(boundedLow, hardFloor.longValue());
+        final long low = nH.multiply(oC).multiply(k100).divide(oH.multiply(b100)).longValue();
 
         //if it's too high, then return the upper bound
         if (newCent > high) {
+            LOGGER.debug(Exchange.EXCHANGE_FILTER, "New rate set is HbarEquiv: {}, CentEquiv: {}",
+                    newRate.hbarEquiv, high);
             return new Rate(newRate.hbarEquiv, high, newRate.expirationTime);
         }
         //if it's too low, then return the lower bound
         if (newCent < low) {
+            LOGGER.debug(Exchange.EXCHANGE_FILTER, "New rate set is HbarEquiv: {}, CentEquiv: {}",
+                    newRate.hbarEquiv, low);
             return new Rate(newRate.hbarEquiv, low, newRate.expirationTime);
         }
         //if it's OK, then return the same object that was passed in

@@ -6,7 +6,7 @@
   "defaultCentEquiv" : 252000000,
   "defaultHbarEquiv": 30000,
   "frequencyInSeconds" : 3600,
-  "floorCentsPerHbar": 6,
+  "floorCentsPerHbar": 4,
   "maxTransactionFee": 10000000,
   "exchangeRateAllowedPercentage": "25",
   "Nodes": {
