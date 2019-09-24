@@ -71,6 +71,8 @@ public class ERTproc {
 
             final Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : {}", medianExRate);
+            LOGGER.debug(Exchange.EXCHANGE_FILTER, "Exchanges worked : {}", this.getExchangeJson());
+
             if (medianExRate == null){
                 LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed. Using current rate as next rate: {}",
                         this.currentExchangeRate.toJson());
