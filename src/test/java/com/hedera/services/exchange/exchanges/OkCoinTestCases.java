@@ -31,8 +31,8 @@ public class OkCoinTestCases {
 
         final OkCoin okcoin = OkCoin.load("https://rest.coinapi.io/v1/exchangerate/HBAR/USD");
         assertEquals(0.008754, okcoin.getHBarValue());
-        assertEquals("HBAR-USD", okcoin.getInstrument_id());
-        assertEquals("HBAR-USD", okcoin.getProduct_id());
+        assertEquals("HBAR-USD", okcoin.getInstrumentid());
+        assertEquals("HBAR-USD", okcoin.getProductid());
     }
 
     @Test
@@ -49,8 +49,8 @@ public class OkCoinTestCases {
         };
 
         final OkCoin okcoin = OkCoin.load("https://rest.coinapi.io/v1/exchangerate/HBAR/USD");
-        assertEquals("HBAR-USD", okcoin.getInstrument_id());
+        assertEquals("HBAR-USD", okcoin.getInstrumentid());
         assertEquals(0.0, okcoin.getHBarValue());
-        assertNull(okcoin.getProduct_id());
+        assertNull(okcoin.getProductid());
     }
 }
