@@ -71,6 +71,8 @@ public class ERTproc {
 
             final Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : {}", medianExRate);
+            LOGGER.debug(Exchange.EXCHANGE_FILTER, "Exchanges worked : {}", this.getExchangeJson());
+
             if (medianExRate == null){
                 LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed. Using current rate as next rate: {}",
                         this.currentExchangeRate.toJson());
@@ -95,8 +97,12 @@ public class ERTproc {
 
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "checking floor");
             long newCentEquiv = Math.max(nextRate.getCentEquiv(), floor * nextRate.getHBarEquiv());
-            nextRate = new Rate(nextRate.getHBarEquiv(), newCentEquiv,
-                    nextExpirationTimeInSeconds);
+            if(newCentEquiv != nextRate.getCentEquiv()){
+                LOGGER.warn(Exchange.EXCHANGE_FILTER, "Flooring the rate. calculated : {}, floored to : {}",
+                        nextRate.getCentEquiv(), newCentEquiv);
+                nextRate = new Rate(nextRate.getHBarEquiv(), newCentEquiv,
+                        nextExpirationTimeInSeconds);
+            }
 
             return new ExchangeRate(currentExchangeRate, nextRate);
         } catch (final Exception ex) {
