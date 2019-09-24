@@ -21,9 +21,6 @@ public abstract class AbstractExchange implements Exchange {
 			final URL url = new URL(endpoint);
 			final HttpURLConnection con = getConnection(url);
 			con.addRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36");
-			if(type.getName().equals("com.hedera.services.exchange.exchanges.OkCoin")) {
-				con.setRequestProperty("X-CoinAPI-Key", OkCoin.APIKEY);
-			}
 			final T exchange =  OBJECT_MAPPER.readValue(con.getInputStream(), type);
 			exchange.setEndPoint(endpoint);
 			con.disconnect();

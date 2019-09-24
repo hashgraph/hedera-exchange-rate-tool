@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class OkCoin extends AbstractExchange {
 
-    public static final String APIKEY = "A1E5E418-E7CA-4A6A-B2CC-01D6BF3772B9";
-
     @JsonProperty(value="product_id", access = JsonProperty.Access.WRITE_ONLY)
     private String productid;
 
@@ -16,6 +14,7 @@ public final class OkCoin extends AbstractExchange {
     private double rate;
 
     @Override
+    @JsonProperty("HBAR")
     public Double getHBarValue() {
         return rate;
     }
