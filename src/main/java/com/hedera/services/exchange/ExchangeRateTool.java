@@ -73,6 +73,7 @@ public class ExchangeRateTool {
         final Ed25519PrivateKey privateOperatorKey =  Ed25519PrivateKey.fromString(params.getOperatorKey());
         final Client client = new Client(params.getNodes())
                 .setMaxTransactionFee(params.getMaxTransactionFee())
+                .setMaxQueryPayment(50)
                 .setOperator(operatorId, privateOperatorKey);
 
         final long currentBalance = client.getAccountBalance(operatorId);
