@@ -96,6 +96,10 @@ public class ExchangeRateTool {
         final long newBalance = client.getAccountBalance(operatorId);
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the file: {}", newBalance);
 
+        final long getContentsQueryFee =  new FileContentsQuery(client).setFileId(fileId).requestCost();
+        LOGGER.debug(Exchange.EXCHANGE_FILTER, "Cost to get file contents is : {}", getContentsQueryFee);
+        client.setMaxQueryPayment(getContentsQueryFee);
+        
         final FileGetContentsResponse contentsResponse = new FileContentsQuery(client).setFileId(fileId).execute();
         final long costPerCheck = contentsResponse.getHeader().getCost();
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Cost to validate file contents is {}", costPerCheck);
