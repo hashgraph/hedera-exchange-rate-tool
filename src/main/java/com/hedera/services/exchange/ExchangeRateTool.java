@@ -117,6 +117,21 @@ public class ExchangeRateTool {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
             exchangeDb.pushMidnightRate(exchangeRate);
         }
+        else if( params.getOperatorId() == "0.0.50" ){
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Updating midnight value since account used is : {}",
+                    params.getPayAccount());
+            Rate tempRate;
+            if( exchangeRate.getCurrentExpiriationsTimeInSeconds() < System.currentTimeMillis() / 1000 ){
+                tempRate = new Rate(exchangeRate.getCurrentRate().getHBarEquiv(), exchangeRate.getCurrentRate().getCentEquiv(),
+                        midnightRate.getExpirationTimeInSeconds());
+            }
+            else{
+                tempRate = new Rate(exchangeRate.getNextRate().getHBarEquiv(), exchangeRate.getNextRate().getCentEquiv(),
+                        midnightRate.getExpirationTimeInSeconds());
+            }
+            ExchangeRate tempExchangeRate = new ExchangeRate(midnightExchangeRate.getCurrentRate(), tempRate);
+            exchangeDb.pushMidnightRate(tempExchangeRate);
+        }
 
         exchangeDb.pushExchangeRate(exchangeRate);
         exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
