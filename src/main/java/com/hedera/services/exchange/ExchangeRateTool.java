@@ -113,11 +113,12 @@ public class ExchangeRateTool {
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
 
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Account used is : {}", params.getPayAccount());
         if(exchangeRate.isMidnightTime()){
             LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
             exchangeDb.pushMidnightRate(exchangeRate);
         }
-        else if( params.getOperatorId() == "0.0.50" ){
+        else if( params.getOperatorId().matches("0.0.50") ){
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Updating midnight value since account used is : {}",
                     params.getPayAccount());
             Rate tempRate;
@@ -130,6 +131,7 @@ public class ExchangeRateTool {
                         midnightRate.getExpirationTimeInSeconds());
             }
             ExchangeRate tempExchangeRate = new ExchangeRate(midnightExchangeRate.getCurrentRate(), tempRate);
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "new midnight rate : {}", tempExchangeRate.toJson());
             exchangeDb.pushMidnightRate(tempExchangeRate);
         }
 
