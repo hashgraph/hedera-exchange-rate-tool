@@ -17,7 +17,7 @@ import java.util.Arrays;
 
 public class ExchangeRateTool {
 
-    private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates weren't updated successfully";
+    private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates were not updated successfully";
 
     private static final int DEFAULT_RETRIES = 4;
 
