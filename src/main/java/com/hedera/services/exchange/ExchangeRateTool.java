@@ -17,7 +17,7 @@ import java.util.Arrays;
 
 public class ExchangeRateTool {
 
-    private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates weren't updated successfully";
+    private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates were not updated successfully";
 
     private static final int DEFAULT_RETRIES = 4;
 
@@ -48,6 +48,7 @@ public class ExchangeRateTool {
     }
 
     private static void execute(final String ... args) throws Exception {
+        logStatements();
         final ERTParams params = ERTParams.readConfig(args);
 
         final ExchangeDB exchangeDb = params.getExchangeDB();
@@ -121,6 +122,20 @@ public class ExchangeRateTool {
         exchangeDb.pushExchangeRate(exchangeRate);
         exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
+    }
+
+    private static void logStatements() {
+        LOGGER.info("failed to get latest exchange rate from exchange rate table");
+        LOGGER.info("failed to get latest exchange rate from midnight rate table");
+        LOGGER.info("No median computed");
+        LOGGER.info("Flooring the rate. calculated 0, floored to 12");
+        LOGGER.info("Reading config from s3 failed. File is not found.");
+        LOGGER.info("Failed to load configuration froms3");
+        LOGGER.info("No valid exchange rates retrieved.");
+        LOGGER.info("API abcd.com not found");
+        LOGGER.info("API abcd.com not loaded");
+        LOGGER.info("Median is Invalid. Out of accepted Delta range. Accepted Delta 5 , calculated delta : 10");
+        LOGGER.info("The Exchange Rates were not updated successfully");
     }
 
     private static Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
