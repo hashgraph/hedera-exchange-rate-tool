@@ -20,8 +20,8 @@ import static org.mockito.Mockito.when;
 public class ERTprocTestCases {
 
     @ParameterizedTest
-    @CsvSource({"src/test/resources/configs/config.json,360000,288000",
-                "src/test/resources/configs/config1.json,252000000,201600000",
+    @CsvSource({"src/test/resources/configs/config.json,360000,300000",
+                "src/test/resources/configs/config1.json,252000000,210000000",
                 "src/test/resources/configs/config2.json,25920000,20736000"})
     public void testMedianWithDefaultAsMidnight(final String configPath, final int currentCentEquiv, final int expectedCentEquiv) throws Exception {
         this.setExchanges();
@@ -78,10 +78,10 @@ public class ERTprocTestCases {
     }
 
     @ParameterizedTest
-    @CsvSource({"src/test/resources/configs/configSimple.json,1,1000,1,1250,15.00",
-                "src/test/resources/configs/configSimple.json,1,1000,1,800,6.00",
+    @CsvSource({"src/test/resources/configs/configSimple.json,1,1000,1,1200,15.00",
+                "src/test/resources/configs/configSimple.json,1,1000,1,833,6.00",
                 "src/test/resources/configs/configSimple.json,1,1000,1,950,9.50",
-                "src/test/resources/configs/configSimple.json,1,1000,1,1220,12.20",
+                "src/test/resources/configs/configSimple.json,1,1000,1,1200,12.20",
                 "src/test/resources/configs/configSimple.json,1,1000,1,1000,0.0"})
     public void testMedianWithCurrentRateSameAsRate(final String configPath,
             final long currentHBarEquiv,

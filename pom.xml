@@ -150,9 +150,7 @@
                 <configuration>
                     <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
                     <failIfNoTests>false</failIfNoTests>
-                    <forkCount>0</forkCount>
-                    <reuseForks>true</reuseForks>
-                    <useSystemClassLoader>false</useSystemClassLoader>
+                    <includes>*TestCases.java</includes>
                 </configuration>
             </plugin>
 
