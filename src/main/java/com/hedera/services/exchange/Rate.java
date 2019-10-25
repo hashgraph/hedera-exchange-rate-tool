@@ -17,9 +17,6 @@ public class Rate {
 
     private static final Logger LOGGER = LogManager.getLogger(Rate.class);
 
-    private static long TINY_BARS_IN_HBAR = 1_000_000_000;
-    private static long TINY_CENTS_IN_USD = 100_000_000;
-
     @JsonProperty("hbarEquiv")
     private final long hbarEquiv;
 
@@ -59,13 +56,7 @@ public class Rate {
 
     public boolean isSmallChange(final long bound, final Rate nextRate){
 
-        final long oldExchangeRateInCents = toTinyCents(this.getCentEquiv());
-        final long oldExchangeRateInHBars = toTinyBars(this.getHBarEquiv());
-
-        final long newExchangeRateInCents = toTinyCents(nextRate.getCentEquiv());
-        final long newExchangeRateInHbars = toTinyBars(nextRate.getHBarEquiv());
-
-        if (this.isSmallChange(bound, oldExchangeRateInCents, oldExchangeRateInHBars, newExchangeRateInCents, newExchangeRateInHbars)){
+        if (this.isSmallChange(bound, this.getCentEquiv(), this.getHBarEquiv(), nextRate.getCentEquiv(), nextRate.getHBarEquiv())){
             LOGGER.debug("Median ({}, {}) is Valid", nextRate.getHBarEquiv(), nextRate.getCentEquiv());
             return true;
         } else {
@@ -183,13 +174,5 @@ public class Rate {
 
     public String toJson() throws JsonProcessingException {
         return OBJECT_MAPPER.writeValueAsString(this);
-    }
-
-    private long toTinyCents(final long rate){
-        return rate * 100 * TINY_CENTS_IN_USD;
-    }
-
-    private long toTinyBars(final long rate) {
-        return rate * TINY_BARS_IN_HBAR;
     }
 }

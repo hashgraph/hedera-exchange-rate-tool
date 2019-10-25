@@ -50,4 +50,15 @@ public class RateTestCases {
 		final Rate clippedRate = rate.clipRate(newRate, 50);
 		assertEquals(3, clippedRate.getCentEquiv());
 	}
+
+	@Test
+	public void issmallChangeCheck(){
+		Rate midnightRate = new Rate(30000, 120000, 1568592000);
+
+		Rate nextRate = new Rate(30000, 96000, 1568592000);
+		assertEquals(true, midnightRate.isSmallChange(25, nextRate));
+
+		nextRate = new Rate(30000, 95999, 1568592000);
+		assertEquals(false, midnightRate.isSmallChange(25, nextRate));
+	}
 }
