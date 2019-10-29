@@ -1,5 +1,6 @@
 package com.hedera.services.exchange;
 
+import com.google.gson.internal.$Gson$Preconditions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -60,5 +61,8 @@ public class RateTestCases {
 
 		nextRate = new Rate(30000, 95999, 1568592000);
 		assertEquals(false, midnightRate.isSmallChange(25, nextRate));
+
+		Rate clippedRate = midnightRate.clipRate(nextRate, 1);
+		System.out.println(clippedRate);
 	}
 }
