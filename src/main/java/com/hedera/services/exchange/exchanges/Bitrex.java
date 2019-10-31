@@ -2,6 +2,11 @@ package com.hedera.services.exchange.exchanges;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * represents a Bitrex Exchange response.
+ *
+ * @author Anirudh, Cesar
+ */
 public final class Bitrex extends AbstractExchange {
 
 	@JsonProperty(value="success", access = JsonProperty.Access.WRITE_ONLY)

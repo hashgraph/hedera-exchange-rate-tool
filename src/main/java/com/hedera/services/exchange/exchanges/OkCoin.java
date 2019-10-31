@@ -2,6 +2,11 @@ package com.hedera.services.exchange.exchanges;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * represents a OkCoin Exchange response.
+ *
+ * @author Anirudh, Cesar
+ */
 public final class OkCoin extends AbstractExchange {
 
     @JsonProperty(value="product_id", access = JsonProperty.Access.WRITE_ONLY)

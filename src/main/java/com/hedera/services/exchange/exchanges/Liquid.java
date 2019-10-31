@@ -2,6 +2,11 @@ package com.hedera.services.exchange.exchanges;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * represents a Liquid Exchange response.
+ *
+ * @author Anirudh, Cesar
+ */
 public class Liquid extends AbstractExchange {
 
 	@JsonProperty(value="last_traded_price",access = JsonProperty.Access.WRITE_ONLY)
