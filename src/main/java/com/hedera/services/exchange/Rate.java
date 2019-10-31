@@ -10,9 +10,17 @@ import org.apache.logging.log4j.Logger;
 
 import java.math.BigInteger;
 
-import static com.hedera.services.exchange.exchanges.Exchange.EXCHANGE_FILTER;
 import static com.hedera.services.exchange.exchanges.Exchange.OBJECT_MAPPER;
 
+/**
+ * Rate class represents a basic structure of Hedera token price.
+ * We represent the rate as
+ * - HabrEquiv : A large enough number to represent CentEquiv as a natural number.
+ * - CentEquiv : A number when divided by HbarEquiv will give us HBAR-USD exchange rate.
+ * - ExpirationTime : top of the hour when this rate expires.
+ *
+ * @author Anirudh, Cesar
+ */
 public class Rate {
 
     private static final Logger LOGGER = LogManager.getLogger(Rate.class);
@@ -54,6 +62,13 @@ public class Rate {
         return this.hbarEquiv;
     }
 
+    /**
+     * Check if the next rate calculated is within the bound.
+     *
+     * @param bound : bound specified int he config file
+     * @param nextRate :calculated from the median of exchange rates
+     * @return true or false weather the next rate is with in the bound.
+     */
     public boolean isSmallChange(final long bound, final Rate nextRate){
 
         if (this.isSmallChange(bound, this.getCentEquiv(), this.getHBarEquiv(), nextRate.getCentEquiv(), nextRate.getHBarEquiv())){
@@ -172,6 +187,11 @@ public class Rate {
         return newRate;
     }
 
+    /**
+     * Get the Rate as a Json String using OBJECT_MAPPER
+     * @return json String
+     * @throws JsonProcessingException
+     */
     public String toJson() throws JsonProcessingException {
         return OBJECT_MAPPER.writeValueAsString(this);
     }
