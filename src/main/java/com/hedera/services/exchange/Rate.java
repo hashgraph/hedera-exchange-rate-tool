@@ -163,13 +163,15 @@ public class Rate {
     public Rate clipRate(final Rate newRate, long bound) {
         final Rate oldRate = this;
         final BigInteger k100 = BigInteger.valueOf(100);
+        final BigInteger k1 = BigInteger.valueOf(1);
         final BigInteger b100 = BigInteger.valueOf(bound).add(k100);
         final BigInteger oC = BigInteger.valueOf(oldRate.centEquiv);
         final BigInteger oH = BigInteger.valueOf(oldRate.hbarEquiv);
         final BigInteger nH = BigInteger.valueOf(newRate.hbarEquiv);
+        final BigInteger d = oH.multiply(b100);
         final long newCent = newRate.centEquiv;
         final long high = oC.multiply(nH).multiply(b100).divide(oH.multiply(k100)).longValue();
-        final long low = nH.multiply(oC).multiply(k100).divide(oH.multiply(b100)).longValue();
+        final long low = (nH.multiply(oC).multiply(k100).add(d).subtract(k1)).divide(d).longValue();
 
         //if it's too high, then return the upper bound
         if (newCent > high) {
