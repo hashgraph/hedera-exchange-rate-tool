@@ -40,7 +40,7 @@ public class RateTestCases {
 		final Rate rate = new Rate(1, 5, expiration);
 		final Rate newRate = new Rate(1, 1, expiration);
 		final Rate clippedRate = rate.clipRate(newRate, 50);
-		assertEquals(3, clippedRate.getCentEquiv());
+		assertEquals(4, clippedRate.getCentEquiv());
 	}
 
 	@Test
@@ -49,7 +49,7 @@ public class RateTestCases {
 		final Rate rate = new Rate(1, 5, expiration);
 		final Rate newRate = new Rate(1, 1, expiration);
 		final Rate clippedRate = rate.clipRate(newRate, 50);
-		assertEquals(3, clippedRate.getCentEquiv());
+		assertEquals(4, clippedRate.getCentEquiv());
 	}
 
 	@Test
