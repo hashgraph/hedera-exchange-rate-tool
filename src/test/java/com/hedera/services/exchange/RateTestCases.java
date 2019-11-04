@@ -54,7 +54,7 @@ public class RateTestCases {
 
 	@Test
 	public void isSmallChangeCheck(){
-		int bound = 1;
+		int bound = 14;
 		Rate midnightRate = new Rate(30000, 120000, 1568592000);
 
 		Rate nextRate = new Rate(30000, 96000, 1568592000);
@@ -63,6 +63,7 @@ public class RateTestCases {
 		nextRate = new Rate(30000, 95999, 1568592000);
 		assertEquals(false, midnightRate.isSmallChange(25, nextRate));
 
+		nextRate = new Rate(30000, 9999, 1568592000);
 		Rate clippedRate = midnightRate.clipRate(nextRate, bound);
 
 		assertEquals(true, midnightRate.isSmallChange(bound, clippedRate));
