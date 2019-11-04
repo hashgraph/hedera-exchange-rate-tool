@@ -53,7 +53,8 @@ public class RateTestCases {
 	}
 
 	@Test
-	public void issmallChangeCheck(){
+	public void isSmallChangeCheck(){
+		int bound = 1;
 		Rate midnightRate = new Rate(30000, 120000, 1568592000);
 
 		Rate nextRate = new Rate(30000, 96000, 1568592000);
@@ -62,7 +63,8 @@ public class RateTestCases {
 		nextRate = new Rate(30000, 95999, 1568592000);
 		assertEquals(false, midnightRate.isSmallChange(25, nextRate));
 
-		Rate clippedRate = midnightRate.clipRate(nextRate, 1);
-		System.out.println(clippedRate);
+		Rate clippedRate = midnightRate.clipRate(nextRate, bound);
+
+		assertEquals(true, midnightRate.isSmallChange(bound, clippedRate));
 	}
 }

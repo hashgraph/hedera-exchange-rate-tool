@@ -147,8 +147,8 @@ public class ExchangeRateTool {
      * Get the current Exchange Rate from the database.
      * If not found, get the default rate from the config file.
      * @param exchangeDb Database class that we are using.
-     * @param params ERTParams object to read the config file.
-     * @return Rate object
+     * @param params ERTPara
+     * @return
      * @throws Exception
      */
     private static Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
