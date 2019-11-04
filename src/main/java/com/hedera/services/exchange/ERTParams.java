@@ -28,6 +28,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This class reads the parameters from the config file and provides get methods to fetch the configuration parameters.
@@ -110,7 +111,28 @@ public class ERTParams {
             return readConfigFromGCP(configurationPath);
         }
 
+        if (configurationPath.contains("TO_DECIDE:AWS_NodeAddressFormat")){
+            return readDefaultConfig(configurationPath);
+        }
+
         return readConfig(configurationPath);
+    }
+
+    /**
+     * Reads the AWS instance address from the arguments and replaces the node address in the
+     * default configuration
+     * @param awsInstanceAddress
+     * @return ERTParams object
+     */
+    private static ERTParams readDefaultConfig(String awsInstanceAddress) throws IOException {
+        final String defaultConfigUri = ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
+        ERTParams ertParams = readConfigFromAWSS3(defaultConfigUri);
+
+        Set<String> nodeNames = ertParams.nodes.keySet();
+        for(String nodeName : nodeNames){
+            ertParams.nodes.put(nodeName, awsInstanceAddress);
+        }
+        return ertParams;
     }
 
     /**

@@ -54,7 +54,7 @@ public class RateTestCases {
 
 	@Test
 	public void isSmallChangeCheck(){
-		int bound = 14;
+		int bound = 25;
 		Rate midnightRate = new Rate(30000, 120000, 1568592000);
 
 		Rate nextRate = new Rate(30000, 96000, 1568592000);
