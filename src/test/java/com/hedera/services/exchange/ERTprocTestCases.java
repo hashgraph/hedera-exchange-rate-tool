@@ -42,7 +42,7 @@ public class ERTprocTestCases {
                 "\"CurrentRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}," +
                 "\"NextRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}}]",
                 currentCentEquiv,
-                exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                exchangeRate.getCurrentExpirationsTimeInSeconds(),
                 expectedCentEquiv,
                 exchangeRate.getNextExpirationTimeInSeconds());
         assertEquals(expectedJson, exchangeRate.toJson());
@@ -71,7 +71,7 @@ public class ERTprocTestCases {
                         "\"CurrentRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}," +
                         "\"NextRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}}]",
                 currentCentEquiv,
-                exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                exchangeRate.getCurrentExpirationsTimeInSeconds(),
                 expectedCentEquiv,
                 exchangeRate.getNextExpirationTimeInSeconds());
         assertEquals(expectedJson, exchangeRate.toJson());
@@ -115,7 +115,7 @@ public class ERTprocTestCases {
                         "\"NextRate\":{\"hbarEquiv\":%d,\"centEquiv\":%d,\"expirationTime\":%d}}]",
                 currentHBarEquiv,
                 currentCentEquiv,
-                exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                exchangeRate.getCurrentExpirationsTimeInSeconds(),
                 expectedHBarEquiv,
                 expectedCentEquiv,
                 exchangeRate.getNextExpirationTimeInSeconds());
@@ -147,7 +147,7 @@ public class ERTprocTestCases {
                         "\"CurrentRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}," +
                         "\"NextRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}}]",
                 currentCentEquiv,
-                exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                exchangeRate.getCurrentExpirationsTimeInSeconds(),
                 expectedCentEquiv,
                 exchangeRate.getNextExpirationTimeInSeconds());
         assertEquals(expectedJson, exchangeRate.toJson());

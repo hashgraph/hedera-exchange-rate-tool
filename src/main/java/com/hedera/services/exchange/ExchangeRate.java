@@ -36,7 +36,7 @@ public class ExchangeRate {
 	}
 
 	@JsonIgnore
-	public long getCurrentExpiriationsTimeInSeconds() {
+	public long getCurrentExpirationsTimeInSeconds() {
 		return this.currentRate.getExpirationTimeInSeconds();
 	}
 
@@ -108,10 +108,10 @@ public class ExchangeRate {
 		return ExchangeRateSet.newBuilder().setCurrentRate(currentRate).setNextRate(nextRate).build();
 	}
 
-	@JsonIgnore
 	/**
 	 * Checks if the current hour ends on the midnight.
 	 */
+	@JsonIgnore
 	public boolean isMidnightTime(){
 		Calendar expiration = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
 		expiration.setTimeInMillis(this.getNextExpirationTimeInSeconds() * 1000);
