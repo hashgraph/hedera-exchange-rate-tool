@@ -68,7 +68,7 @@ public abstract class AbstractExchange implements Exchange {
 	 * @return HttpURLConnection object to the URL
 	 * @throws IOException
 	 */
-	private static HttpURLConnection getConnection(final URL url) throws IOException {
+	protected static HttpURLConnection getConnection(final URL url) throws IOException {
 		return (HttpURLConnection) url.openConnection();
 	}
 }
