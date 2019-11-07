@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 
 /**
- * represents a Coinbase Exchange response.
+ * Represents a Coinbase Exchange response.
  *
  * @author Anirudh, Cesar
  */

@@ -263,7 +263,7 @@ public class ERTParams {
     }
 
     /**
-     * get the default HbarEquiv value
+     * Get the default HbarEquiv value
      * @return
      */
     public int getDefaultHbarEquiv() {
@@ -271,7 +271,7 @@ public class ERTParams {
     }
 
     /**
-     * get the frequency at which ERT should be running.
+     * Get the frequency at which ERT should be running.
      * @return
      */
     public long getFrequencyInSeconds() {
@@ -309,7 +309,7 @@ public class ERTParams {
     }
 
     /**
-     * get Exchange Rate file ID
+     * Get Exchange Rate file ID
      * @return
      */
     public String getFileId() {
@@ -317,7 +317,7 @@ public class ERTParams {
     }
 
     /**
-     * get the operator ID - Account from which the FIle update transaction is performed
+     * Get the operator ID - Account from which the FIle update transaction is performed
      * @return
      */
     public String getOperatorId() {
@@ -325,7 +325,7 @@ public class ERTParams {
     }
 
     /**
-     * get the Floor of the Exchange Rate that is allowed.
+     * Get the Floor of the Exchange Rate that is allowed.
      * @return
      */
     public long getFloor(){ return this.floor; }
@@ -344,7 +344,7 @@ public class ERTParams {
     }
 
     /**
-     * get the validation Delay in Milli Seconds
+     * Get the validation Delay in Milli Seconds
      * @return
      */
     public long getValidationDelayInMilliseconds() {
@@ -352,7 +352,7 @@ public class ERTParams {
     }
 
     /**
-     * get the EPOC time of the end of the current hour in seconds in UTC.
+     * Get the EPOC time of the end of the current hour in seconds in UTC.
      * for example, say the current date and time is October 31st 2019, 10:34 AM
      * then currentExpirationTime will be 1572537600 in UTC
      * @return

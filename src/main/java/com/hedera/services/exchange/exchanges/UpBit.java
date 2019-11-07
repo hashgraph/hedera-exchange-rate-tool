@@ -6,7 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * represents a UpBit Exchange response.
+ * Represents a UpBit Exchange response.
  *
  * @author Anirudh, Cesar
  */
