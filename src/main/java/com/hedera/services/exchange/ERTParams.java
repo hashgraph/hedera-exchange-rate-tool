@@ -28,9 +28,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * This class reads the parameters from the config file
+ * This class reads the parameters from the config file and provides get methods to fetch the configuration parameters.
+ *
+ * @author Anirudh, Cesar
  */
 public class ERTParams {
 
@@ -75,6 +78,19 @@ public class ERTParams {
     @JsonProperty("validationDelayInMilliseconds")
     private int validationDelayInMilliseconds;
 
+    /**
+     * Return a ERTParams class populated with the configuration parameters read from the config file.
+     * The reading method depends on the argument/config file path passed in the call.
+     *
+     *  Possible config file paths:
+     *  Amazon s3
+     *  Google cloud storage
+     *  local path
+     *
+     * @param args
+     * @return ERTParams object
+     * @throws IOException
+     */
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
             return readDefaultConfig();
@@ -95,14 +111,46 @@ public class ERTParams {
             return readConfigFromGCP(configurationPath);
         }
 
+        if (configurationPath.contains("TO_DECIDE:AWS_NodeAddressFormat")){
+            return readDefaultConfig(configurationPath);
+        }
+
         return readConfig(configurationPath);
     }
 
+    /**
+     * Reads the AWS instance address from the arguments and replaces the node address in the
+     * default configuration
+     * @param awsInstanceAddress
+     * @return ERTParams object
+     */
+    private static ERTParams readDefaultConfig(String awsInstanceAddress) throws IOException {
+        final String defaultConfigUri = ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
+        ERTParams ertParams = readConfigFromAWSS3(defaultConfigUri);
+
+        Set<String> nodeNames = ertParams.nodes.keySet();
+        for(String nodeName : nodeNames){
+            ertParams.nodes.put(nodeName, awsInstanceAddress);
+        }
+        return ertParams;
+    }
+
+    /**
+     * Read default config from amazon s3 if no config file path is provided.
+     * @return ERTParams object
+     * @throws IOException
+     */
     private static ERTParams readDefaultConfig() throws IOException {
         final String defaultConfigUri = ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
         return readConfigFromAWSS3(defaultConfigUri);
     }
 
+    /**
+     * Read Config file from the Amazon S3 bucket
+     * @param endpoint - url for the config file in the amazon s3 bucket.
+     * @return ERTParams object
+     * @throws IOException
+     */
     private static ERTParams readConfigFromAWSS3(final String endpoint) throws IOException {
         LOGGER.info("Reading configuration file from AWS S3: {}", endpoint);
         final String[] s3Params = endpoint.split("/");
@@ -115,6 +163,13 @@ public class ERTParams {
         return readConfigFromAWSS3(bucketName, key);
     }
 
+    /**
+     * Helper method to read config file from the s3 bucket once you have the url to the file in the s3 bucket.
+     * @param bucketName
+     * @param key
+     * @return ERTParams object
+     * @throws IOException
+     */
     private static ERTParams readConfigFromAWSS3(final String bucketName, final String key) throws IOException {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Reading configuration from S3 bucket: {} and key {}", bucketName, key);
         final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
@@ -125,6 +180,12 @@ public class ERTParams {
         }
     }
 
+    /**
+     * Read config file from Google cloud storage
+     * @param endPoint - url for the config file in Google Cloud Storage
+     * @return ERTParams object
+     * @throws IOException
+     */
     private static ERTParams readConfigFromGCP(final String endPoint) throws IOException {
         final String[] gcsParams = endPoint.split("/");
         if (gcsParams.length < 3) {
@@ -137,6 +198,13 @@ public class ERTParams {
         return readConfigFromGCP(bucketName, fileName);
     }
 
+    /**
+     * Helper method to read config file from the Google Cloud storage
+     * @param bucketName
+     * @param srcFileName
+     * @return ERTParams object
+     * @throws IOException
+     */
     private static ERTParams readConfigFromGCP(final String bucketName, final String srcFileName) throws IOException {
         final Storage storage = StorageOptions.getDefaultInstance().getService();
         final Blob blob = storage.get(BlobId.of(bucketName, srcFileName));
@@ -145,6 +213,11 @@ public class ERTParams {
         return OBJECT_MAPPER.readValue(outputStream.toByteArray(), ERTParams.class);
     }
 
+    /**
+     * Read the config file from a local path.
+     * @param configFilePath
+     * @return ERTParams object
+     */
     public static ERTParams readConfig(final String configFilePath) {
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Reading config from {}", configFilePath);
@@ -164,28 +237,51 @@ public class ERTParams {
         }
     }
 
+    /**
+     * Converts the ERTParams object into a Json string using OBJECT_MAPPER
+     * @return Json String
+     * @throws JsonProcessingException
+     */
     public String toJson() throws JsonProcessingException {
         return OBJECT_MAPPER.writeValueAsString(this);
     }
 
+    /**
+     * Returns a Map of Exchanges and their APIs to get the HBAR rates.
+     * @return Map<String, String> of ExchangeName:ExchangeURL
+     */
     public Map<String, String> getExchangeAPIList() {
         return exchanges;
     }
 
+    /**
+     * Return the bound
+     * @return bound
+     */
     public long getBound() {
         return bound;
     }
 
-    public Map<String, String> getNetworkNodes() {
-        return nodes;
-    }
-
+    /**
+     * get the default HbarEquiv value
+     * @return
+     */
     public int getDefaultHbarEquiv() {
         return this.defaultHbarEquiv;
     }
 
-    public long getFrequencyInSeconds() { return this.frequencyInSeconds;}
+    /**
+     * get the frequency at which ERT should be running.
+     * @return
+     */
+    public long getFrequencyInSeconds() {
+        return this.frequencyInSeconds;
+    }
 
+    /**
+     * Return the network nodes ERT is sending the ERT file update to.
+     * @return Map of Node's AccountID to its IpAddress.
+     */
     public Map<AccountId, String> getNodes() {
         final Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
         for (final Map.Entry<String, String> node : this.nodes.entrySet()) {
@@ -196,22 +292,42 @@ public class ERTParams {
         return accountToNodeAddresses;
     }
 
+    /**
+     * Get the Pay account to execute this ER file update transaction.
+     * @return account ID in string
+     */
     public String getPayAccount() {
         return payAccount;
     }
 
+    /**
+     * Get the max transaction fee for file update.
+     * @return
+     */
     public long getMaxTransactionFee() {
         return this.maxTransactionFee;
     }
 
+    /**
+     * get Exchange Rate file ID
+     * @return
+     */
     public String getFileId() {
         return this.fileId;
     }
 
+    /**
+     * get the operator ID - Account from which the FIle update transaction is performed
+     * @return
+     */
     public String getOperatorId() {
         return this.operatorId;
     }
 
+    /**
+     * get the Floor of the Exchange Rate that is allowed.
+     * @return
+     */
     public long getFloor(){ return this.floor; }
 
     @JsonIgnore
@@ -219,14 +335,28 @@ public class ERTParams {
         return ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY");
     }
 
+    /**
+     * Get the default Exchange Rate
+     * @return
+     */
     public Rate getDefaultRate() {
         return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, this.getCurrentExpirationTime());
     }
 
+    /**
+     * get the validation Delay in Milli Seconds
+     * @return
+     */
     public long getValidationDelayInMilliseconds() {
         return this.validationDelayInMilliseconds;
     }
 
+    /**
+     * get the EPOC time of the end of the current hour in seconds in UTC.
+     * for example, say the current date and time is October 31st 2019, 10:34 AM
+     * then currentExpirationTime will be 1572537600 in UTC
+     * @return
+     */
     public static long getCurrentExpirationTime() {
         final long currentTime = System.currentTimeMillis();
         final long currentHourOnTheDot = currentTime - (currentTime % 3_600_000);
@@ -234,6 +364,10 @@ public class ERTParams {
         return currentExpirationTime / 1000;
     }
 
+    /**
+     * Get the Database class to read and write the Exchange Rate Files.
+     * @return ExchangeRateDb object as we are configured with AWS POSTGRESQL for now.
+     */
     public ExchangeDB getExchangeDB() {
         return new ExchangeRateAWSRD(new AWSDBParams());
     }

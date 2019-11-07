@@ -4,13 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>hedera</groupId>
-    <artifactId>Exchange-Rate-Tool</artifactId>
+    <groupId>com.hedera</groupId>
+    <artifactId>hedera-exchange-rate-tool</artifactId>
     <version>0.0.1</version>
 
 
     <properties>
         <junit-platform.version>5.5.0</junit-platform.version>
+        <jmockit.version>1.48</jmockit.version>
     </properties>
 
     <!-- Dependencies -->
@@ -34,7 +35,7 @@
         <dependency>
             <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
-            <version>1.24</version>
+            <version>${jmockit.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -61,14 +62,14 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>2.23.4</version>
+			<version>3.1.0</version>
 			<scope>test</scope>
 		</dependency>
 
         <dependency>
             <groupId>com.hedera.hashgraph</groupId>
             <artifactId>sdk</artifactId>
-            <version>0.6.1</version>
+            <version>0.8.0</version>
         </dependency>
 
         <dependency>
@@ -149,6 +150,9 @@
                 <version>3.0.0-M3</version>
                 <configuration>
                     <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
+                    <argLine>
+                        -javaagent:${settings.localRepository}/org/jmockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar
+                    </argLine>
                     <failIfNoTests>false</failIfNoTests>
                     <includes>*TestCases.java</includes>
                 </configuration>

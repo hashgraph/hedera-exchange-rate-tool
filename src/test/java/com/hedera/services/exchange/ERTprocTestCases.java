@@ -42,7 +42,7 @@ public class ERTprocTestCases {
                 "\"CurrentRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}," +
                 "\"NextRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}}]",
                 currentCentEquiv,
-                exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                exchangeRate.getCurrentExpirationsTimeInSeconds(),
                 expectedCentEquiv,
                 exchangeRate.getNextExpirationTimeInSeconds());
         assertEquals(expectedJson, exchangeRate.toJson());
@@ -71,7 +71,7 @@ public class ERTprocTestCases {
                         "\"CurrentRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}," +
                         "\"NextRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}}]",
                 currentCentEquiv,
-                exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                exchangeRate.getCurrentExpirationsTimeInSeconds(),
                 expectedCentEquiv,
                 exchangeRate.getNextExpirationTimeInSeconds());
         assertEquals(expectedJson, exchangeRate.toJson());
@@ -79,7 +79,7 @@ public class ERTprocTestCases {
 
     @ParameterizedTest
     @CsvSource({"src/test/resources/configs/configSimple.json,1,1000,1,1200,15.00",
-                "src/test/resources/configs/configSimple.json,1,1000,1,833,6.00",
+                "src/test/resources/configs/configSimple.json,1,1000,1,834,6.00",
                 "src/test/resources/configs/configSimple.json,1,1000,1,950,9.50",
                 "src/test/resources/configs/configSimple.json,1,1000,1,1200,12.20",
                 "src/test/resources/configs/configSimple.json,1,1000,1,1000,0.0"})
@@ -115,7 +115,7 @@ public class ERTprocTestCases {
                         "\"NextRate\":{\"hbarEquiv\":%d,\"centEquiv\":%d,\"expirationTime\":%d}}]",
                 currentHBarEquiv,
                 currentCentEquiv,
-                exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                exchangeRate.getCurrentExpirationsTimeInSeconds(),
                 expectedHBarEquiv,
                 expectedCentEquiv,
                 exchangeRate.getNextExpirationTimeInSeconds());
@@ -147,7 +147,7 @@ public class ERTprocTestCases {
                         "\"CurrentRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}," +
                         "\"NextRate\":{\"hbarEquiv\":30000,\"centEquiv\":%d,\"expirationTime\":%d}}]",
                 currentCentEquiv,
-                exchangeRate.getCurrentExpiriationsTimeInSeconds(),
+                exchangeRate.getCurrentExpirationsTimeInSeconds(),
                 expectedCentEquiv,
                 exchangeRate.getNextExpirationTimeInSeconds());
         assertEquals(expectedJson, exchangeRate.toJson());

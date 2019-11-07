@@ -39,7 +39,7 @@ public class RateTestCases {
 		final Rate rate = new Rate(1, 5, expiration);
 		final Rate newRate = new Rate(1, 1, expiration);
 		final Rate clippedRate = rate.clipRate(newRate, 50);
-		assertEquals(3, clippedRate.getCentEquiv());
+		assertEquals(4, clippedRate.getCentEquiv());
 	}
 
 	@Test
@@ -48,6 +48,23 @@ public class RateTestCases {
 		final Rate rate = new Rate(1, 5, expiration);
 		final Rate newRate = new Rate(1, 1, expiration);
 		final Rate clippedRate = rate.clipRate(newRate, 50);
-		assertEquals(3, clippedRate.getCentEquiv());
+		assertEquals(4, clippedRate.getCentEquiv());
+	}
+
+	@Test
+	public void isSmallChangeCheck(){
+		int bound = 27;
+		Rate midnightRate = new Rate(30000, 120000, 1568592000);
+
+		Rate nextRate = new Rate(30000, 96000, 1568592000);
+		assertEquals(true, midnightRate.isSmallChange(25, nextRate));
+
+		nextRate = new Rate(30000, 95999, 1568592000);
+		assertEquals(false, midnightRate.isSmallChange(25, nextRate));
+
+		nextRate = new Rate(30000, 9999, 1568592000);
+		Rate clippedRate = midnightRate.clipRate(nextRate, bound);
+
+		assertEquals(true, midnightRate.isSmallChange(bound, clippedRate));
 	}
 }

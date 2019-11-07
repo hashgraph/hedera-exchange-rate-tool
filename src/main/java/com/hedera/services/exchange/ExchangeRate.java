@@ -13,6 +13,11 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+/**
+ * This Class represents the Exchange Rate File that we send to the nodes.
+ *
+ * @author Anirudh, Cesar
+ */
 public class ExchangeRate {
 
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -31,7 +36,7 @@ public class ExchangeRate {
 	}
 
 	@JsonIgnore
-	public long getCurrentExpiriationsTimeInSeconds() {
+	public long getCurrentExpirationsTimeInSeconds() {
 		return this.currentRate.getExpirationTimeInSeconds();
 	}
 
@@ -50,11 +55,22 @@ public class ExchangeRate {
 		return this.nextRate;
 	}
 
+	/**
+	 * Converts the ExchangeRate object into a Json String
+	 * @return Json String
+	 * @throws JsonProcessingException
+	 */
 	public String toJson() throws JsonProcessingException {
 		final ExchangeRate[] rates = new ExchangeRate[] { this };
 		return OBJECT_MAPPER.writeValueAsString(rates);
 	}
 
+	/**
+	 * Converts a Json string into an ExchangeRate object
+	 * @param json String that represents a exchange rate file.
+	 * @return ExchangeRate object
+	 * @throws IOException
+	 */
 	public static ExchangeRate fromJson(final String json) throws IOException {
 		try {
 			final ExchangeRate[] rates = OBJECT_MAPPER.readValue(json, ExchangeRate[].class);
@@ -64,6 +80,12 @@ public class ExchangeRate {
 		}
 	}
 
+	/**
+	 * Converts the ExchangeRate object into ExchangeRateSet that is used to send in the transaction that we submit to
+	 * the nodes.
+	 *
+	 * @return ExchangeRateSet
+	 */
 	public ExchangeRateSet toExchangeRateSet() {
 		final com.hederahashgraph.api.proto.java.ExchangeRate currentRate =
 				com.hederahashgraph.api.proto.java.ExchangeRate.newBuilder()
@@ -86,6 +108,9 @@ public class ExchangeRate {
 		return ExchangeRateSet.newBuilder().setCurrentRate(currentRate).setNextRate(nextRate).build();
 	}
 
+	/**
+	 * Checks if the current hour ends on the midnight.
+	 */
 	@JsonIgnore
 	public boolean isMidnightTime(){
 		Calendar expiration = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));

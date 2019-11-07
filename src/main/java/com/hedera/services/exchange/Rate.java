@@ -10,15 +10,20 @@ import org.apache.logging.log4j.Logger;
 
 import java.math.BigInteger;
 
-import static com.hedera.services.exchange.exchanges.Exchange.EXCHANGE_FILTER;
 import static com.hedera.services.exchange.exchanges.Exchange.OBJECT_MAPPER;
 
+/**
+ * Rate class represents a basic structure of Hedera token price.
+ * We represent the rate as
+ * - HabrEquiv : A large enough number to represent CentEquiv as a natural number.
+ * - CentEquiv : A number when divided by HbarEquiv will give us HBAR-USD exchange rate.
+ * - ExpirationTime : top of the hour when this rate expires.
+ *
+ * @author Anirudh, Cesar
+ */
 public class Rate {
 
     private static final Logger LOGGER = LogManager.getLogger(Rate.class);
-
-    private static long TINY_BARS_IN_HBAR = 1_000_000_000;
-    private static long TINY_CENTS_IN_USD = 100_000_000;
 
     @JsonProperty("hbarEquiv")
     private final long hbarEquiv;
@@ -57,15 +62,16 @@ public class Rate {
         return this.hbarEquiv;
     }
 
+    /**
+     * Check if the next rate calculated is within the bound.
+     *
+     * @param bound : bound specified int he config file
+     * @param nextRate :calculated from the median of exchange rates
+     * @return true or false weather the next rate is with in the bound.
+     */
     public boolean isSmallChange(final long bound, final Rate nextRate){
 
-        final long oldExchangeRateInCents = toTinyCents(this.getCentEquiv());
-        final long oldExchangeRateInHBars = toTinyBars(this.getHBarEquiv());
-
-        final long newExchangeRateInCents = toTinyCents(nextRate.getCentEquiv());
-        final long newExchangeRateInHbars = toTinyBars(nextRate.getHBarEquiv());
-
-        if (this.isSmallChange(bound, oldExchangeRateInCents, oldExchangeRateInHBars, newExchangeRateInCents, newExchangeRateInHbars)){
+        if (this.isSmallChange(bound, this.getCentEquiv(), this.getHBarEquiv(), nextRate.getCentEquiv(), nextRate.getHBarEquiv())){
             LOGGER.debug("Median ({}, {}) is Valid", nextRate.getHBarEquiv(), nextRate.getCentEquiv());
             return true;
         } else {
@@ -157,13 +163,15 @@ public class Rate {
     public Rate clipRate(final Rate newRate, long bound) {
         final Rate oldRate = this;
         final BigInteger k100 = BigInteger.valueOf(100);
+        final BigInteger k1 = BigInteger.valueOf(1);
         final BigInteger b100 = BigInteger.valueOf(bound).add(k100);
         final BigInteger oC = BigInteger.valueOf(oldRate.centEquiv);
         final BigInteger oH = BigInteger.valueOf(oldRate.hbarEquiv);
         final BigInteger nH = BigInteger.valueOf(newRate.hbarEquiv);
+        final BigInteger d = oH.multiply(b100);
         final long newCent = newRate.centEquiv;
         final long high = oC.multiply(nH).multiply(b100).divide(oH.multiply(k100)).longValue();
-        final long low = nH.multiply(oC).multiply(k100).divide(oH.multiply(b100)).longValue();
+        final long low = (nH.multiply(oC).multiply(k100).add(d).subtract(k1)).divide(d).longValue();
 
         //if it's too high, then return the upper bound
         if (newCent > high) {
@@ -181,15 +189,12 @@ public class Rate {
         return newRate;
     }
 
+    /**
+     * Get the Rate as a Json String
+     * @return json String
+     * @throws JsonProcessingException
+     */
     public String toJson() throws JsonProcessingException {
         return OBJECT_MAPPER.writeValueAsString(this);
-    }
-
-    private long toTinyCents(final long rate){
-        return rate * 100 * TINY_CENTS_IN_USD;
-    }
-
-    private long toTinyBars(final long rate) {
-        return rate * TINY_BARS_IN_HBAR;
     }
 }

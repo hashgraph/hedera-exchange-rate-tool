@@ -7,6 +7,12 @@ import com.hedera.services.exchange.database.ExchangeRateAWSRD;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class implements an API that one can trigger using an AWS lambda for example and get the latest Exchange rate file
+ * from the database.
+ *
+ * @author Anirudh, Cesar
+ */
 public class ExchangeRateApi {
 
 	private static Map<String, String> HEADERS = new HashMap<>();

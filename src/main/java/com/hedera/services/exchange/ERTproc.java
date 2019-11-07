@@ -15,6 +15,17 @@ import java.util.function.Function;
 
 /**
  * This class implements the methods that we perform periodically to generate Exchange rate
+ * Operations Performed:
+ * <ul>
+ *  <li>load Exchanges using URLs provided and fetch HBAR-USD exchange rate.</li>
+ *  <li>Calculate the median of the fetched exchange rates.</li>
+ *  <li>Check if the median is valid : if small change ..i.e., if in bound.</li>
+ *  <li>if not a small change clip it.</li>
+ *  <li>check if the clipped rate is more then floor if not floor the rate.</li>
+ *  <li>generate ExchangeRate file using the final calculated rate and return it.</li>
+ *</ul>
+ *  
+ * @author Anirudh, Cesar
  */
 public class ERTproc {
 
@@ -55,6 +66,12 @@ public class ERTproc {
         this.frequencyInSeconds = frequencyInSeconds;
     }
 
+    /**
+     * Main method that executed the Logic to generate a new Exchange Rate by fetching the rates from respective Exchanges
+     * and calculating the median among them. ALso perform isSmallChange checks and clip if necessary and floor the rate if
+     * its lower then recommended value.
+     * @return ExchangeRate object
+     */
     public ExchangeRate call() {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Start of ERT Logic");
 
@@ -110,6 +127,11 @@ public class ERTproc {
         }
     }
 
+    /**
+     * Calculates the Median among the exchange rates fetched from the exchanges
+     * @param exchanges - list of Exchange objects that have exchange rates of HABR-USD
+     * @return median of the exchange rates
+     */
     private Double calculateMedianRate(final List<Exchange> exchanges) {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Computing median");
 
@@ -131,6 +153,11 @@ public class ERTproc {
         }
     }
 
+    /**
+     * Loads the list of Exchange objects with HBAR-USD exchange rate using the URL endpoints provided for each
+     * Exchange int he config file.
+     * @return List of Exchange objects.
+     */
     private List<Exchange> generateExchanges() {
         final List<Exchange> exchanges = new ArrayList<>();
 
@@ -154,6 +181,11 @@ public class ERTproc {
         return exchanges;
     }
 
+    /**
+     * return the list of exchanges that worked in json string format using OBJECT_MAPPER
+     * @return Json String
+     * @throws JsonProcessingException
+     */
     public String getExchangeJson() throws JsonProcessingException {
         return Exchange.OBJECT_MAPPER.writeValueAsString(exchanges);
     }

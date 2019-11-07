@@ -15,6 +15,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 
+/**
+ * This Class represents the whole Exchange Rate Tool application. This is main entry point for the application.
+ *
+ * @author Anirudh, Cesar
+ */
 public class ExchangeRateTool {
 
     private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates were not updated successfully";
@@ -27,6 +32,11 @@ public class ExchangeRateTool {
         run(args);
     }
 
+    /**
+     * This method executes the ERT logic and if an execution fails, it retries for the a fixed number of times
+     * mentioned in DEFAULT_RETRIES.
+     * @param args
+     */
     private static void run(final String ... args) {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
         final int maxRetries = DEFAULT_RETRIES;
@@ -47,6 +57,16 @@ public class ExchangeRateTool {
         throw new RuntimeException(errorMessage);
     }
 
+    /**
+     * This method encapsulates all the execution logic
+     *  - Execute ERTProc
+     *  - generate a transaction using the operator key, file ID, sign it with the private key
+     *  - perform the FIle Update transaction
+     *  - check if the transaction was successful
+     *  - Write the generated exchange rate files into the Database
+     * @param args
+     * @throws Exception
+     */
     private static void execute(final String ... args) throws Exception {
         final ERTParams params = ERTParams.readConfig(args);
 
@@ -123,6 +143,14 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
+    /**
+     * Get the current Exchange Rate from the database.
+     * If not found, get the default rate from the config file.
+     * @param exchangeDb Database class that we are using.
+     * @param params ERTParams object to read the config file.
+     * @return Rate object
+     * @throws Exception
+     */
     private static Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
         final ExchangeRate exchangeRate = exchangeDb.getLatestExchangeRate();
         if (exchangeRate != null) {

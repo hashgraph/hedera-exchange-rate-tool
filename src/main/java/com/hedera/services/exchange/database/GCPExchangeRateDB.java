@@ -1,7 +1,8 @@
-package com.hedera.services.exchange;
+package com.hedera.services.exchange.database;
 
 
 import com.google.cloud.spanner.*;
+import com.hedera.services.exchange.ExchangeRate;
 
 public class GCPExchangeRateDB {
 
