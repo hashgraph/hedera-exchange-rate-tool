@@ -301,7 +301,7 @@ public class ERTParams {
     }
 
     /**
-     * get teh max transaction fee for file update.
+     * Get the max transaction fee for file update.
      * @return
      */
     public long getMaxTransactionFee() {

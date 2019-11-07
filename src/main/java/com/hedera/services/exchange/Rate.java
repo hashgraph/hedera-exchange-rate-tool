@@ -190,7 +190,7 @@ public class Rate {
     }
 
     /**
-     * Get the Rate as a Json String using OBJECT_MAPPER
+     * Get the Rate as a Json String
      * @return json String
      * @throws JsonProcessingException
      */

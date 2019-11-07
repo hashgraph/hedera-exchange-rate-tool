@@ -56,7 +56,7 @@ public class ExchangeRate {
 	}
 
 	/**
-	 * Converts the ExchangeRate object into a Json String using OBJECT_MAPPER
+	 * Converts the ExchangeRate object into a Json String
 	 * @return Json String
 	 * @throws JsonProcessingException
 	 */
@@ -66,7 +66,7 @@ public class ExchangeRate {
 	}
 
 	/**
-	 * Converts a Json string into an ExchangeRate object using OBJECT_MAPPER
+	 * Converts a Json string into an ExchangeRate object
 	 * @param json String that represents a exchange rate file.
 	 * @return ExchangeRate object
 	 * @throws IOException

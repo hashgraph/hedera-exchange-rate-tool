@@ -1,6 +1,5 @@
 package com.hedera.services.exchange;
 
-import com.google.gson.internal.$Gson$Preconditions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

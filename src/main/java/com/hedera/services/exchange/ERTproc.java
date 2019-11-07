@@ -16,13 +16,14 @@ import java.util.function.Function;
 /**
  * This class implements the methods that we perform periodically to generate Exchange rate
  * Operations Performed:
- *  - load Exchanges using URLs provided and fetch HBAR-USD exchange rate
- *  - Calculate the median of the fetched exchange rates
- *  - Check if the median is valid : if small change ..i.e., if in bound
- *  - if not a small change clip it
- *  - check if the clipped rate is more then floor if not floor the rate.
- *  - generate ExchangeRate file using the final calculated rate and return it.
- *
+ * <ul>
+ *  <li>load Exchanges using URLs provided and fetch HBAR-USD exchange rate.</li>
+ *  <li>Calculate the median of the fetched exchange rates.</li>
+ *  <li>Check if the median is valid : if small change ..i.e., if in bound.</li>
+ *  <li>if not a small change clip it.</li>
+ *  <li>check if the clipped rate is more then floor if not floor the rate.</li>
+ *  <li>generate ExchangeRate file using the final calculated rate and return it.</li>
+ *</ul>
  *  
  * @author Anirudh, Cesar
  */
