@@ -15,7 +15,7 @@
   	"exchangeRateAllowedPercentage": "25",
     "operatorId": "0.0.57",
 	"Nodes": {
-		"0.0.3": "35.237.182.66:50211"
+		"0.0.3": "35.196.146.2:50211"
 	},
 	"payerAccount": "0.0.57"
 }
