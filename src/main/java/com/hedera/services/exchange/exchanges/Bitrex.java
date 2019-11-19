@@ -3,7 +3,7 @@ package com.hedera.services.exchange.exchanges;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * represents a Bitrex Exchange response.
+ * Represents a Bitrex Exchange response.
  *
  * @author Anirudh, Cesar
  */

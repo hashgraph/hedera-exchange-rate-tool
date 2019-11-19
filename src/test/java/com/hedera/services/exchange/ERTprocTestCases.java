@@ -20,8 +20,8 @@ import static org.mockito.Mockito.when;
 public class ERTprocTestCases {
 
     @ParameterizedTest
-    @CsvSource({"src/test/resources/configs/config.json,360000,300000",
-                "src/test/resources/configs/config1.json,252000000,210000000",
+    @CsvSource({"src/test/resources/configs/config.json,360000,288000",
+                "src/test/resources/configs/config1.json,252000000,201600000",
                 "src/test/resources/configs/config2.json,25920000,20736000"})
     public void testMedianWithDefaultAsMidnight(final String configPath, final int currentCentEquiv, final int expectedCentEquiv) throws Exception {
         this.setExchanges();
@@ -125,7 +125,7 @@ public class ERTprocTestCases {
 
     @ParameterizedTest
     @CsvSource({"src/test/resources/configs/config.json,126000,120000",
-                "src/test/resources/configs/config.json,150000,125000"})
+                "src/test/resources/configs/config.json,150000,120000"})
     public void testFloor(String configPath, long currentCentEquiv, long expectedCentEquiv) throws IOException {
         this.setFloorExchanges();
         final ERTParams params = ERTParams.readConfig(configPath);

@@ -12,7 +12,7 @@
 	"floorCentsPerHbar": 4,
     "fileId": "0.0.112",
     "maxTransactionFee": 10000000,
-	"exchangeRateAllowedPercentage": "20",
+	"exchangeRateAllowedPercentage": "25",
     "operatorId": "0.0.57",
 	"Nodes": {
 		"0.0.3": "0.testnet.hedera.com:50211"

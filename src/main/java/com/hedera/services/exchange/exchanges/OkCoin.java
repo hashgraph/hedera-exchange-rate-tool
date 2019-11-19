@@ -3,7 +3,7 @@ package com.hedera.services.exchange.exchanges;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * represents a OkCoin Exchange response.
+ * Represents a OkCoin Exchange response.
  *
  * @author Anirudh, Cesar
  */

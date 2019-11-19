@@ -8,7 +8,7 @@
   "frequencyInSeconds" : 3600,
   "floorCentsPerHbar": 4,
   "maxTransactionFee": 10000000,
-  "exchangeRateAllowedPercentage": "20",
+  "exchangeRateAllowedPercentage": "25",
   "Nodes": {
     "0.0.4": "1.testnet.hedera.com:71322",
     "0.0.5": "1.testnet.hedera.com:71322"

@@ -182,7 +182,7 @@ public class ERTproc {
     }
 
     /**
-     * return the list of exchanges that worked in json string format using OBJECT_MAPPER
+     * Return the list of exchanges that worked in json string format using OBJECT_MAPPER
      * @return Json String
      * @throws JsonProcessingException
      */
