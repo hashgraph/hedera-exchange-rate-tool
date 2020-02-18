@@ -1,6 +1,8 @@
 package com.hedera.services.exchange;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 
@@ -40,5 +42,19 @@ public class ExchangeRateTestCases {
 		assertEquals(1000000, exchangeRate.getNextRate().getHBarEquiv());
 		assertEquals(67800, exchangeRate.getNextRate().getCentEquiv());
 		assertEquals(1567490403600L, exchangeRate.getNextRate().getExpirationTimeInSeconds());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"1581638400,true",
+			"1581639400,false",
+			"1581724800,true"
+	})
+	public void isMidnightRate(long expirationTime, boolean isMidnight) {
+		Rate currRate = new Rate(30000, 120000, expirationTime);
+		Rate nextRate = new Rate(30000, 120000, expirationTime+3600);
+		ExchangeRate exchangeRate = new ExchangeRate(currRate, nextRate);
+
+		assertEquals(isMidnight, exchangeRate.isMidnightTime());
 	}
 }

@@ -40,7 +40,22 @@ public class DynamoDBExchangeRate implements ExchangeDB {
     }
 
     @Override
+    public ExchangeRate getExchangeRate(long expirationTime) throws Exception {
+        return null;
+    }
+
+    @Override
     public ExchangeRate getLatestMidnightExchangeRate() {
+        return null;
+    }
+
+    @Override
+    public String getQueriedRate(long expirationTime) throws Exception {
+        return null;
+    }
+
+    @Override
+    public String getLatestQueriedRate() throws Exception {
         return null;
     }
 

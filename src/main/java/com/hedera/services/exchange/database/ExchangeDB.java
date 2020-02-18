@@ -7,7 +7,13 @@ public interface ExchangeDB {
 
 	ExchangeRate getLatestExchangeRate() throws Exception;
 
+	ExchangeRate getExchangeRate(long expirationTime) throws  Exception;
+
 	ExchangeRate getLatestMidnightExchangeRate() throws Exception;
+
+	public String getQueriedRate(long expirationTime) throws Exception;
+
+	public String getLatestQueriedRate() throws Exception;
 
 	void pushExchangeRate(final ExchangeRate exchangeRate) throws Exception;
 
