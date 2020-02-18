@@ -18,6 +18,8 @@
            command: |
              set -eEx -o pipefail
              mvn test
+
+
  workflows:
    version: 2
    continuous_delivery:
