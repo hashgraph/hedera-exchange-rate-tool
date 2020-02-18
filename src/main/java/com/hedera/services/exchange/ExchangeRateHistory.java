@@ -19,7 +19,7 @@ public class ExchangeRateHistory {
     private String queriedRate;
 
     @JsonProperty("MedianRate")
-    private Double medianRate;
+    private double medianRate;
 
     @JsonProperty("Smoothed")
     private boolean isSmoothed;
@@ -36,7 +36,7 @@ public class ExchangeRateHistory {
     @JsonCreator
     public ExchangeRateHistory( @JsonProperty("ExpirationTime") final String expirationTime,
                                 @JsonProperty("QueriedRate") final String queriedRate,
-                                @JsonProperty("MedianRate") final Double medianRate,
+                                @JsonProperty("MedianRate") final double medianRate,
                                 @JsonProperty("Smoothed") final boolean isSmoothed,
                                 @JsonProperty("MidnightRate") final ExchangeRate midnightRate,
                                 @JsonProperty("CurrentRate") final Rate currentRate,
