@@ -13,6 +13,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -131,7 +133,11 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
 
     private static double calMedian(ExchangeRate exchangeRate){
         LOGGER.info(Exchange.EXCHANGE_FILTER, "calculating median");
-        return ((double) exchangeRate.getNextRate().getCentEquiv() / exchangeRate.getNextRate().getHBarEquiv()) / 100 ;
+        double median = ((double) exchangeRate.getNextRate().getCentEquiv() / exchangeRate.getNextRate().getHBarEquiv()) / 100 ;
+
+        BigDecimal medianBD = new BigDecimal(Double.toString(median));
+        medianBD = medianBD.setScale(5, RoundingMode.HALF_UP);
+        return medianBD.doubleValue();
     }
 
     private static String toDate(long expirationTime){
