@@ -141,6 +141,27 @@
 
     </dependencies>
 
+    <repositories>
+        <!-- explicitly pull from Maven Central first -->
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>com.bintray.jcenter</id>
+            <url>https://jcenter.bintray.com/</url>
+            <name>JCenter</name>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
