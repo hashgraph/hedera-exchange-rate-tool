@@ -10,7 +10,8 @@
    run_ert_tests:
      <<: *default_job_settings
      environment:
-       MAVEN_OPTS: -Xmx3200m
+       - CIRCLE_COMPARE_URL: https://github.com/swirlds/Exchange-Rate-Tool/compare/08ea6e74b5860a46261b658c4d9499210b36732c...eeb8f9af26e2f8364e616126805d2466882c810b
+       - MAVEN_OPTS: -Xmx3200m
      steps:
        - checkout
        - run:
