@@ -1,28 +1,25 @@
 ## YAML aliases + anchors docs https://yaml.org/spec/1.2/spec.html#id2760395
- defaults:
-   default_job_settings: &default_job_settings
-     docker:
-       - image: maven:3.6-jdk-8
-     working_directory: /repo
+defaults:
+  default_job_settings: &default_job_settings
+    docker:
+      - image: maven:3.6-jdk-8
+    working_directory: /repo
 
- version: 2
- jobs:
-   run_ert_tests:
-     <<: *default_job_settings
-     environment:
-       - CIRCLE_COMPARE_URL: https://github.com/swirlds/Exchange-Rate-Tool/compare/08ea6e74b5860a46261b658c4d9499210b36732c...eeb8f9af26e2f8364e616126805d2466882c810b
-       - MAVEN_OPTS: -Xmx3200m
-     steps:
-       - checkout
-       - run:
-           name: Run Exchange Rate Tool tests.
-           command: |
-             set -eEx -o pipefail
-             mvn test
-
-
- workflows:
-   version: 2
-   continuous_delivery:
-     jobs:
-       - run_ert_tests
+version: 2
+jobs:
+  run_ert_tests:
+    <<: *default_job_settings
+    environment:
+      MAVEN_OPTS: -Xmx3200m
+    steps:
+      - checkout
+      - run:
+          name: Run Exchange Rate Tool tests.
+          command: |
+            set -eEx -o pipefail
+            mvn test
+workflows:
+  version: 2
+  continuous_delivery:
+    jobs:
+      - run_ert_tests
