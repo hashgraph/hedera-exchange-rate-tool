@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * This class implements an API which returns the data from the last 5 successful runs of ERT
+ * This class implements an API which returns the data from the last 'n'[defaulted to 5] successful runs of ERT
  *
  * @author anighanta
  */
@@ -29,7 +29,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateHistoryAPI.class);
     private static int NO_OF_RECORDS = 5;
     private final static long BOUND = 25;
-    private final static DateFormat UTC_DATETIME_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    private static DateFormat UTC_DATETIME_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     static {
         HEADERS.put("Access-Control-Allow-Origin", "*");
