@@ -36,7 +36,7 @@ public class ExchangeRateApi {
 
 		private String body;
 
-		private LambdaResponse(final int statusCode, final String body) {
+		LambdaResponse(final int statusCode, final String body) {
 			this.statusCode = statusCode;
 			this.body = body;
 		}
