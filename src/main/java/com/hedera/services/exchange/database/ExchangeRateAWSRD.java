@@ -13,6 +13,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * This class implements the ExchangeDB interface using AWS RDS
+ * which species what APIs that we need to fetch/push data into the Database.
+ *
+ * If you foresee doing more of this mapping, I would recommend moving to JPA/Hibernate.
+ *
+ */
 public class ExchangeRateAWSRD implements ExchangeDB {
 
 	private static final Logger LOGGER = LogManager.getLogger(ExchangeRateAWSRD.class);

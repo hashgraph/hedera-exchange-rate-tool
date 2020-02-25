@@ -1,7 +1,6 @@
 package com.hedera.services.exchange;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.hedera.services.exchange.database.AWSDBParams;
 import com.hedera.services.exchange.database.ExchangeDB;
@@ -26,24 +25,11 @@ import java.util.*;
  */
 public class ExchangeRateHistoryAPI implements RequestStreamHandler {
 
-//    public static class Params{
-//        int no_of_records;
-//
-//        public Params(){}
-//
-//        public int getNo_of_records() {
-//            return no_of_records;
-//        }
-//
-//        public void setNo_of_records(int no_of_records) {
-//            this.no_of_records = no_of_records;
-//        }
-//    }
-
     private static Map<String, String> HEADERS = new HashMap<>();
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateHistoryAPI.class);
     private static int NO_OF_RECORDS = 5;
     private final static long BOUND = 25;
+    private final static DateFormat UTC_DATETIME_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     static {
         HEADERS.put("Access-Control-Allow-Origin", "*");
@@ -57,6 +43,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
         JSONObject responseJson = new JSONObject();
         responseJson.put("headers", HEADERS);
         int no_of_records = NO_OF_RECORDS;
+        UTC_DATETIME_FORMAT.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
 
         try{
 
@@ -82,7 +69,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
 
             results.add(new ExchangeRateHistory(toDate(latestExpirationTime),
                             latestQueriedRate,
-                            calMedian(latestExchangeRate),
+                            calulateMedian(latestExchangeRate),
                             midnightRate.getNextRate()
                                     .isSmallChange(BOUND, latestExchangeRate.getNextRate()),
                             midnightRate,
@@ -95,17 +82,17 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
 
             for (int i = 1; i < NO_OF_RECORDS; i++) {
                 expirationTime -= 3600;
-                ExchangeRate currExchangeRate = exchangeDb.getExchangeRate(expirationTime);
+                ExchangeRate currentExchangeRate = exchangeDb.getExchangeRate(expirationTime);
                 String cuuQueriedRate = exchangeDb.getQueriedRate(expirationTime);
 
                 results.add(new ExchangeRateHistory(toDate(expirationTime),
                         cuuQueriedRate,
-                        calMedian(currExchangeRate),
+                        calulateMedian(currentExchangeRate),
                         midnightRate.getNextRate()
-                                .isSmallChange(BOUND, currExchangeRate.getNextRate()),
+                                .isSmallChange(BOUND, currentExchangeRate.getNextRate()),
                         midnightRate,
-                        currExchangeRate.getCurrentRate(),
-                        currExchangeRate.getNextRate()
+                        currentExchangeRate.getCurrentRate(),
+                        currentExchangeRate.getNextRate()
                         )
                 );
             }
@@ -131,7 +118,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
         responseWriter.close();
     }
 
-    private static double calMedian(ExchangeRate exchangeRate){
+    private static double calulateMedian(ExchangeRate exchangeRate){
         LOGGER.info(Exchange.EXCHANGE_FILTER, "calculating median");
         double median = ((double) exchangeRate.getNextRate().getCentEquiv() / exchangeRate.getNextRate().getHBarEquiv()) / 100 ;
 
@@ -143,8 +130,6 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
     private static String toDate(long expirationTime){
         LOGGER.info(Exchange.EXCHANGE_FILTER, "converting epoc to utc date time format");
         Date date = new Date(expirationTime*1000);
-        DateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        format.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
-        return format.format(date);
+        return UTC_DATETIME_FORMAT.format(date);
     }
 }
