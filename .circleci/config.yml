@@ -2,7 +2,7 @@
 defaults:
   default_job_settings: &default_job_settings
     docker:
-      - image: maven:3.6-jdk-8
+      - image: maven:3.6-jdk-11
     working_directory: /repo
 
 version: 2
