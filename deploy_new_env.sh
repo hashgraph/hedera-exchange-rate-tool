@@ -235,7 +235,7 @@ FILE_URI="${LOCAL_JAR}"
 
 LAMBDA_ARN=$(aws lambda create-function \
               --function-name "$LAMBDA_NAME" \
-              --runtime java8 \
+              --runtime java11 \
               --handler com.hedera.services.exchange.ExchangeRateTool::main \
               --publish \
               --memory-size 1024 \
@@ -286,7 +286,7 @@ echo "Creating lambda ${LAMBDA_API_NAME} for exchange rate api"
 
 LAMBDA_API_ARN=$(aws lambda create-function \
               --function-name "$LAMBDA_API_NAME" \
-              --runtime java8 \
+              --runtime java11 \
               --handler com.hedera.services.exchange.ExchangeRateApi::getLatest \
               --publish \
               --memory-size 1024 \
