@@ -59,7 +59,10 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
             final ExchangeDB exchangeDb = new ExchangeRateAWSRD(new AWSDBParams());
             LOGGER.info(Exchange.EXCHANGE_FILTER, "params received : {}", no_of_records);
             NO_OF_RECORDS = no_of_records;
-            final ExchangeRate midnightRate = exchangeDb.getLatestMidnightExchangeRate();
+            ExchangeRate midnightRate = exchangeDb.getLatestMidnightExchangeRate();
+            long currMidnightTime = midnightRate.getNextExpirationTimeInSeconds();
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "current Midnight time : {}", currMidnightTime);
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "current midnight rate : {}", midnightRate.toJson());
             String latestQueriedRate = exchangeDb.getLatestQueriedRate();
             ExchangeRate latestExchangeRate = exchangeDb.getLatestExchangeRate();
 
@@ -82,6 +85,15 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
 
             for (int i = 1; i < NO_OF_RECORDS; i++) {
                 expirationTime -= 3600;
+                //pull the appropriate midnight rate
+                if(expirationTime <= currMidnightTime){
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "day changed. fetching older midnight rate");
+                    currMidnightTime -= 86400;
+                    midnightRate = exchangeDb.getMidnightExchangeRate(currMidnightTime);
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "current Midnight time : {}", currMidnightTime);
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "current midnight rate : {}", midnightRate.toJson());
+                }
+
                 ExchangeRate currentExchangeRate = exchangeDb.getExchangeRate(expirationTime);
                 String cuuQueriedRate = exchangeDb.getQueriedRate(expirationTime);
 
