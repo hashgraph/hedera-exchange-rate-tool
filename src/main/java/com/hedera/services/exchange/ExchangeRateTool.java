@@ -87,6 +87,9 @@ public class ExchangeRateTool {
 
         final ExchangeRate exchangeRate = proc.call();
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
+        final String memo = String.format("ExchangeRate : {}, midnightRate : {}",
+                exchangeRate.toJson(),
+                midnightRate.toJson());
         final AccountId operatorId = AccountId.fromString(params.getOperatorId());
 
         final FileId fileId = FileId.fromString(params.getFileId());
@@ -100,7 +103,8 @@ public class ExchangeRateTool {
         final FileUpdateTransaction fileUpdateTransaction = new FileUpdateTransaction(client)
                 .setFileId(fileId)
                 .setContents(exchangeRateAsBytes)
-                .addKey(privateOperatorKey.getPublicKey());
+                .addKey(privateOperatorKey.getPublicKey())
+                .setMemo(memo);
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Pushing new ExchangeRate {}", exchangeRate.toJson());
         final TransactionReceipt firstTry = fileUpdateTransaction.executeForReceipt();
