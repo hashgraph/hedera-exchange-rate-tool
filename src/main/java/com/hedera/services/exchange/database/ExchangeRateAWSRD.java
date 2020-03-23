@@ -48,6 +48,25 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	}
 
 	@Override
+	public ExchangeRate getMidnightExchangeRate(long expirationTime) throws Exception {
+		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get the midnight exchange rate from midnight rate table " +
+				"with nextExpiration time :{}", expirationTime);
+		try (final Connection conn = getConnection();
+			 final PreparedStatement prepStatement = conn.prepareStatement(
+					 "SELECT expirationTime, exchangeRateFile FROM midnight_rate where expirationTime = ?")){
+			prepStatement.setLong(1, expirationTime);
+			final ResultSet result = prepStatement.executeQuery();
+			if (result.next()) {
+				LOGGER.info(Exchange.EXCHANGE_FILTER, "the midnight rate at {} is {}", expirationTime, result.getString(2));
+				return ExchangeRate.fromJson(result.getString(2));
+			}
+			LOGGER.warn(Exchange.EXCHANGE_FILTER, "failed to midnight exchange rate from midnight rate table " +
+					"with expirationTime {}", expirationTime);
+			return null;
+		}
+	}
+
+	@Override
 	public ExchangeRate getLatestExchangeRate() throws Exception {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get latest exchange rate from exchange rate table");
 		try (final Connection conn = getConnection();

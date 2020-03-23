@@ -21,4 +21,5 @@ public interface ExchangeDB {
 
 	void pushQueriedRate(final long expirationTime, final String queriedRate) throws Exception;
 
+	ExchangeRate getMidnightExchangeRate(long expirationTime) throws Exception;
 }

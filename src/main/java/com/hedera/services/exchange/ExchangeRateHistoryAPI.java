@@ -29,6 +29,8 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateHistoryAPI.class);
     private static int NO_OF_RECORDS = 5;
     private final static long BOUND = 25;
+    private final static long SECONDS_IN_HOUR = 3600;
+    private final static long SECONDS_IN_DAY = 86400;
     private static DateFormat UTC_DATETIME_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     static {
@@ -59,7 +61,10 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
             final ExchangeDB exchangeDb = new ExchangeRateAWSRD(new AWSDBParams());
             LOGGER.info(Exchange.EXCHANGE_FILTER, "params received : {}", no_of_records);
             NO_OF_RECORDS = no_of_records;
-            final ExchangeRate midnightRate = exchangeDb.getLatestMidnightExchangeRate();
+            ExchangeRate midnightRate = exchangeDb.getLatestMidnightExchangeRate();
+            long currMidnightTime = midnightRate.getNextExpirationTimeInSeconds();
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "current Midnight time : {}", currMidnightTime);
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "current midnight rate : {}", midnightRate.toJson());
             String latestQueriedRate = exchangeDb.getLatestQueriedRate();
             ExchangeRate latestExchangeRate = exchangeDb.getLatestExchangeRate();
 
@@ -70,8 +75,8 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
             results.add(new ExchangeRateHistory(toDate(latestExpirationTime),
                             latestQueriedRate,
                             calulateMedian(latestExchangeRate),
-                            midnightRate.getNextRate()
-                                    .isSmallChange(BOUND, latestExchangeRate.getNextRate()),
+                            isSmoothed(midnightRate.getNextRate(),
+                                    latestExchangeRate.getNextRate()),
                             midnightRate,
                             latestExchangeRate.getCurrentRate(),
                             latestExchangeRate.getNextRate()
@@ -81,15 +86,24 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
             long expirationTime = latestExpirationTime;
 
             for (int i = 1; i < NO_OF_RECORDS; i++) {
-                expirationTime -= 3600;
+                expirationTime -= SECONDS_IN_HOUR;
+                //pull the appropriate midnight rate
+                if(expirationTime <= currMidnightTime){
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "day changed. fetching older midnight rate");
+                    currMidnightTime -= SECONDS_IN_DAY;
+                    midnightRate = exchangeDb.getMidnightExchangeRate(currMidnightTime);
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "adjusted current Midnight time : {}", currMidnightTime);
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "adjusted current midnight rate : {}", midnightRate.toJson());
+                }
+
                 ExchangeRate currentExchangeRate = exchangeDb.getExchangeRate(expirationTime);
                 String cuuQueriedRate = exchangeDb.getQueriedRate(expirationTime);
 
                 results.add(new ExchangeRateHistory(toDate(expirationTime),
                         cuuQueriedRate,
                         calulateMedian(currentExchangeRate),
-                        midnightRate.getNextRate()
-                                .isSmallChange(BOUND, currentExchangeRate.getNextRate()),
+                        isSmoothed(midnightRate.getNextRate(),
+                                currentExchangeRate.getNextRate()),
                         midnightRate,
                         currentExchangeRate.getCurrentRate(),
                         currentExchangeRate.getNextRate()
@@ -131,5 +145,9 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "converting epoc to utc date time format");
         Date date = new Date(expirationTime*1000);
         return UTC_DATETIME_FORMAT.format(date);
+    }
+
+    private boolean isSmoothed(Rate midnightRate, Rate nextRate){
+        return !midnightRate.isSmallChange(BOUND, nextRate);
     }
 }
