@@ -114,7 +114,7 @@ public class ExchangeRate {
 	@JsonIgnore
 	public boolean isMidnightTime(){
 		Calendar expiration = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
-		expiration.setTimeInMillis(this.getNextExpirationTimeInSeconds() * 1000);
+		expiration.setTimeInMillis(this.getCurrentExpirationsTimeInSeconds() * 1000);
 		return expiration.get(Calendar.HOUR_OF_DAY) == 0 && expiration.get(Calendar.MINUTE) == 0 && expiration.get(Calendar.SECOND) == 0;
 	}
 }

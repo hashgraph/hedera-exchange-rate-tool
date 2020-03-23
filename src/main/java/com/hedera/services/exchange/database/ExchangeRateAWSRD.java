@@ -13,6 +13,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * This class implements the ExchangeDB interface using AWS RDS
+ * which species what APIs that we need to fetch/push data into the Database.
+ *
+ * If you foresee doing more of this mapping, I would recommend moving to JPA/Hibernate.
+ *
+ */
 public class ExchangeRateAWSRD implements ExchangeDB {
 
 	private static final Logger LOGGER = LogManager.getLogger(ExchangeRateAWSRD.class);
@@ -20,6 +27,8 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	private static final String LATEST_EXCHANGE_QUERY = "SELECT e1.expirationTime, e1.exchangeRateFile FROM exchange_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM exchange_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
 	private static final String MIDNIGHT_EXCHANGE_QUERY = "SELECT e1.expirationTime, e1.exchangeRateFile FROM midnight_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM midnight_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
+
+	private static final String LATEST_QUERIED_QUERY = "SELECT e1.expirationTime, e1.queriedrates FROM queried_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM queried_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
 	private final AWSDBParams params;
 
@@ -54,6 +63,44 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	}
 
 	@Override
+	public ExchangeRate getExchangeRate(long expirationTime) throws Exception {
+		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get the exchange rate from exchange rate table " +
+				"with nextExpiration time :{}", expirationTime);
+		try (final Connection conn = getConnection();
+			 final PreparedStatement prepStatement = conn.prepareStatement(
+			 "SELECT expirationTime, exchangeRateFile FROM exchange_rate where expirationTime = ?")){
+			prepStatement.setLong(1, expirationTime);
+			final ResultSet result = prepStatement.executeQuery();
+			if (result.next()) {
+				LOGGER.info(Exchange.EXCHANGE_FILTER, "the exchange rate at {} is {}", expirationTime, result.getString(2));
+				return ExchangeRate.fromJson(result.getString(2));
+			}
+			LOGGER.warn(Exchange.EXCHANGE_FILTER, "failed to exchange rate from exchange rate table " +
+					"with expirationTime {}", expirationTime);
+			return null;
+		}
+	}
+
+	@Override
+	public String getQueriedRate(long expirationTime) throws Exception {
+		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get the queried rate from queried rate table " +
+				"with nextExpiration time :{}", expirationTime);
+		try (final Connection conn = getConnection();
+			 final PreparedStatement prepStatement = conn.prepareStatement(
+					 "SELECT expirationTime, queriedrates FROM queried_rate where expirationTime = ?")){
+			prepStatement.setLong(1, expirationTime);
+			final ResultSet result = prepStatement.executeQuery();
+			if (result.next()) {
+				LOGGER.info(Exchange.EXCHANGE_FILTER, "the queried rate at {} is {}", expirationTime, result.getString(2));
+				return result.getString(2);
+			}
+			LOGGER.warn(Exchange.EXCHANGE_FILTER, "failed to get the queried rate from queried rate table " +
+					"with expirationTime {}", expirationTime);
+			return null;
+		}
+	}
+
+	@Override
 	public ExchangeRate getLatestMidnightExchangeRate() throws Exception {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get midnight exchange rate from midnight rate table");
 		try (final Connection conn = getConnection();
@@ -64,6 +111,21 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 				return ExchangeRate.fromJson(result.getString(2));
 			}
 			LOGGER.warn(Exchange.EXCHANGE_FILTER, "failed to get latest exchange rate from midnight rate table ");
+			return null;
+		}
+	}
+
+	@Override
+	public String getLatestQueriedRate() throws Exception {
+		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get the latest queried rate");
+		try (final Connection conn = getConnection();
+			 final Statement statement = conn.createStatement();
+			 final ResultSet result = statement.executeQuery(LATEST_QUERIED_QUERY)) {
+			if (result.next()) {
+				LOGGER.info(Exchange.EXCHANGE_FILTER, "the queried rate : {}", result.getString(2));
+				return result.getString(2);
+			}
+			LOGGER.warn(Exchange.EXCHANGE_FILTER, "failed to get latest queried rate");
 			return null;
 		}
 	}
