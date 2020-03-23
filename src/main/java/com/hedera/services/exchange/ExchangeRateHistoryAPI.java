@@ -147,8 +147,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
         return UTC_DATETIME_FORMAT.format(date);
     }
 
-    private boolean isSmoothed(Rate midnightRate, Rate nextRate)
-    {
+    private boolean isSmoothed(Rate midnightRate, Rate nextRate){
         return !midnightRate.isSmallChange(BOUND, nextRate);
     }
 }
