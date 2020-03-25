@@ -87,9 +87,11 @@ public class ExchangeRateTool {
 
         final ExchangeRate exchangeRate = proc.call();
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
-        final String memo = String.format("ExchangeRate : {}, midnightRate : {}",
-                exchangeRate.toJson(),
-                midnightRate.toJson());
+        final String memo = String.format("currentRate : %d, nextRate : %d, midnightRate : %d",
+                exchangeRate.getCurrentRate().getCentEquiv(),
+                exchangeRate.getNextRate().getCentEquiv(),
+                midnightRate.getCentEquiv());
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Memo for the FileUpdate tx : {}", memo);
         final AccountId operatorId = AccountId.fromString(params.getOperatorId());
 
         final FileId fileId = FileId.fromString(params.getFileId());
