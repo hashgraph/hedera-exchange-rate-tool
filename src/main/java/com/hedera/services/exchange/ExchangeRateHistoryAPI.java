@@ -163,11 +163,11 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
                 midnightRate.getExpirationTimeInSeconds());
         if(midnightRate.isSmallChange(BOUND, nexRate)){
             LOGGER.info(Exchange.EXCHANGE_FILTER, "median in bound");
-            return true;
+            return false;
         }
         else{
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Medina out of bound");
-            return false;
+            return true;
         }
     }
 
