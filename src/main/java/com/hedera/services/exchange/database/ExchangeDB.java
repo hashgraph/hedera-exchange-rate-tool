@@ -1,7 +1,7 @@
 package com.hedera.services.exchange.database;
 
+import com.hedera.services.exchange.ERTAddressBook;
 import com.hedera.services.exchange.ExchangeRate;
-import com.hedera.services.exchange.exchanges.Exchange;
 
 public interface ExchangeDB {
 
@@ -22,4 +22,8 @@ public interface ExchangeDB {
 	void pushQueriedRate(final long expirationTime, final String queriedRate) throws Exception;
 
 	ExchangeRate getMidnightExchangeRate(long expirationTime) throws Exception;
+
+	ERTAddressBook getLatestERTAddressBook() throws Exception;
+
+	void pushERTAddressBook(long expirationTime, final ERTAddressBook ertAddressBook) throws Exception;
 }

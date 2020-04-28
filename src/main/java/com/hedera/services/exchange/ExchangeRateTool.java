@@ -1,19 +1,21 @@
 package com.hedera.services.exchange;
 
 import com.hedera.hashgraph.sdk.Client;
-import com.hedera.hashgraph.sdk.TransactionReceipt;
+import com.hedera.hashgraph.sdk.Hbar;
+import com.hedera.hashgraph.sdk.TransactionId;
 import com.hedera.hashgraph.sdk.account.AccountId;
+import com.hedera.hashgraph.sdk.account.AccountBalanceQuery;
 import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
-import com.hedera.hashgraph.sdk.file.FileContentsQuery;
-import com.hedera.hashgraph.sdk.file.FileId;
-import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
+import com.hedera.hashgraph.sdk.file.*;
 import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Exchange;
-import com.hederahashgraph.api.proto.java.FileGetContentsResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This Class represents the whole Exchange Rate Tool application. This is main entry point for the application.
@@ -21,12 +23,14 @@ import java.util.Arrays;
  * @author Anirudh, Cesar
  */
 public class ExchangeRateTool {
-
-    private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates were not updated successfully";
-
-    private static final int DEFAULT_RETRIES = 4;
-
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
+    private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates were not updated successfully";
+    private static final int DEFAULT_RETRIES = 4;
+    private static final String ADDRESS_BOOK_FILE_ID = "0.0.101";
+
+    private static ERTParams ertParams;
+    private static ExchangeDB exchangeDB;
+    private static ERTAddressBook ertAddressBook;
 
     public static void main(final String ... args) {
         run(args);
@@ -41,15 +45,19 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
         final int maxRetries = DEFAULT_RETRIES;
         int currentTries = 0;
-        while (currentTries <  maxRetries) {
-            try {
-                execute(args);
+        try {
+            ertParams = ERTParams.readConfig(args);
+            exchangeDB = ertParams.getExchangeDB();
+            ertAddressBook = exchangeDB.getLatestERTAddressBook();
+
+            while (currentTries <  maxRetries) {
+                execute();
                 return;
-            } catch (final Exception ex) {
-                ex.printStackTrace();
-                currentTries++;
-                LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute at try {}/{} with exception {}. Retrying", currentTries, maxRetries, ex);
             }
+        } catch (final Exception ex) {
+            ex.printStackTrace();
+            currentTries++;
+            LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute at try {}/{} with exception {}. Retrying", currentTries, maxRetries, ex);
         }
 
         final String errorMessage = String.format("Failed to execute after %d retries", maxRetries);
@@ -59,77 +67,114 @@ public class ExchangeRateTool {
 
     /**
      * This method encapsulates all the execution logic
-     *  - Execute ERTProc
-     *  - generate a transaction using the operator key, file ID, sign it with the private key
-     *  - perform the FIle Update transaction
-     *  - check if the transaction was successful
-     *  - Write the generated exchange rate files into the Database
-     * @param args
+     * - Execute ERTProc
+     * - generate a transaction using the operator key, file ID, sign it with the private key
+     * - perform the FIle Update transaction
+     * - check if the transaction was successful
+     * - Write the generated exchange rate files into the Database
      * @throws Exception
      */
-    private static void execute(final String ... args) throws Exception {
-        final ERTParams params = ERTParams.readConfig(args);
+    private static void execute() throws Exception {
 
-        final ExchangeDB exchangeDb = params.getExchangeDB();
+        final Ed25519PrivateKey privateOperatorKey = Ed25519PrivateKey.fromString(ertParams.getOperatorKey());
+        final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
 
-        final long frequencyInSeconds = params.getFrequencyInSeconds();
+        Client client = new Client( ertAddressBook != null && !ertAddressBook.getNodes().isEmpty() ?
+                ertAddressBook.getNodes() : ertParams.getNodes() )
+                .setMaxTransactionFee(ertParams.getMaxTransactionFee())
+                .setOperator(operatorId, privateOperatorKey);
 
-        final ExchangeRate midnightExchangeRate = exchangeDb.getLatestMidnightExchangeRate();
+        final long frequencyInSeconds = ertParams.getFrequencyInSeconds();
+        final ExchangeRate midnightExchangeRate = exchangeDB.getLatestMidnightExchangeRate();
         final Rate midnightRate = midnightExchangeRate == null ? null : midnightExchangeRate.getNextRate();
-        final Rate currentRate = getCurrentRate(exchangeDb, params);
-        final ERTproc proc = new ERTproc(params.getDefaultHbarEquiv(),
-                params.getExchangeAPIList(),
-                params.getBound(),
-                params.getFloor(),
+        final Rate currentRate = getCurrentRate(exchangeDB, ertParams);
+
+        final ERTproc proc = new ERTproc(ertParams.getDefaultHbarEquiv(),
+                ertParams.getExchangeAPIList(),
+                ertParams.getBound(),
+                ertParams.getFloor(),
                 midnightRate,
                 currentRate,
                 frequencyInSeconds);
 
         final ExchangeRate exchangeRate = proc.call();
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
+
         final String memo = String.format("currentRate : %d, nextRate : %d, midnightRate : %d",
                 exchangeRate.getCurrentRate().getCentEquiv(),
                 exchangeRate.getNextRate().getCentEquiv(),
                 midnightRate.getCentEquiv());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Memo for the FileUpdate tx : {}", memo);
-        final AccountId operatorId = AccountId.fromString(params.getOperatorId());
 
-        final FileId fileId = FileId.fromString(params.getFileId());
-        final Ed25519PrivateKey privateOperatorKey =  Ed25519PrivateKey.fromString(params.getOperatorKey());
-        final Client client = new Client(params.getNodes())
-                .setMaxTransactionFee(params.getMaxTransactionFee())
-                .setOperator(operatorId, privateOperatorKey);
+        final FileId exchangeRateFileId = FileId.fromString(ertParams.getFileId());
+        final FileId addressBookFileId = FileId.fromString(ADDRESS_BOOK_FILE_ID);
 
-        final long currentBalance = client.getAccountBalance(operatorId);
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before updating the file: {}", currentBalance);
-        final FileUpdateTransaction fileUpdateTransaction = new FileUpdateTransaction(client)
-                .setFileId(fileId)
-                .setContents(exchangeRateAsBytes)
-                .addKey(privateOperatorKey.getPublicKey())
-                .setMemo(memo);
+        final Hbar currentBalance = new AccountBalanceQuery()
+                                                .setAccountId(operatorId)
+                                                .execute(client);
+
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before the process of updating the Exchange Rate file: {}",
+                currentBalance);
+
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "fetching the addressbook");
+
+        final String addressBook = new String(getFileContentsQuery(client, addressBookFileId),
+                                        StandardCharsets.UTF_8)
+                                        .trim();
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "addressbook file contents {}", addressBook);
+
+        Map<String, String> addressBookNodes = new HashMap<>();
+        if (addressBook.isEmpty()) {
+            LOGGER.warn(Exchange.EXCHANGE_FILTER, "didnt find any addresses in the address book.");
+        } else {
+            addressBookNodes = getNodesFromAddressBook(addressBook);
+        }
+
+        ERTAddressBook newAddressBook = new ERTAddressBook();
+        newAddressBook.setNodes(addressBookNodes);
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Pushing new ExchangeRate {}", exchangeRate.toJson());
-        final TransactionReceipt firstTry = fileUpdateTransaction.executeForReceipt();
+        final TransactionId ExchangeRateFileUpdateTransactionId = new FileUpdateTransaction()
+                                                                    .setFileId(exchangeRateFileId)
+                                                                    .setContents(exchangeRateAsBytes)
+                                                                    .setTransactionMemo(memo)
+                                                                    .execute(client);
 
         LOGGER.info("Exchange rate file hash {} bytes and hash code {}",
                 exchangeRateAsBytes.length,
                 Arrays.hashCode(exchangeRateAsBytes));
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has status {}", firstTry.getStatus());
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has status {}",
+                ExchangeRateFileUpdateTransactionId.getReceipt(client).status);
 
-        Thread.sleep(params.getValidationDelayInMilliseconds());
+        Thread.sleep(ertParams.getValidationDelayInMilliseconds());
 
-        final long newBalance = client.getAccountBalance(operatorId);
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the file: {}", newBalance);
+        final Hbar newBalance = new AccountBalanceQuery()
+                                    .setAccountId(operatorId)
+                                    .execute(client);
 
-        final long getContentsQueryFee =  new FileContentsQuery(client).setFileId(fileId).requestCost();
-        LOGGER.debug(Exchange.EXCHANGE_FILTER, "Cost to get file contents is : {}", getContentsQueryFee);
-        client.setMaxQueryPayment(getContentsQueryFee);
-        
-        final FileGetContentsResponse contentsResponse = new FileContentsQuery(client).setFileId(fileId).execute();
-        final long costPerCheck = contentsResponse.getHeader().getCost();
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Cost to validate file contents is {}", costPerCheck);
-        final byte[] contentsRetrieved = contentsResponse.getFileContents().getContents().toByteArray();
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the Exchange Rate file: {}", newBalance);
+
+        /**
+         * commented out code:
+         *
+         * Code to get file info on the ERT file that we just updated.
+         * Could be useful in future to debug errors.
+         */
+
+//        FileInfo exchangeRateFileInfo = new FileInfoQuery()
+//                                            .setFileId(exchangeRateFileId)
+//                                            .execute(client);
+//
+//        LOGGER.info(Exchange.EXCHANGE_FILTER, "Exchange Rate file info : exp Time {} \n fileID {} \n isDeleted {} \n" +
+//                        "keys {} \n size {}",
+//                exchangeRateFileInfo.expirationTime,
+//                exchangeRateFileInfo.fileId,
+//                exchangeRateFileInfo.isDeleted,
+//                exchangeRateFileInfo.keys,
+//                exchangeRateFileInfo.size);
+
+        final byte[] contentsRetrieved =  getFileContentsQuery(client, exchangeRateFileId);
 
         LOGGER.info("The contents retrieved has {} bytes and hash code {}",
                 contentsRetrieved.length,
@@ -139,14 +184,38 @@ public class ExchangeRateTool {
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
 
-        if(exchangeRate.isMidnightTime()){
+        exchangeDB.pushExchangeRate(exchangeRate);
+        if (exchangeRate.isMidnightTime()) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
-            exchangeDb.pushMidnightRate(exchangeRate);
+            exchangeDB.pushMidnightRate(exchangeRate);
         }
+        exchangeDB.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
+        exchangeDB.pushERTAddressBook(exchangeRate.getNextExpirationTimeInSeconds(), newAddressBook);
 
-        exchangeDb.pushExchangeRate(exchangeRate);
-        exchangeDb.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
+    }
+
+    /**
+     * This method parses the address book and generates a map of nodeIds and their Addresses.
+     * @param addressBook
+     * @return Map<String, String> nodeId --> IPaddress
+     */
+    public static Map<String, String> getNodesFromAddressBook(String addressBook) {
+        Map<String, String> nodes =  new HashMap<>();
+        String[] addresses = addressBook.split("\n");
+        int nodeNumber = 3;
+        for(String address : addresses){
+            address = address.replaceAll(" ", "");
+            String[] elements = address.split("0.0.");
+            if(elements.length == 2) {
+                String nodeId = String.format("0.0.%d", nodeNumber++);
+                String nodeAddress = elements[0].trim().replaceAll("/", "");
+                nodes.put(nodeId, nodeAddress+":50211");
+                LOGGER.info(Exchange.EXCHANGE_FILTER, "found node {} and its address {}:50211 in addressBook",
+                        nodeId, nodeAddress);
+            }
+        }
+        return  nodes;
     }
 
     /**
@@ -166,5 +235,25 @@ public class ExchangeRateTool {
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Using default exchange rate as current exchange rate");
         return params.getDefaultRate();
+    }
+
+    /**
+     * This method executes the FileContentsQuery given a Client and a FileId
+     * @param client
+     * @param fileId
+     * @return contents of the file in byte{] format
+     * @throws Exception
+     */
+    private static byte[] getFileContentsQuery(Client client, FileId fileId) throws Exception {
+        final long getContentsQueryFee = new FileContentsQuery()
+                                            .setFileId(fileId)
+                                            .getCost(client);
+        LOGGER.debug(Exchange.EXCHANGE_FILTER, "Cost to get file {} contents is : {}", fileId, getContentsQueryFee);
+        client.setMaxQueryPayment(getContentsQueryFee);
+
+        byte[] contentsResponse = new FileContentsQuery()
+                                                        .setFileId(fileId)
+                                                        .execute(client);
+        return contentsResponse;
     }
 }

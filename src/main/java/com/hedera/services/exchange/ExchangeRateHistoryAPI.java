@@ -2,6 +2,7 @@ package com.hedera.services.exchange;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -33,9 +34,9 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateHistoryAPI.class);
     private static int NO_OF_RECORDS = 5;
     private final static long BOUND = 25;
-    private final static long SECONDS_IN_HOUR = 3600;
-    private final static long SECONDS_IN_DAY = 86400;
-    private final static long HABREQUIV = 30000;
+    private final static long SECONDS_IN_HOUR = 3_600;
+    private final static long SECONDS_IN_DAY = 86_400;
+    private final static long HBAR_EQUIV = 30_000;
     private static DateFormat UTC_DATETIME_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     static {
@@ -56,7 +57,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
 
             JSONObject requestEvent = (JSONObject) requestParser.parse(requestReader);
 
-            if(requestEvent.get("queryStringParameters") != null){
+            if (requestEvent.get("queryStringParameters") != null) {
                 JSONObject queryStringParameters = (JSONObject) requestEvent.get("queryStringParameters");
                 if (queryStringParameters.get("no_of_records") != null) {
                     no_of_records = Integer.parseInt((String) queryStringParameters.get("no_of_records"));
@@ -77,12 +78,12 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
 
             List<ExchangeRateHistory> results = new ArrayList<>();
 
-            Double foundMedian = findMedian(latestQueriedRate);
+            double latestMedian = findMedian(latestQueriedRate);
 
             results.add(new ExchangeRateHistory(toDate(latestExpirationTime),
                             latestQueriedRate,
-                            foundMedian,
-                            isSmoothed(midnightRate.getNextRate(), foundMedian),
+                            latestMedian,
+                            isSmoothed(midnightRate.getNextRate(), latestMedian),
                             midnightRate,
                             latestExchangeRate.getCurrentRate(),
                             latestExchangeRate.getNextRate()
@@ -94,7 +95,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
             for (int i = 1; i < NO_OF_RECORDS; i++) {
                 expirationTime -= SECONDS_IN_HOUR;
                 //pull the appropriate midnight rate
-                if(expirationTime <= currMidnightTime){
+                if (expirationTime <= currMidnightTime) {
                     LOGGER.info(Exchange.EXCHANGE_FILTER, "day changed. fetching older midnight rate");
                     currMidnightTime -= SECONDS_IN_DAY;
                     midnightRate = exchangeDb.getMidnightExchangeRate(currMidnightTime);
@@ -104,11 +105,11 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
 
                 ExchangeRate currentExchangeRate = exchangeDb.getExchangeRate(expirationTime);
                 String currentQueriedRate = exchangeDb.getQueriedRate(expirationTime);
-                foundMedian = findMedian(currentQueriedRate);
+                double currentMedian = findMedian(currentQueriedRate);
                 results.add(new ExchangeRateHistory(toDate(expirationTime),
                         currentQueriedRate,
                         calulateMedian(currentExchangeRate),
-                        isSmoothed(midnightRate.getNextRate(), foundMedian),
+                        isSmoothed(midnightRate.getNextRate(), currentMedian),
                         midnightRate,
                         currentExchangeRate.getCurrentRate(),
                         currentExchangeRate.getNextRate()
@@ -125,8 +126,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
 
             responseJson.put("statusCode", 200);
             responseJson.put("body", result);
-        }
-        catch (Exception e){
+        } catch (Exception e){
             LOGGER.error(Exchange.EXCHANGE_FILTER, e.getMessage());
             responseJson.put("statusCode", 400);
             responseJson.put("body", e.getMessage());
@@ -152,56 +152,55 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
         return UTC_DATETIME_FORMAT.format(date);
     }
 
-    public boolean isSmoothed(Rate midnightRate, Double foundMedian){
-        if( foundMedian == 0.0){
+    public boolean isSmoothed(Rate midnightRate, double foundMedian) throws JsonProcessingException {
+        if ( foundMedian == 0.0) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "failed to find median" );
             return false;
         }
 
-        Rate nexRate = new Rate(HABREQUIV,
-                (int) (foundMedian * 100 * HABREQUIV),
+        final Rate nexRate = new Rate(HBAR_EQUIV,
+                (int) (foundMedian * 100 * HBAR_EQUIV),
                 midnightRate.getExpirationTimeInSeconds());
-        if(midnightRate.isSmallChange(BOUND, nexRate)){
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "median in bound");
+        if (midnightRate.isSmallChange(BOUND, nexRate)) {
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "median in bound : {}", nexRate.toJson());
             return false;
-        }
-        else{
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "Medina out of bound");
+        } else {
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Medina out of bound : {}", nexRate.toJson());
             return true;
         }
     }
 
     private Double findMedian(String queriedRate) {
-        Double median = 0.0;
-        List<Double> hbarValues = extracthabrValues(queriedRate);
-        if(hbarValues.isEmpty()){
-            return median;
+       final  List<Double> hbarValues = extracthbarValues(queriedRate);
+        if (hbarValues.isEmpty()) {
+            return 0.0;
         }
-        if(hbarValues.size() % 2 == 0){
-            median = ( hbarValues.get( hbarValues.size() / 2 ) +
+
+        if (hbarValues.size() % 2 == 0) {
+            return( hbarValues.get( hbarValues.size() / 2 ) +
                     hbarValues.get( (hbarValues.size() / 2 ) - 1 )
             ) / 2;
+        } else {
+           return hbarValues.get( (hbarValues.size() - 1) / 2);
         }
-        else{
-            median = hbarValues.get( (hbarValues.size() - 1) / 2);
-        }
-        return median;
     }
 
-    private List<Double> extracthabrValues(String queriedRate){
+    private List<Double> extracthbarValues(String queriedRate){
         List<Double> hbarValues = new ArrayList<Double>();
         JsonParser exchangeParser = new JsonParser();
         JsonElement exchangesElement = exchangeParser.parse(queriedRate);
-        if(exchangesElement.isJsonArray()){
+        if (exchangesElement.isJsonArray()) {
             JsonArray exchanges = exchangesElement.getAsJsonArray();
-            for( int i = 0 ; i < exchanges.size(); i++){
+            for( int i = 0 ; i < exchanges.size(); i++) {
                 JsonObject exchange = exchanges.get(i).getAsJsonObject();
                 JsonElement habr = exchange.get("HBAR");
                 hbarValues.add(habr.getAsDouble());
             }
+
             hbarValues.sort(Comparator.comparingDouble(Double::doubleValue));
             LOGGER.info(Exchange.EXCHANGE_FILTER, "queried rates - {}", hbarValues);
         }
+
         return hbarValues;
     }
 
