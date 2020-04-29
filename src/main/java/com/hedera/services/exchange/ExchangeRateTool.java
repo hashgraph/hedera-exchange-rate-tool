@@ -116,29 +116,39 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before the process of updating the Exchange Rate file: {}",
                 currentBalance);
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "fetching the addressbook");
+        ERTAddressBook newAddressBook = fetchAddressBook(client, addressBookFileId);
 
-        final String addressBook = new String(getFileContentsQuery(client, addressBookFileId),
-                                        StandardCharsets.UTF_8)
-                                        .trim();
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "addressbook file contents {}", addressBook);
+        updateExchangeRateFileTxnAndValidate(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo, operatorId);
 
-        Map<String, String> addressBookNodes = new HashMap<>();
-        if (addressBook.isEmpty()) {
-            LOGGER.warn(Exchange.EXCHANGE_FILTER, "didnt find any addresses in the address book.");
-        } else {
-            addressBookNodes = getNodesFromAddressBook(addressBook);
+        final Hbar newBalance = new AccountBalanceQuery()
+                .setAccountId(operatorId)
+                .execute(client);
+
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the Exchange Rate file: {}", newBalance);
+
+        exchangeDB.pushExchangeRate(exchangeRate);
+        if (exchangeRate.isMidnightTime()) {
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
+            exchangeDB.pushMidnightRate(exchangeRate);
         }
+        exchangeDB.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
+        exchangeDB.pushERTAddressBook(exchangeRate.getNextExpirationTimeInSeconds(), newAddressBook);
 
-        ERTAddressBook newAddressBook = new ERTAddressBook();
-        newAddressBook.setNodes(addressBookNodes);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
+    }
 
+    private static void updateExchangeRateFileTxnAndValidate(ExchangeRate exchangeRate,
+                                                             FileId exchangeRateFileId,
+                                                             byte[] exchangeRateAsBytes,
+                                                             Client client,
+                                                             String memo,
+                                                             AccountId operatorId) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Pushing new ExchangeRate {}", exchangeRate.toJson());
         final TransactionId ExchangeRateFileUpdateTransactionId = new FileUpdateTransaction()
-                                                                    .setFileId(exchangeRateFileId)
-                                                                    .setContents(exchangeRateAsBytes)
-                                                                    .setTransactionMemo(memo)
-                                                                    .execute(client);
+                .setFileId(exchangeRateFileId)
+                .setContents(exchangeRateAsBytes)
+                .setTransactionMemo(memo)
+                .execute(client);
 
         LOGGER.info("Exchange rate file hash {} bytes and hash code {}",
                 exchangeRateAsBytes.length,
@@ -148,12 +158,6 @@ public class ExchangeRateTool {
                 ExchangeRateFileUpdateTransactionId.getReceipt(client).status);
 
         Thread.sleep(ertParams.getValidationDelayInMilliseconds());
-
-        final Hbar newBalance = new AccountBalanceQuery()
-                                    .setAccountId(operatorId)
-                                    .execute(client);
-
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the Exchange Rate file: {}", newBalance);
 
         /**
          * commented out code:
@@ -183,16 +187,26 @@ public class ExchangeRateTool {
             LOGGER.error(Exchange.EXCHANGE_FILTER, UPDATE_ERROR_MESSAGE);
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
+    }
 
-        exchangeDB.pushExchangeRate(exchangeRate);
-        if (exchangeRate.isMidnightTime()) {
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
-            exchangeDB.pushMidnightRate(exchangeRate);
+    private static ERTAddressBook fetchAddressBook(Client client, FileId addressBookFileId) throws Exception {
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "fetching the addressbook");
+
+        final String addressBook = new String(getFileContentsQuery(client, addressBookFileId),
+                StandardCharsets.UTF_8)
+                .trim();
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "addressbook file contents {}", addressBook);
+
+        Map<String, String> addressBookNodes = new HashMap<>();
+        if (addressBook.isEmpty()) {
+            LOGGER.warn(Exchange.EXCHANGE_FILTER, "didnt find any addresses in the address book.");
+        } else {
+            addressBookNodes = getNodesFromAddressBook(addressBook);
         }
-        exchangeDB.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
-        exchangeDB.pushERTAddressBook(exchangeRate.getNextExpirationTimeInSeconds(), newAddressBook);
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
+        ERTAddressBook newAddressBook = new ERTAddressBook();
+        newAddressBook.setNodes(addressBookNodes);
+        return  newAddressBook;
     }
 
     /**

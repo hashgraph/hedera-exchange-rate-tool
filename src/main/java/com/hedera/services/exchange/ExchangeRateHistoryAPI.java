@@ -158,20 +158,20 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
             return false;
         }
 
-        final Rate nexRate = new Rate(HBAR_EQUIV,
+        final Rate nextRate = new Rate(HBAR_EQUIV,
                 (int) (foundMedian * 100 * HBAR_EQUIV),
                 midnightRate.getExpirationTimeInSeconds());
-        if (midnightRate.isSmallChange(BOUND, nexRate)) {
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "median in bound : {}", nexRate.toJson());
+        if (midnightRate.isSmallChange(BOUND, nextRate)) {
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Median in bound : {}", nextRate.toJson());
             return false;
         } else {
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "Medina out of bound : {}", nexRate.toJson());
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Median out of bound : {}", nextRate.toJson());
             return true;
         }
     }
 
     private Double findMedian(String queriedRate) {
-       final  List<Double> hbarValues = extracthbarValues(queriedRate);
+       final  List<Double> hbarValues = extractHbarValues(queriedRate);
         if (hbarValues.isEmpty()) {
             return 0.0;
         }
@@ -185,7 +185,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
         }
     }
 
-    private List<Double> extracthbarValues(String queriedRate){
+    private List<Double> extractHbarValues(String queriedRate){
         List<Double> hbarValues = new ArrayList<Double>();
         JsonParser exchangeParser = new JsonParser();
         JsonElement exchangesElement = exchangeParser.parse(queriedRate);
@@ -193,8 +193,8 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
             JsonArray exchanges = exchangesElement.getAsJsonArray();
             for( int i = 0 ; i < exchanges.size(); i++) {
                 JsonObject exchange = exchanges.get(i).getAsJsonObject();
-                JsonElement habr = exchange.get("HBAR");
-                hbarValues.add(habr.getAsDouble());
+                JsonElement hbar = exchange.get("HBAR");
+                hbarValues.add(hbar.getAsDouble());
             }
 
             hbarValues.sort(Comparator.comparingDouble(Double::doubleValue));
