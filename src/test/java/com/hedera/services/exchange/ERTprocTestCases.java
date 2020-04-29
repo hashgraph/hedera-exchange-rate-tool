@@ -1,7 +1,7 @@
 package com.hedera.services.exchange;
 
 import com.hedera.services.exchange.exchanges.AbstractExchange;
-import com.hederahashgraph.api.proto.java.ExchangeRateSet;
+import com.hedera.hashgraph.proto.ExchangeRateSet;
 import mockit.Mock;
 import mockit.MockUp;
 import org.junit.jupiter.params.ParameterizedTest;

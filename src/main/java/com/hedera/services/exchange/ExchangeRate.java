@@ -5,9 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hederahashgraph.api.proto.java.ExchangeRateSet;
-import com.hederahashgraph.api.proto.java.TimestampSeconds;
-
+import com.hedera.hashgraph.proto.ExchangeRateSet;
+import com.hedera.hashgraph.proto.TimestampSeconds;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -87,8 +86,8 @@ public class ExchangeRate {
 	 * @return ExchangeRateSet
 	 */
 	public ExchangeRateSet toExchangeRateSet() {
-		final com.hederahashgraph.api.proto.java.ExchangeRate currentRate =
-				com.hederahashgraph.api.proto.java.ExchangeRate.newBuilder()
+		final com.hedera.hashgraph.proto.ExchangeRate currentRate =
+				com.hedera.hashgraph.proto.ExchangeRate.newBuilder()
 						.setExpirationTime(TimestampSeconds.newBuilder()
 								.setSeconds(this.currentRate.getExpirationTimeInSeconds()
 						).build())
@@ -96,8 +95,8 @@ public class ExchangeRate {
 						.setHbarEquiv((int)this.currentRate.getHBarEquiv())
 						.build();
 
-		final com.hederahashgraph.api.proto.java.ExchangeRate nextRate =
-				com.hederahashgraph.api.proto.java.ExchangeRate.newBuilder()
+		final com.hedera.hashgraph.proto.ExchangeRate nextRate =
+				com.hedera.hashgraph.proto.ExchangeRate.newBuilder()
 						.setExpirationTime(TimestampSeconds.newBuilder()
 								.setSeconds(this.nextRate.getExpirationTimeInSeconds()
 								).build())

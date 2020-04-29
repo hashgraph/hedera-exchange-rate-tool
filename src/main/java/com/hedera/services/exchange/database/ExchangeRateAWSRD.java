@@ -1,5 +1,6 @@
 package com.hedera.services.exchange.database;
 
+import com.hedera.services.exchange.ERTAddressBook;
 import com.hedera.services.exchange.ExchangeRate;
 import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +26,8 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	private static final Logger LOGGER = LogManager.getLogger(ExchangeRateAWSRD.class);
 
 	private static final String LATEST_EXCHANGE_QUERY = "SELECT e1.expirationTime, e1.exchangeRateFile FROM exchange_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM exchange_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
+
+	private static final String LATEST_ADDRESSBOOK_QUERY = "SELECT e1.expirationTime, e1.addressBook FROM address_book AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM address_book) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
 	private static final String MIDNIGHT_EXCHANGE_QUERY = "SELECT e1.expirationTime, e1.exchangeRateFile FROM midnight_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM midnight_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
@@ -63,6 +66,34 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 			LOGGER.warn(Exchange.EXCHANGE_FILTER, "failed to midnight exchange rate from midnight rate table " +
 					"with expirationTime {}", expirationTime);
 			return null;
+		}
+	}
+
+	@Override
+	public ERTAddressBook getLatestERTAddressBook() throws Exception {
+		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get latest ERTAddressBook from address_book table");
+		try (final Connection conn = getConnection();
+			 final Statement statement = conn.createStatement();
+			 final ResultSet result = statement.executeQuery(LATEST_ADDRESSBOOK_QUERY)) {
+			if (result.next()) {
+				LOGGER.info(Exchange.EXCHANGE_FILTER, "the latest exchange rate : {}", result.getString(2));
+				return ERTAddressBook.fromJson(result.getString(2));
+			}
+			LOGGER.warn(Exchange.EXCHANGE_FILTER, "failed to get latest ERTAddressBook from address_book table ");
+			return null;
+		}
+	}
+
+	@Override
+	public void pushERTAddressBook(long expirationTime, ERTAddressBook ertAddressBook) throws Exception {
+		LOGGER.info(Exchange.EXCHANGE_FILTER, "push latest addressBook to  address_book table : {}",
+				ertAddressBook.toJson());
+		try (final Connection conn = getConnection();
+			 final PreparedStatement statement = conn.prepareStatement(
+					 "INSERT INTO address_book (expirationTime,addressBook) VALUES(?,?::JSON)")) {
+			statement.setLong(1, expirationTime);
+			statement.setObject(2, ertAddressBook.toJson());
+			statement.executeUpdate();
 		}
 	}
 
