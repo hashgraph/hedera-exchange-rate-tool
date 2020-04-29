@@ -144,7 +144,7 @@ public class ExchangeRateTool {
                                                              String memo,
                                                              AccountId operatorId) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Pushing new ExchangeRate {}", exchangeRate.toJson());
-        final TransactionId ExchangeRateFileUpdateTransactionId = new FileUpdateTransaction()
+        final TransactionId exchangeRateFileUpdateTransactionId = new FileUpdateTransaction()
                 .setFileId(exchangeRateFileId)
                 .setContents(exchangeRateAsBytes)
                 .setTransactionMemo(memo)
@@ -155,7 +155,7 @@ public class ExchangeRateTool {
                 Arrays.hashCode(exchangeRateAsBytes));
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has status {}",
-                ExchangeRateFileUpdateTransactionId.getReceipt(client).status);
+                exchangeRateFileUpdateTransactionId.getReceipt(client).status);
 
         Thread.sleep(ertParams.getValidationDelayInMilliseconds());
 
