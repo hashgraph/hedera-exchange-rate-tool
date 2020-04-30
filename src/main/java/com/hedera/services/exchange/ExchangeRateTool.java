@@ -1,5 +1,6 @@
 package com.hedera.services.exchange;
 
+import com.hedera.hashgraph.proto.NodeAddress;
 import com.hedera.hashgraph.sdk.Client;
 import com.hedera.hashgraph.sdk.Hbar;
 import com.hedera.hashgraph.sdk.TransactionId;
@@ -7,12 +8,12 @@ import com.hedera.hashgraph.sdk.account.AccountId;
 import com.hedera.hashgraph.sdk.account.AccountBalanceQuery;
 import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
 import com.hedera.hashgraph.sdk.file.*;
+import com.hedera.hashgraph.proto.NodeAddressBook;
 import com.hedera.services.exchange.database.ExchangeDB;
 import com.hedera.services.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -192,16 +193,15 @@ public class ExchangeRateTool {
     private static ERTAddressBook fetchAddressBook(Client client, FileId addressBookFileId) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "fetching the addressbook");
 
-        final String addressBook = new String(getFileContentsQuery(client, addressBookFileId),
-                StandardCharsets.UTF_8)
-                .trim();
+        final NodeAddressBook addressBook = NodeAddressBook.parseFrom(
+                getFileContentsQuery(client, addressBookFileId));
         LOGGER.info(Exchange.EXCHANGE_FILTER, "addressbook file contents {}", addressBook);
 
         Map<String, String> addressBookNodes = new HashMap<>();
-        if (addressBook.isEmpty()) {
-            LOGGER.warn(Exchange.EXCHANGE_FILTER, "didnt find any addresses in the address book.");
-        } else {
+        if (addressBook.getNodeAddressCount() > 0) {
             addressBookNodes = getNodesFromAddressBook(addressBook);
+        } else {
+            LOGGER.warn(Exchange.EXCHANGE_FILTER, "didnt find any addresses in the address book.");
         }
 
         ERTAddressBook newAddressBook = new ERTAddressBook();
@@ -214,20 +214,14 @@ public class ExchangeRateTool {
      * @param addressBook
      * @return Map<String, String> nodeId --> IPaddress
      */
-    public static Map<String, String> getNodesFromAddressBook(String addressBook) {
+    public static Map<String, String> getNodesFromAddressBook(NodeAddressBook addressBook) {
         Map<String, String> nodes =  new HashMap<>();
-        String[] addresses = addressBook.split("\n");
-        int nodeNumber = 3;
-        for(String address : addresses){
-            address = address.replaceAll(" ", "");
-            String[] elements = address.split("0.0.");
-            if(elements.length == 2) {
-                String nodeId = String.format("0.0.%d", nodeNumber++);
-                String nodeAddress = elements[0].trim().replaceAll("/", "");
-                nodes.put(nodeId, nodeAddress+":50211");
-                LOGGER.info(Exchange.EXCHANGE_FILTER, "found node {} and its address {}:50211 in addressBook",
-                        nodeId, nodeAddress);
-            }
+        for(NodeAddress address : addressBook.getNodeAddressList()){
+            String nodeId = address.getMemo().toStringUtf8();
+            String nodeAddress = address.getIpAddress().toStringUtf8();
+            nodes.put(nodeId, nodeAddress+":50211");
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "found node {} and its address {}:50211 in addressBook",
+                    nodeId, nodeAddress);
         }
         return  nodes;
     }
