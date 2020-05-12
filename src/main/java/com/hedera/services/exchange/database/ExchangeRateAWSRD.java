@@ -76,7 +76,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 			 final Statement statement = conn.createStatement();
 			 final ResultSet result = statement.executeQuery(LATEST_ADDRESSBOOK_QUERY)) {
 			if (result.next()) {
-				LOGGER.info(Exchange.EXCHANGE_FILTER, "the latest exchange rate : {}", result.getString(2));
+				LOGGER.info(Exchange.EXCHANGE_FILTER, "the latest ERTAddressBook from address_book table {}", result.getString(2));
 				return ERTAddressBook.fromJson(result.getString(2));
 			}
 			LOGGER.warn(Exchange.EXCHANGE_FILTER, "failed to get latest ERTAddressBook from address_book table ");

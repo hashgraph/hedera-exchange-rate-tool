@@ -25,3 +25,13 @@ create table queried_rate
 
 
 CREATE INDEX ON queried_rate (expirationtime);
+
+create table address_book
+(
+    id             SERIAL NOT NULL,
+    expirationTime BIGINT,
+    addressBook    JSON
+);
+
+
+CREATE INDEX ON address_book (expirationtime);
