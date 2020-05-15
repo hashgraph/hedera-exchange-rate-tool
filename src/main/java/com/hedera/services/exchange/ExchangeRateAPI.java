@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author Anirudh, Cesar
  */
-public class ExchangeRateApi {
+public class ExchangeRateAPI {
 
 	private static Map<String, String> HEADERS = new HashMap<>();
 
