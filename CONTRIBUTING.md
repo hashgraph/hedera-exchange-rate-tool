@@ -1,6 +1,6 @@
 # Contributing Guidelines
 
-Hedera Services accepts contributions via GitHub pull requests. 
+Exchange Rate Tool accepts contributions via GitHub pull requests. 
 This document outlines the process to help get your contribution accepted.
 
 ## Contents
@@ -19,7 +19,7 @@ This document outlines the process to help get your contribution accepted.
 
 Whether you are a user or contributor, official support channels include:
 
-- [Issues](https://github.com/hashgraph/hedera-services/issues)
+- [Issues](https://github.com/swirlds/Exchange-Rate-Tool/issues)
 - [Discord](https://discordapp.com/invite/FFb9YFX)
 
 Before opening a new issue or submitting a new pull request, it's helpful to search the project -
@@ -33,14 +33,14 @@ Issues are used as the primary method for tracking anything to do with the proje
 ### Vulnerability Disclosure
 
 Most of the time, when you find a bug, it should be reported using
-[GitHub issues](https://github.com/hashgraph/hedera-services/issues). However, if
+[GitHub issues](https://github.com/swirlds/Exchange-Rate-Tool/issues). However, if
 you are reporting a _security vulnerability_, please email a report to
 [security@hedera.com](mailto:security@hedera.com). This will give
 us a chance to try to fix the issue before it is exploited in the wild.
 
 ### Issue Types
 
-There are 3 types of issues (each with their own corresponding [label](https://github.com/hashgraph/hedera-services/labels)):
+There are 3 types of issues (each with their own corresponding [label](https://github.com/swirlds/Exchange-Rate-Tool/issues/labels)):
 
 - **Bugs:** These track bugs with the code or problems with the documentation (i.e. missing or incomplete)
 - **Features:** These track specific feature requests and ideas until they are complete. If the feature is
@@ -81,25 +81,25 @@ Like most open source projects, we use Pull Requests (PRs) to track code changes
 
 ### Forking
 
-1. Fork the [hedera-services](https://github.com/hashgraph/hedera-services) repo
+1. Fork the [Exchange-Rate-Tool](https://github.com/hashgraph/Exchange-Rate-Tool) repo
 
-Go to the [project](https://github.com/hashgraph/hedera-services) page then hit the `Fork`
+Go to the [project](https://github.com/hashgraph/Exchange-Rate-Tool) page then hit the `Fork`
 button to fork your own copy of the repository to your GitHub account.
 
 2. Clone the forked repo to your local working directory.
 ```sh
-$ git clone https://github.com/$your_github_account/hedera-services.git   
+$ git clone https://github.com/$your_github_account/Exchange-Rate-Tool.git   
 ```
 3. Add an `upstream` remote to keep your fork in sync with the main repo.
 ```sh
-$ cd hedera-services
-$ git remote add upstream https://github.com/hashgraph/hedera-services.git
+$ cd Exchange-Rate-Tool
+$ git remote add upstream https://github.com/hashgraph/Exchange-Rate-Tool.git
 $ git remote -v
 
-origin  https://github.com/$your_github_account/hedera-services.git (fetch)
-origin  https://github.com/$your_github_account/hedera-services.git (push)
-upstream        https://github.com/hashgraph/hedera-services.git (fetch)
-upstream        https://github.com/hashgraph/hedera-services.git (push)
+origin  https://github.com/$your_github_account/Exchange-Rate-Tool.git (fetch)
+origin  https://github.com/$your_github_account/Exchange-Rate-Tool.git (push)
+upstream        https://github.com/hashgraph/Exchange-Rate-Tool.git (fetch)
+upstream        https://github.com/hashgraph/Exchange-Rate-Tool.git (push)
 ```
 4. Sync your local `master` branch.
 ```sh
