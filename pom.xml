@@ -28,6 +28,11 @@
         </license>
     </licenses>
 
+    <organization>
+        <name>Hedera Hashgraph, LLC</name>
+        <url>https://hedera.com</url>
+    </organization>
+
     <scm>
 
     </scm>
