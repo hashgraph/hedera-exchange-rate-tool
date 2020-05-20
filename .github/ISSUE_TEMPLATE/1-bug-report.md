@@ -22,11 +22,8 @@ Run such-and-such unit tests.
 ```
 ...
 ```
-**Environment:**
-- OS: [e.g. Ubuntu 18.04]
-- Java: [e.g. OpenJDK 11.0.4]
+**Environment:**]
 - hedera-exchange-rate-tool Version: [e.g. 0.0.1]
-- HAPI Version: [e.g. 0.0.5]
 
 **Additional Context**
 Add any other context about the problem here.

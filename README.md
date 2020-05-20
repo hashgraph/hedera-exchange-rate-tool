@@ -13,7 +13,7 @@ We periodically [hourly] run this tool from AWS lambda.
 
 This tool also provides 2 APIs.
 
-1. ExchangeRateApi - This gives the latest exchange rate that this tool has pushed to the Hedera Network.
+1. ExchangeRateAPI - This gives the latest exchange rate that this tool has pushed to the Hedera Network.
 2. ExchnageRateHistoryAPI - This gives the data from the previous runs which includes 
     * All the data from exchanges that it fetched.
     * The median it calculated.
