@@ -192,8 +192,27 @@
         <plugins>
 
             <plugin>
+                <!-- To re-generate the LICENSE.txt and copyright headers, execute the Maven goals
+                "license:update-project-license" and "license:update-file-header". -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
+                <version>2.0.0</version>
+                <configuration>
+                    <dryRun>false</dryRun>
+                    <canUpdateDescription>true</canUpdateDescription>
+                    <canUpdateCopyright>true</canUpdateCopyright>
+                    <includes>
+                        <include>**/*.java</include>
+                    </includes>
+                    <licenseName>apache_v2</licenseName>
+                    <roots>
+                        <root>src/main/java</root>
+                        <root>src/test/java</root>
+                    </roots>
+                    <processEndTag>‍</processEndTag>
+                    <processStartTag>‌</processStartTag>
+                    <sectionDelimiter>​</sectionDelimiter>
+                </configuration>
             </plugin>
 
             <plugin>
