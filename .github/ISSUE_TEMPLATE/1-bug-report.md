@@ -29,4 +29,4 @@ Run such-and-such unit tests.
 - HAPI Version: [e.g. 0.0.5]
 
 **Additional Context**
-Add any other context about the problem here. Attach any logs here, if applicable.
+Add any other context about the problem here.
