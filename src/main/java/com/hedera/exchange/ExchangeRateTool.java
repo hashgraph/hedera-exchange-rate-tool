@@ -66,19 +66,18 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
         final int maxRetries = DEFAULT_RETRIES;
         int currentTries = 0;
-        try {
-            ertParams = ERTParams.readConfig(args);
-            exchangeDB = ertParams.getExchangeDB();
-            ertAddressBook = exchangeDB.getLatestERTAddressBook();
-
-            while (currentTries <  maxRetries) {
+        while (currentTries <  maxRetries) {
+            try {
+                ertParams = ERTParams.readConfig(args);
+                exchangeDB = ertParams.getExchangeDB();
+                ertAddressBook = exchangeDB.getLatestERTAddressBook();
                 execute();
                 return;
+            } catch (final Exception ex) {
+                ex.printStackTrace();
+                currentTries++;
+                LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute at try {}/{} with exception {}. Retrying", currentTries, maxRetries, ex);
             }
-        } catch (final Exception ex) {
-            ex.printStackTrace();
-            currentTries++;
-            LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute at try {}/{} with exception {}. Retrying", currentTries, maxRetries, ex);
         }
 
         final String errorMessage = String.format("Failed to execute after %d retries", maxRetries);
@@ -128,34 +127,39 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Memo for the FileUpdate tx : {}", memo);
 
         final FileId exchangeRateFileId = FileId.fromString(ertParams.getFileId());
-        final FileId addressBookFileId = FileId.fromString(ADDRESS_BOOK_FILE_ID);
 
         final Hbar currentBalance = new AccountBalanceQuery()
-                                                .setAccountId(operatorId)
-                                                .execute(client);
+                .setAccountId(operatorId)
+                .execute(client);
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before the process of updating the Exchange Rate file: {}",
                 currentBalance);
 
-        ERTAddressBook newAddressBook = fetchAddressBook(client, addressBookFileId);
+        try {
 
-        updateExchangeRateFileTxnAndValidate(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo, operatorId);
+            ERTAddressBook newAddressBook = fetchAddressBook(client);
 
-        final Hbar newBalance = new AccountBalanceQuery()
-                .setAccountId(operatorId)
-                .execute(client);
+            updateExchangeRateFileTxnAndValidate(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo, operatorId);
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the Exchange Rate file: {}", newBalance);
+            final Hbar newBalance = new AccountBalanceQuery()
+                    .setAccountId(operatorId)
+                    .execute(client);
 
-        exchangeDB.pushExchangeRate(exchangeRate);
-        if (exchangeRate.isMidnightTime()) {
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
-            exchangeDB.pushMidnightRate(exchangeRate);
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the Exchange Rate file: {}", newBalance);
+
+            exchangeDB.pushExchangeRate(exchangeRate);
+            if (exchangeRate.isMidnightTime()) {
+                LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
+                exchangeDB.pushMidnightRate(exchangeRate);
+            }
+            exchangeDB.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
+            exchangeDB.pushERTAddressBook(exchangeRate.getNextExpirationTimeInSeconds(), newAddressBook);
+
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
+        } catch (Exception e) {
+            e.printStackTrace();
+            client.close();
         }
-        exchangeDB.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
-        exchangeDB.pushERTAddressBook(exchangeRate.getNextExpirationTimeInSeconds(), newAddressBook);
-
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
     private static void updateExchangeRateFileTxnAndValidate(ExchangeRate exchangeRate,
@@ -210,9 +214,17 @@ public class ExchangeRateTool {
         }
     }
 
-    private static ERTAddressBook fetchAddressBook(Client client, FileId addressBookFileId) throws Exception {
+    /**
+     * Method to fetch the address book from the client
+     * @param client  - to fetch the addressbook from
+     * @return  An object of ERTAddressBook class with the
+     *          contents of the address book fetched from the Client
+     * @throws Exception
+     */
+    private static ERTAddressBook fetchAddressBook(Client client) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "fetching the addressbook");
 
+        final FileId addressBookFileId = FileId.fromString(ADDRESS_BOOK_FILE_ID);
         final NodeAddressBook addressBook = NodeAddressBook.parseFrom(
                 getFileContentsQuery(client, addressBookFileId));
         LOGGER.info(Exchange.EXCHANGE_FILTER, "addressbook file contents {}", addressBook);
@@ -239,7 +251,9 @@ public class ExchangeRateTool {
         for(NodeAddress address : addressBook.getNodeAddressList()){
             String nodeId = address.getMemo().toStringUtf8();
             String nodeAddress = address.getIpAddress().toStringUtf8();
-            nodes.put(nodeId, nodeAddress+":50211");
+            if(!nodes.containsKey(nodeId)) {
+                nodes.put(nodeId, nodeAddress + ":50211");
+            }
             LOGGER.info(Exchange.EXCHANGE_FILTER, "found node {} and its address {}:50211 in addressBook",
                     nodeId, nodeAddress);
         }
@@ -274,14 +288,14 @@ public class ExchangeRateTool {
      */
     private static byte[] getFileContentsQuery(Client client, FileId fileId) throws Exception {
         final long getContentsQueryFee = new FileContentsQuery()
-                                            .setFileId(fileId)
-                                            .getCost(client);
+                .setFileId(fileId)
+                .getCost(client);
         LOGGER.debug(Exchange.EXCHANGE_FILTER, "Cost to get file {} contents is : {}", fileId, getContentsQueryFee);
         client.setMaxQueryPayment(getContentsQueryFee);
 
         byte[] contentsResponse = new FileContentsQuery()
-                                                        .setFileId(fileId)
-                                                        .execute(client);
+                .setFileId(fileId)
+                .execute(client);
         return contentsResponse;
     }
 }
