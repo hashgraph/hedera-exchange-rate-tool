@@ -16,16 +16,16 @@ assignees: ''
 Lorem ipsum dolor sit amet.
 
 **How to reproduce (if possible)**
-Run such-and-such `HapiApiSpec`.
+Run such-and-such unit tests.
 
-**Service logs (if applicable)**
+**hedera-exchange-rate-tool logs (if applicable)**
 ```
 ...
 ```
 **Environment:**
 - OS: [e.g. Ubuntu 18.04]
 - Java: [e.g. OpenJDK 11.0.4]
-- Hedera Services Version: [e.g. 0.0.5]
+- hedera-exchange-rate-tool Version: [e.g. 0.0.1]
 - HAPI Version: [e.g. 0.0.5]
 
 **Additional Context**

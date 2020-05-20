@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Summary**
-As a ExchangeRate Tool [ Hedera Services client ], I need _X_ so that I can accomplish _Y_.
+As a Hedera Exchange Rate Tool service, I need _X_ so that I can accomplish _Y_.
 
 **Possible resolution**
 Lorem ipsum dolor sit amet.

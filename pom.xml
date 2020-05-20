@@ -7,6 +7,30 @@
     <groupId>com.hedera</groupId>
     <artifactId>hedera-exchange-rate-tool</artifactId>
     <version>0.0.1</version>
+    <name>Hedera Exchange Rate Tool</name>
+
+    <description>
+        Hedera Exchange Rate Tool to send median HBAR/USD exchange rate to Hedera Network
+    </description>
+    <inceptionYear>2019</inceptionYear>
+    <url>https://github.com/hashgraph/hedera-exchange-rate-tool</url>
+
+    <ciManagement>
+        <system>CircleCI</system>
+        <url>https://circleci.com/gh/hashgraph/hedera-exchange-rate-tool</url>
+    </ciManagement>
+
+    <licenses>
+        <license>
+            <distribution>repo</distribution>
+            <name>Apache License 2.0</name>
+            <url>https://github.com/hashgraph/hedera-exchange-rate-tool/blob/master/LICENSE</url>
+        </license>
+    </licenses>
+
+    <scm>
+
+    </scm>
 
 
     <properties>
@@ -166,6 +190,11 @@
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

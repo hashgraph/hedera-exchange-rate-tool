@@ -81,25 +81,25 @@ Like most open source projects, we use Pull Requests (PRs) to track code changes
 
 ### Forking
 
-1. Fork the [Exchange-Rate-Tool](https://github.com/hashgraph/Exchange-Rate-Tool) repo
+1. Fork the [hedera-exchange-rate-tool](https://github.com/hashgraph/hedera-exchange-rate-tool) repo
 
-Go to the [project](https://github.com/hashgraph/Exchange-Rate-Tool) page then hit the `Fork`
+Go to the [project](https://github.com/hashgraph/hedera-exchange-rate-tool) page then hit the `Fork`
 button to fork your own copy of the repository to your GitHub account.
 
 2. Clone the forked repo to your local working directory.
 ```sh
-$ git clone https://github.com/$your_github_account/Exchange-Rate-Tool.git   
+$ git clone https://github.com/$your_github_account/hedera-exchange-rate-tool.git   
 ```
 3. Add an `upstream` remote to keep your fork in sync with the main repo.
 ```sh
-$ cd Exchange-Rate-Tool
-$ git remote add upstream https://github.com/hashgraph/Exchange-Rate-Tool.git
+$ cd hedera-exchange-rate-tool
+$ git remote add upstream https://github.com/hashgraph/hedera-exchange-rate-tool.git
 $ git remote -v
 
-origin  https://github.com/$your_github_account/Exchange-Rate-Tool.git (fetch)
-origin  https://github.com/$your_github_account/Exchange-Rate-Tool.git (push)
-upstream        https://github.com/hashgraph/Exchange-Rate-Tool.git (fetch)
-upstream        https://github.com/hashgraph/Exchange-Rate-Tool.git (push)
+origin  https://github.com/$your_github_account/hedera-exchange-rate-tool.git (fetch)
+origin  https://github.com/$your_github_account/hedera-exchange-rate-tool.git (push)
+upstream        https://github.com/hashgraph/hedera-exchange-rate-tool.git (fetch)
+upstream        https://github.com/hashgraph/hedera-exchange-rate-tool.git (push)
 ```
 4. Sync your local `master` branch.
 ```sh
