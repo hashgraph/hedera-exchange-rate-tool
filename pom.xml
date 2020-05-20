@@ -7,6 +7,35 @@
     <groupId>com.hedera</groupId>
     <artifactId>hedera-exchange-rate-tool</artifactId>
     <version>0.0.1</version>
+    <name>Hedera Exchange Rate Tool</name>
+
+    <description>
+        Hedera Exchange Rate Tool to send median HBAR/USD exchange rate to Hedera Network
+    </description>
+    <inceptionYear>2019</inceptionYear>
+    <url>https://github.com/hashgraph/hedera-exchange-rate-tool</url>
+
+    <ciManagement>
+        <system>CircleCI</system>
+        <url>https://circleci.com/gh/hashgraph/hedera-exchange-rate-tool</url>
+    </ciManagement>
+
+    <licenses>
+        <license>
+            <distribution>repo</distribution>
+            <name>Apache License 2.0</name>
+            <url>https://github.com/hashgraph/hedera-exchange-rate-tool/blob/master/LICENSE</url>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>Hedera Hashgraph, LLC</name>
+        <url>https://hedera.com</url>
+    </organization>
+
+    <scm>
+
+    </scm>
 
 
     <properties>
@@ -166,6 +195,30 @@
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
+
+            <plugin>
+                <!-- To re-generate the LICENSE.txt and copyright headers, execute the Maven goals
+                "license:update-project-license" and "license:update-file-header". -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>2.0.0</version>
+                <configuration>
+                    <dryRun>false</dryRun>
+                    <canUpdateDescription>true</canUpdateDescription>
+                    <canUpdateCopyright>true</canUpdateCopyright>
+                    <includes>
+                        <include>**/*.java</include>
+                    </includes>
+                    <licenseName>apache_v2</licenseName>
+                    <roots>
+                        <root>src/main/java</root>
+                        <root>src/test/java</root>
+                    </roots>
+                    <processEndTag>‍</processEndTag>
+                    <processStartTag>‌</processStartTag>
+                    <sectionDelimiter>​</sectionDelimiter>
+                </configuration>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
