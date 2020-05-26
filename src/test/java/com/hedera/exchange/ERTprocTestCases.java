@@ -216,6 +216,11 @@ public class ERTprocTestCases {
         final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
         final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
         when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);
+
+        final String binanceResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.095}";
+        final InputStream binanceJson = new ByteArrayInputStream(binanceResult.getBytes());
+        final HttpURLConnection binanceConnection = mock(HttpURLConnection.class);
+        when(binanceConnection.getInputStream()).thenReturn(binanceJson);
         new MockUp<AbstractExchange>() {
             @Mock
             HttpURLConnection getConnection(final URL url) {
@@ -234,6 +239,10 @@ public class ERTprocTestCases {
 
                 if (host.contains("coinapi")) {
                     return okCoinConnection;
+                }
+
+                if (host.contains("binance")) {
+                    return binanceConnection;
                 }
 
                 return null;
@@ -263,6 +272,11 @@ public class ERTprocTestCases {
         final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
         final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
         when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);
+
+        final String binanceResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.035}";
+        final InputStream binanceJson = new ByteArrayInputStream(binanceResult.getBytes());
+        final HttpURLConnection binanceConnection = mock(HttpURLConnection.class);
+        when(binanceConnection.getInputStream()).thenReturn(binanceJson);
         new MockUp<AbstractExchange>() {
             @Mock
             HttpURLConnection getConnection(final URL url) {
@@ -281,6 +295,10 @@ public class ERTprocTestCases {
 
                 if (host.contains("coinapi")) {
                     return okCoinConnection;
+                }
+
+                if (host.contains("binance")) {
+                    return binanceConnection;
                 }
 
                 return null;
