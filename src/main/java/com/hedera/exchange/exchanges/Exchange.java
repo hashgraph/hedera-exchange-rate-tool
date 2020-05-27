@@ -36,12 +36,12 @@ public interface Exchange {
 
 	Marker EXCHANGE_FILTER = MarkerManager.getMarker("EXCHANGE");
 
-
-
 	ObjectMapper OBJECT_MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
 			false);
 
 	Double getHBarValue();
+
+	Double getVolume();
 
 	void setEndPoint(String url);
 

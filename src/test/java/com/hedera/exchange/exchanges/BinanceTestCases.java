@@ -20,38 +20,41 @@ package com.hedera.exchange.exchanges;
  * ‍
  */
 
-import mockit.Mock;
-import mockit.MockUp;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(AbstractExchange.class)
 public class BinanceTestCases {
     @Test
-    public void retrieveBinanceDataTest() throws IOException {
-        final String result = "{\"volume\":\"1631.03198900\", \"price\":\"0.0429\"}";
+    public void retrieveBinanceDataTest() throws Exception {
+        final String urlString = "https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD";
+        final String result = "{\"quoteVolume\":\"1631.03198900\", \"lastPrice\":\"0.0429\"}";
 
+        Binance mockBinance = mock(Binance.class);
         final InputStream json = new ByteArrayInputStream(result.getBytes());
         final HttpURLConnection connection = mock(HttpURLConnection.class);
         when(connection.getInputStream()).thenReturn(json);
-        new MockUp<Liquid>() {
-            @Mock
-            HttpURLConnection getConnection(final URL url) {
-                return connection;
-            }
-        };
+        when(mockBinance.getConnection(new URL(urlString))).thenReturn(connection);
 
-        final Binance binance = Binance.load("https://api.binance.us//api/v3/avgPrice?symbol=HBARUSD");
-        assertEquals((Double)1631.03198900, binance.getVolume());
-        assertEquals((Double)0.0429, binance.getHBarValue());
+        //PowerMockito.whenNew(URL.class).withArguments(urlString).thenReturn(url);
+        //when(url.openConnection()).thenReturn(connection);
+
+        mockBinance = Binance.load(urlString);
+        assertEquals((Double)1631.03198900, mockBinance.getVolume());
+        assertEquals((Double)0.0429, mockBinance.getHBarValue());
 
     }
 }

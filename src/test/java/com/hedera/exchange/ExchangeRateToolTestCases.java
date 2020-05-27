@@ -20,7 +20,6 @@ package com.hedera.exchange;
  * ‍
  */
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -29,6 +28,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import com.hedera.hashgraph.proto.NodeAddressBook;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExchangeRateToolTestCases {
     private Map<String, String> nodes =  new HashMap<>();
@@ -40,7 +41,7 @@ public class ExchangeRateToolTestCases {
 
         Map<String, String> ERTnodes = ExchangeRateTool.getNodesFromAddressBook(addressBook);
         for( String node : ERTnodes.keySet()){
-            Assert.assertEquals(ERTnodes.get(node), nodes.get(node));
+            assertEquals(ERTnodes.get(node), nodes.get(node));
         }
     }
 

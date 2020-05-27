@@ -69,9 +69,9 @@ public class ERTprocTestCases {
     }
 
     @ParameterizedTest
-    @CsvSource({"src/test/resources/configs/config.json,360000,286248",
-            "src/test/resources/configs/config1.json,252000000,290124",
-            "src/test/resources/configs/config2.json,25920000,290124"})
+    @CsvSource({"src/test/resources/configs/config.json,360000,282624",
+            "src/test/resources/configs/config1.json,252000000,282624",
+            "src/test/resources/configs/config2.json,25920000,282624"})
     public void testMedianWithNullMidnightValue(final String configPath, final int currentCentEquiv, final int expectedCentEquiv) throws Exception {
         this.setExchanges();
 
@@ -110,8 +110,9 @@ public class ERTprocTestCases {
             final long expectedCentEquiv,
             final double bitrexValue) throws Exception {
         this.setOnlyBitrex(bitrexValue);
-        final String exchangesInJson = bitrexValue == 0.0 ? "[]" : String.format("[{\"Query\":\"https://api.bittrex.com/api/v1" +
-                ".1/public/getticker?market=USD-HBAR\",\"HBAR\":%.1f}]", bitrexValue);
+        final String exchangesInJson = bitrexValue == 0.0 ? "[]" : String.format("[{\"volume\":1000.0," +
+                "\"Query\":\"https://api.bittrex.com/api/v1.1/public/getticker?market=USD-HBAR\"," +
+                "\"Weight\":1.0,\"HBAR\":%.1f}]", bitrexValue);
         final long currentExpirationInSeconds = ERTParams.getCurrentExpirationTime();
         final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
         final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
@@ -176,7 +177,7 @@ public class ERTprocTestCases {
 
     private void setOnlyBitrex(final double value) throws IOException {
         final String bitrexResult = String.format("{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.00753996," +
-                "\"Last\":%.8f}}", value);
+                "\"Last\":%.8f,\"BaseVolume\":1000}}\";}}", value);
         final InputStream bitrexJson = new ByteArrayInputStream(bitrexResult.getBytes());
         final HttpURLConnection bitrexConnection = mock(HttpURLConnection.class);
         when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
@@ -196,7 +197,7 @@ public class ERTprocTestCases {
 
     private void setExchanges() throws IOException {
         final String bitrexResult = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.00753996," +
-                "\"Last\":0.0954162}}";
+                "\"Last\":0.0954162,\"BaseVolume\":1000}}";
         final InputStream bitrexJson = new ByteArrayInputStream(bitrexResult.getBytes());
         final HttpURLConnection bitrexConnection = mock(HttpURLConnection.class);
         when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
@@ -207,17 +208,20 @@ public class ERTprocTestCases {
         final HttpURLConnection coinbaseConnection = mock(HttpURLConnection.class);
         when(coinbaseConnection.getInputStream()).thenReturn(coinbaseJson);
 
-        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", \"last_traded_price\": 0.093}";
+        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\"," +
+                " \"last_traded_price\": 0.093, \"volume_24h\":\"1000\"}";
         final InputStream liquidJson = new ByteArrayInputStream(liquidResult.getBytes());
         final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
         when(liquidConnection.getInputStream()).thenReturn(liquidJson);
 
-        final String okCoinResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.093}";
+        final String okCoinResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.093" +
+                " \"quote_volume_24h\":\"1000\"}";
         final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
         final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
         when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);
 
-        final String binanceResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.095}";
+        final String binanceResult = "{\"symbol\": \"HBARUSD\",\"lastPrice\": 0.045," +
+                " \"quoteVolume\":\"1000\"}";
         final InputStream binanceJson = new ByteArrayInputStream(binanceResult.getBytes());
         final HttpURLConnection binanceConnection = mock(HttpURLConnection.class);
         when(binanceConnection.getInputStream()).thenReturn(binanceJson);
@@ -251,8 +255,8 @@ public class ERTprocTestCases {
     }
 
     private void setFloorExchanges() throws IOException {
-        final String bitrexResult = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.0553996," +
-                "\"Last\":0.0354162}}";
+        final String bitrexResult = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751," +
+                "\"Ask\":0.0553996,\"Last\":0.0354162,\"BaseVolume\":1000}}";
         final InputStream bitrexJson = new ByteArrayInputStream(bitrexResult.getBytes());
         final HttpURLConnection bitrexConnection = mock(HttpURLConnection.class);
         when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
@@ -263,17 +267,20 @@ public class ERTprocTestCases {
         final HttpURLConnection coinbaseConnection = mock(HttpURLConnection.class);
         when(coinbaseConnection.getInputStream()).thenReturn(coinbaseJson);
 
-        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", \"last_traded_price\": 0.033}";
+        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", " +
+                "\"last_traded_price\": 0.033, \"volume_24h\":\"1000\"}";
         final InputStream liquidJson = new ByteArrayInputStream(liquidResult.getBytes());
         final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
         when(liquidConnection.getInputStream()).thenReturn(liquidJson);
 
-        final String okCoinResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.033}";
+        final String okCoinResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.033" +
+                " \"quote_volume_24h\":\"1000\"}";
         final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
         final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
         when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);
 
-        final String binanceResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.035}";
+        final String binanceResult = "{\"symbol\": \"HBARUSD\",\"lastPrice\": 0.035," +
+                " \"quoteVolume\":\"1000\"}";
         final InputStream binanceJson = new ByteArrayInputStream(binanceResult.getBytes());
         final HttpURLConnection binanceConnection = mock(HttpURLConnection.class);
         when(binanceConnection.getInputStream()).thenReturn(binanceJson);

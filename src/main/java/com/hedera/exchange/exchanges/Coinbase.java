@@ -45,6 +45,11 @@ public class Coinbase extends AbstractExchange{
         return Double.valueOf(this.data.rates.get("HBAR"));
     }
 
+    @Override
+    public Double getVolume() {
+        return null;
+    }
+
     @JsonIgnore
     String getCurrency() {
         return this.data.currency;

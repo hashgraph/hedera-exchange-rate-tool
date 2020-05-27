@@ -35,6 +35,11 @@ public class UpBit extends AbstractExchange {
         return null;
     }
 
+    @Override
+    public Double getVolume() {
+        return null;
+    }
+
     public static UpBit load(final String endpoint) {
         return load(endpoint, UpBit.class);
     }

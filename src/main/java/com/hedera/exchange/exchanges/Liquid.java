@@ -38,10 +38,18 @@ public class Liquid extends AbstractExchange {
 	@JsonProperty(value="code", access = JsonProperty.Access.WRITE_ONLY)
 	private String code;
 
+	@JsonProperty(value="volume_24h",access = JsonProperty.Access.WRITE_ONLY)
+	private Double volume;
+
 	@Override
 	@JsonProperty("HBAR")
 	public Double getHBarValue() {
 		return this.exchangeRate;
+	}
+
+	@Override
+	public Double getVolume() {
+		return volume == null || volume <= 1.0 ? 0.0 : this.volume;
 	}
 
 	public String getProductType() {

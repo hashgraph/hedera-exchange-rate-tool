@@ -36,12 +36,20 @@ public final class OkCoin extends AbstractExchange {
     private String instrumentid;
 
     @JsonProperty(value="last", access = JsonProperty.Access.WRITE_ONLY)
-    private double rate;
+    private Double rate;
+
+    @JsonProperty(value="quote_volume_24h", access = JsonProperty.Access.WRITE_ONLY)
+    private Double volume;
 
     @Override
     @JsonProperty("HBAR")
     public Double getHBarValue() {
         return rate;
+    }
+
+    @Override
+    public Double getVolume() {
+        return volume == null || volume <= 1.0 ? 0.0 : this.volume;
     }
 
     public String getProductid() {

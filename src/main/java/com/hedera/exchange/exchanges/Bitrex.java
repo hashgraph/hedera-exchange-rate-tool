@@ -48,6 +48,15 @@ public final class Bitrex extends AbstractExchange {
 		return this.result.last;
 	}
 
+	@Override
+	public Double getVolume() {
+		if (result == null || result.volume == null || result.volume <= 1.0) {
+			return 0.0;
+		}
+
+		return this.result.volume;
+	}
+
 	boolean isSuccess() {
 		return success;
 	}
@@ -68,5 +77,8 @@ public final class Bitrex extends AbstractExchange {
 
 		@JsonProperty("Last")
 		private Double last;
+
+		@JsonProperty("BaseVolume")
+		private Double volume;
 	}
 }

@@ -1,6 +1,6 @@
 {
 	"exchanges": {
-		"bitrex": "https://api.bittrex.com/api/v1.1/public/getticker?market=USD-HBAR",
+		"bitrex": "https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=USD-HBAR",
 		"liquid": "https://api.liquid.com/products/557",
 		"upbit": "https://api.upbit.com/v1/ticker?markets=USD-HBAR",
 		"coinbase": "https://api.coinbase.com/v2/exchange-rates",

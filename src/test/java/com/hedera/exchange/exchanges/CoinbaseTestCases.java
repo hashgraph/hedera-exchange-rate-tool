@@ -52,6 +52,7 @@ public class CoinbaseTestCases {
         final Coinbase coinbase = Coinbase.load("https://api.coinbase.com/v2/exchange-rates");
         assertEquals("USD", coinbase.getCurrency() );
         assertEquals(0.0098, coinbase.getHBarValue());
-        assertEquals("{\"Query\":\"https://api.coinbase.com/v2/exchange-rates\",\"HBAR\":0.0098}", coinbase.toJson());
+        assertEquals("{\"volume\":null,\"Query\":\"https://api.coinbase.com/v2/exchange-rates\"," +
+                "\"Weight\":0.0,\"HBAR\":0.0098}", coinbase.toJson());
     }
 }

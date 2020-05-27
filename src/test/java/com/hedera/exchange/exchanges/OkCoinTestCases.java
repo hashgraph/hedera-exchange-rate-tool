@@ -70,7 +70,7 @@ public class OkCoinTestCases {
 
         final OkCoin okcoin = OkCoin.load("https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker");
         assertEquals("HBAR-USD", okcoin.getInstrumentid());
-        assertEquals(0.0, okcoin.getHBarValue());
+        assertNull(okcoin.getHBarValue());
         assertNull(okcoin.getProductid());
     }
 }

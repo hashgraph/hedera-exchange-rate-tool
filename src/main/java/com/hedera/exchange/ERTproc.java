@@ -106,7 +106,7 @@ public class ERTproc {
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next-next hour as next expiration time :{}",
                     nextExpirationTimeInSeconds);
 
-            final Double medianExRate = calculateMedianRate(exchanges);
+            final Double medianExRate = ExchangeRateUtils.calculateMedianRate(exchanges);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : {}", medianExRate);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Exchanges worked : {}", this.getExchangeJson());
 
@@ -148,37 +148,11 @@ public class ERTproc {
     }
 
     /**
-     * Calculates the Median among the exchange rates fetched from the exchanges
-     * @param exchanges - list of Exchange objects that have exchange rates of HABR-USD
-     * @return median of the exchange rates
-     */
-    private Double calculateMedianRate(final List<Exchange> exchanges) {
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Computing median");
-
-        exchanges.removeIf(x -> x == null || x.getHBarValue() == null || x.getHBarValue() == 0.0);
-
-        if (exchanges.size() == 0){
-            LOGGER.error(Exchange.EXCHANGE_FILTER, "No valid exchange rates retrieved.");
-            return null;
-        }
-
-        exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "find the median");
-        if (exchanges.size() % 2 == 0 ) {
-            return (exchanges.get(exchanges.size() / 2).getHBarValue() +
-                    exchanges.get(exchanges.size() / 2 - 1).getHBarValue()) / 2;
-        }
-        else {
-            return exchanges.get(exchanges.size() / 2).getHBarValue();
-        }
-    }
-
-    /**
      * Loads the list of Exchange objects with HBAR-USD exchange rate using the URL endpoints provided for each
      * Exchange int he config file.
      * @return List of Exchange objects.
      */
-    private List<Exchange> generateExchanges() {
+    public List<Exchange> generateExchanges() {
         final List<Exchange> exchanges = new ArrayList<>();
 
         for (final Map.Entry<String, String> api : this.exchangeApis.entrySet()) {
@@ -200,6 +174,7 @@ public class ERTproc {
 
         return exchanges;
     }
+
 
     /**
      * Return the list of exchanges that worked in json string format using OBJECT_MAPPER
