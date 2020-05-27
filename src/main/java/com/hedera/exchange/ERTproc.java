@@ -58,6 +58,7 @@ public class ERTproc {
         EXCHANGES.put("coinbase", Coinbase::load);
         EXCHANGES.put("upbit", UpBit::load);
         EXCHANGES.put("okcoin", OkCoin::load);
+        EXCHANGES.put("binance", Binance::load);
     }
 
     private final Map<String, String> exchangeApis;

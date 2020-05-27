@@ -4,7 +4,8 @@
 		"liquid": "https://api.liquid.com/products/557",
 		"upbit": "https://api.upbit.com/v1/ticker?markets=USD-HBAR",
 		"coinbase": "https://api.coinbase.com/v2/exchange-rates",
-		"okcoin": "https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker"
+		"okcoin": "https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker",
+		"binance": "https://api.binance.us//api/v3/avgPrice?symbol=HBARUSD"
 	},
     "defaultCentEquiv" : 360000,
     "defaultHbarEquiv": 30000,

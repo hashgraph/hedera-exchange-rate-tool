@@ -19,3 +19,10 @@ This tool also provides 2 APIs.
     * The median it calculated.
     * If that median is smoothed.
     * Previous Midnight Rate.
+    
+    
+ Exchanges that we are currently pulling latest HBAR-USD exchange rate from:
+  * Liquid
+  * Bittrex
+  * OKCoin
+  * Binance
