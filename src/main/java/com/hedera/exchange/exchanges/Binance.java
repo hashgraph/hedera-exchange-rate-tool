@@ -44,7 +44,8 @@ public class Binance extends AbstractExchange {
         return volume == null || volume <= 1.0 ? 0.0 : this.volume;
     }
 
-    public static Binance load(final String endpoint) {
+    @Override
+    public Binance load(final String endpoint) {
         return load(endpoint, Binance.class);
     }
 }

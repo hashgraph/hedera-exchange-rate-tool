@@ -50,15 +50,15 @@ public class ERTproc {
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
 
-    private static final Map<String, Function<String, Exchange>> EXCHANGES = new HashMap<>();
+    private static final Map<String, Class<? extends AbstractExchange>> EXCHANGES = new HashMap<>();
 
     static {
-        EXCHANGES.put("bitrex", Bitrex::load);
-        EXCHANGES.put("liquid", Liquid::load);
-        EXCHANGES.put("coinbase", Coinbase::load);
-        EXCHANGES.put("upbit", UpBit::load);
-        EXCHANGES.put("okcoin", OkCoin::load);
-        EXCHANGES.put("binance", Binance::load);
+        EXCHANGES.put("bitrex", Bitrex.class);
+        EXCHANGES.put("liquid", Liquid.class);
+        EXCHANGES.put("coinbase", Coinbase.class);
+        EXCHANGES.put("upbit", UpBit.class);
+        EXCHANGES.put("okcoin", OkCoin.class);
+        EXCHANGES.put("binance", Binance.class);
     }
 
     private final Map<String, String> exchangeApis;
@@ -152,19 +152,22 @@ public class ERTproc {
      * Exchange int he config file.
      * @return List of Exchange objects.
      */
-    public List<Exchange> generateExchanges() {
+    public List<Exchange> generateExchanges() throws IllegalAccessException, InstantiationException {
         List<Exchange> exchanges = new ArrayList<>();
 
         for (final Map.Entry<String, String> api : this.exchangeApis.entrySet()) {
-            final Function<String, Exchange> exchangeLoader = EXCHANGES.get(api.getKey());
-            if (exchangeLoader == null) {
+
+            //final Function<String, Exchange> exchangeLoader = EXCHANGES.get(api.getKey());
+            Class exchangeClass = EXCHANGES.get(api.getKey());
+            Exchange exchange = (Exchange) exchangeClass.newInstance();
+            if (exchange == null) {
                 LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not found", api.getKey());
                 continue;
             }
 
             final String endpoint = api.getValue();
-            final Exchange exchange = exchangeLoader.apply(endpoint);
-            if (exchange == null) {
+            final Exchange actualExchange = exchange.load(endpoint); //exchangeLoader.apply(endpoint);
+            if (actualExchange == null) {
                 LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not loaded", api.getKey());
                 continue;
             }

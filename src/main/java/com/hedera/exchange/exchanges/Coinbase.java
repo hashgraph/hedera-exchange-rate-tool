@@ -55,7 +55,8 @@ public class Coinbase extends AbstractExchange{
         return this.data.currency;
     }
 
-    public static Coinbase load(final String endpoint) {
+    @Override
+    public Coinbase load(final String endpoint) {
         return load(endpoint, Coinbase.class);
     }
 

@@ -60,7 +60,8 @@ public final class OkCoin extends AbstractExchange {
         return instrumentid;
     }
 
-    public static OkCoin load(final String endpoint) {
+    @Override
+    public OkCoin load(final String endpoint) {
         return load(endpoint, OkCoin.class);
     }
 }

@@ -50,7 +50,7 @@ public abstract class AbstractExchange implements Exchange {
 	 * @param <T> Exchange class type.. Ex- Bitrex, Coinbase..
 	 * @return Exchange class type.. Ex- Bitrex, Coinbase..
 	 */
-	public static <T extends Exchange> T load(final String endpoint, final Class<T> type) {
+	public <T extends Exchange> T load(final String endpoint, final Class<T> type) {
 		try {
 			final URL url = new URL(endpoint);
 			final HttpURLConnection con = getConnection(url);
@@ -82,13 +82,14 @@ public abstract class AbstractExchange implements Exchange {
 		endPoint = url;
 	}
 
+	@Override
 	/**
 	 * Get the Https connection using the URL provided.
 	 * @param url URL to the exchange
 	 * @return HttpURLConnection object to the URL
 	 * @throws IOException
 	 */
-	protected static HttpURLConnection getConnection(final URL url) throws IOException {
+	public HttpURLConnection getConnection(final URL url) throws IOException {
 		return (HttpURLConnection) url.openConnection();
 	}
 }

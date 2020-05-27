@@ -20,6 +20,7 @@ package com.hedera.exchange.exchanges;
  * ‍
  */
 
+import com.amazonaws.services.dynamodbv2.xspec.B;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -53,9 +54,10 @@ public class BinanceTestCases {
         //PowerMockito.whenNew(URL.class).withArguments(urlString).thenReturn(url);
         //when(url.openConnection()).thenReturn(connection);
 
-        mockBinance = mockBinance.load(urlString);
-        assertEquals((Double)1631.03198900, mockBinance.getVolume());
-        assertEquals((Double)0.0429, mockBinance.getHBarValue());
+        Binance binance = new Binance();
+        binance = binance.load(urlString);
+        assertEquals((Double)1631.03198900, binance.getVolume());
+        assertEquals((Double)0.0429, binance.getHBarValue());
 
     }
 }

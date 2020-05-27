@@ -69,7 +69,8 @@ public final class Bitrex extends AbstractExchange {
 		return result;
 	}
 
-	public static Bitrex load(final String endpoint) {
+	@Override
+	public Bitrex load(final String endpoint) {
 		return load(endpoint, Bitrex.class);
 	}
 

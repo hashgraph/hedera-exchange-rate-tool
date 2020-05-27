@@ -60,7 +60,8 @@ public class Liquid extends AbstractExchange {
 		return this.code;
 	}
 
-	public static Liquid load(final String endpoint) {
+	@Override
+	public Liquid load(final String endpoint) {
 		return load(endpoint, Liquid.class);
 	}
 }

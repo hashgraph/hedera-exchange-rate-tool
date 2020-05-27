@@ -49,7 +49,8 @@ public class OkCoinTestCases {
             }
         };
 
-        final OkCoin okcoin = OkCoin.load("https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker");
+        OkCoin okcoin = new OkCoin();
+        okcoin = okcoin.load("https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker");
         assertEquals(0.008754, okcoin.getHBarValue());
         assertEquals("HBAR-USD", okcoin.getInstrumentid());
         assertEquals("HBAR-USD", okcoin.getProductid());
@@ -68,7 +69,8 @@ public class OkCoinTestCases {
             }
         };
 
-        final OkCoin okcoin = OkCoin.load("https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker");
+        OkCoin okcoin = new OkCoin();
+        okcoin = okcoin.load("https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker");
         assertEquals("HBAR-USD", okcoin.getInstrumentid());
         assertNull(okcoin.getHBarValue());
         assertNull(okcoin.getProductid());

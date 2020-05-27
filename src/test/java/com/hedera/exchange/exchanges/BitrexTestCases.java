@@ -41,19 +41,25 @@ public class BitrexTestCases {
 
 	@Test
 	public void fetchBitrexTest() throws IOException {
+		final String urlString = "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC";
 		final String result = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.00753996," +
 				"\"Last\":0.00954162}}";
 		final InputStream json = new ByteArrayInputStream(result.getBytes());
 		final HttpURLConnection connection = mock(HttpURLConnection.class);
+		Bitrex mockBitrex = mock(Bitrex.class);
+		URL mockURL = mock(URL.class);
+		when(mockBitrex.getConnection(mockURL)).thenReturn(connection);
 		when(connection.getInputStream()).thenReturn(json);
-		new MockUp<Bitrex>() {
-			@Mock
-			HttpURLConnection getConnection(final URL url) {
-				return connection;
-			}
-		};
 
-		final Bitrex bitrex = Bitrex.load("https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC");
+//		new MockUp<Bitrex>() {
+//			@Mock
+//			HttpURLConnection getConnection(final URL url) {
+//				return connection;
+//			}
+//		};
+
+		Bitrex bitrex = new Bitrex();
+		bitrex = bitrex.load(urlString);
 		assertTrue(bitrex.isSuccess());
 		assertEquals(0.00954162, bitrex.getHBarValue());
 		assertEquals("Data Sent", bitrex.getMessage());
@@ -72,7 +78,8 @@ public class BitrexTestCases {
 			}
 		};
 
-		final Bitrex bitrex = Bitrex.load("https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC");
+		Bitrex bitrex = new Bitrex();
+		bitrex = bitrex.load("https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC");
 		assertFalse(bitrex.isSuccess());
 		assertNull(bitrex.getHBarValue());
 		assertNull(bitrex.getResult());

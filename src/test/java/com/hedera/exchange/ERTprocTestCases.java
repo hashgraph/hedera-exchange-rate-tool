@@ -20,7 +20,7 @@ package com.hedera.exchange;
  * ‍
  */
 
-import com.hedera.exchange.exchanges.AbstractExchange;
+import com.hedera.exchange.exchanges.*;
 import com.hedera.hashgraph.proto.ExchangeRateSet;
 import mockit.Mock;
 import mockit.MockUp;
@@ -255,61 +255,74 @@ public class ERTprocTestCases {
     }
 
     private void setFloorExchanges() throws IOException {
+        URL mockURL = mock(URL.class);
+
+        Bitrex mockBitrex = mock(Bitrex.class);
         final String bitrexResult = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751," +
                 "\"Ask\":0.0553996,\"Last\":0.0354162,\"BaseVolume\":1000}}";
         final InputStream bitrexJson = new ByteArrayInputStream(bitrexResult.getBytes());
         final HttpURLConnection bitrexConnection = mock(HttpURLConnection.class);
         when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
+        when(mockBitrex.getConnection(mockURL)).thenReturn(bitrexConnection);
 
 
+        Coinbase mockCoinbase = mock(Coinbase.class);
         final String coinbaseResult = "{\"data\":{\"currency\":\"USD\", \"rates\":{\"HBAR\":\"0.038\"}}}";
         final InputStream coinbaseJson = new ByteArrayInputStream(coinbaseResult.getBytes());
         final HttpURLConnection coinbaseConnection = mock(HttpURLConnection.class);
         when(coinbaseConnection.getInputStream()).thenReturn(coinbaseJson);
+        when(mockCoinbase.getConnection(mockURL)).thenReturn(coinbaseConnection);
 
+        Liquid mockLiquid = mock(Liquid.class);
         final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", " +
                 "\"last_traded_price\": 0.033, \"volume_24h\":\"1000\"}";
         final InputStream liquidJson = new ByteArrayInputStream(liquidResult.getBytes());
         final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
         when(liquidConnection.getInputStream()).thenReturn(liquidJson);
+        when(mockLiquid.getConnection(mockURL)).thenReturn(liquidConnection);
 
+        OkCoin mockOkCoin = mock(OkCoin.class);
         final String okCoinResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.033" +
                 " \"quote_volume_24h\":\"1000\"}";
         final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
         final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
         when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);
+        when(mockOkCoin.getConnection(mockURL)).thenReturn(okCoinConnection);
 
+        Binance mockBinance = mock(Binance.class);
         final String binanceResult = "{\"symbol\": \"HBARUSD\",\"lastPrice\": 0.035," +
                 " \"quoteVolume\":\"1000\"}";
         final InputStream binanceJson = new ByteArrayInputStream(binanceResult.getBytes());
         final HttpURLConnection binanceConnection = mock(HttpURLConnection.class);
         when(binanceConnection.getInputStream()).thenReturn(binanceJson);
-        new MockUp<AbstractExchange>() {
-            @Mock
-            HttpURLConnection getConnection(final URL url) {
-                final String host = url.getHost();
-                if (host.contains("bittrex")) {
-                    return bitrexConnection;
-                }
+        when(mockBinance.getConnection(mockURL)).thenReturn(binanceConnection);
 
-                if (host.contains("liquid")) {
-                    return liquidConnection;
-                }
-
-                if (host.contains("coinbase")) {
-                    return coinbaseConnection;
-                }
-
-                if (host.contains("coinapi")) {
-                    return okCoinConnection;
-                }
-
-                if (host.contains("binance")) {
-                    return binanceConnection;
-                }
-
-                return null;
-            }
-        };
+//        new MockUp<AbstractExchange>() {
+//            @Mock
+//            HttpURLConnection getConnection(final URL url) {
+//                final String host = url.getHost();
+//                if (host.contains("bittrex")) {
+//                    return bitrexConnection;
+//                }
+//
+//                if (host.contains("liquid")) {
+//                    return liquidConnection;
+//                }
+//
+//                if (host.contains("coinbase")) {
+//                    return coinbaseConnection;
+//                }
+//
+//                if (host.contains("coinapi")) {
+//                    return okCoinConnection;
+//                }
+//
+//                if (host.contains("binance")) {
+//                    return binanceConnection;
+//                }
+//
+//                return null;
+//            }
+//        };
     }
 }

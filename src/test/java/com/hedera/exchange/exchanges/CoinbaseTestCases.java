@@ -49,7 +49,8 @@ public class CoinbaseTestCases {
             }
         };
 
-        final Coinbase coinbase = Coinbase.load("https://api.coinbase.com/v2/exchange-rates");
+        Coinbase coinbase = new Coinbase();
+        coinbase = coinbase.load("https://api.coinbase.com/v2/exchange-rates");
         assertEquals("USD", coinbase.getCurrency() );
         assertEquals(0.0098, coinbase.getHBarValue());
         assertEquals("{\"volume\":null,\"Query\":\"https://api.coinbase.com/v2/exchange-rates\"," +

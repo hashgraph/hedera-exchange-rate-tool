@@ -40,7 +40,8 @@ public class UpBit extends AbstractExchange {
         return null;
     }
 
-    public static UpBit load(final String endpoint) {
+    @Override
+    public UpBit load(final String endpoint) {
         return load(endpoint, UpBit.class);
     }
 }
