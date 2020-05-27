@@ -67,7 +67,7 @@ public class ExchangeRateUtils {
 	 * @param exchanges - list of Exchange objects that have exchange rates of HABR-USD
 	 * @return median of the exchange rates
 	 */
-	public static Double calculateMedianRate(final List<Exchange> exchanges) {
+	public static Double calculateMedianRate(List<Exchange> exchanges) {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "Computing median");
 
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "removing all invalid exchanges retrieved");
@@ -137,6 +137,4 @@ public class ExchangeRateUtils {
 		}
 		return result;
 	}
-
-
 }

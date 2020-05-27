@@ -44,15 +44,16 @@ public class BinanceTestCases {
         final String result = "{\"quoteVolume\":\"1631.03198900\", \"lastPrice\":\"0.0429\"}";
 
         Binance mockBinance = mock(Binance.class);
+        URL mockURL = mock(URL.class);
         final InputStream json = new ByteArrayInputStream(result.getBytes());
         final HttpURLConnection connection = mock(HttpURLConnection.class);
         when(connection.getInputStream()).thenReturn(json);
-        when(mockBinance.getConnection(new URL(urlString))).thenReturn(connection);
+        when(mockBinance.getConnection(mockURL)).thenReturn(connection);
 
         //PowerMockito.whenNew(URL.class).withArguments(urlString).thenReturn(url);
         //when(url.openConnection()).thenReturn(connection);
 
-        mockBinance = Binance.load(urlString);
+        mockBinance = mockBinance.load(urlString);
         assertEquals((Double)1631.03198900, mockBinance.getVolume());
         assertEquals((Double)0.0429, mockBinance.getHBarValue());
 

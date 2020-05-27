@@ -153,7 +153,7 @@ public class ERTproc {
      * @return List of Exchange objects.
      */
     public List<Exchange> generateExchanges() {
-        final List<Exchange> exchanges = new ArrayList<>();
+        List<Exchange> exchanges = new ArrayList<>();
 
         for (final Map.Entry<String, String> api : this.exchangeApis.entrySet()) {
             final Function<String, Exchange> exchangeLoader = EXCHANGES.get(api.getKey());

@@ -69,9 +69,9 @@ public class ERTprocTestCases {
     }
 
     @ParameterizedTest
-    @CsvSource({"src/test/resources/configs/config.json,360000,282624",
-            "src/test/resources/configs/config1.json,252000000,282624",
-            "src/test/resources/configs/config2.json,25920000,282624"})
+    @CsvSource({"src/test/resources/configs/config.json,360000,283832",
+            "src/test/resources/configs/config1.json,252000000,283832",
+            "src/test/resources/configs/config2.json,25920000,283832"})
     public void testMedianWithNullMidnightValue(final String configPath, final int currentCentEquiv, final int expectedCentEquiv) throws Exception {
         this.setExchanges();
 
@@ -112,7 +112,7 @@ public class ERTprocTestCases {
         this.setOnlyBitrex(bitrexValue);
         final String exchangesInJson = bitrexValue == 0.0 ? "[]" : String.format("[{\"volume\":1000.0," +
                 "\"Query\":\"https://api.bittrex.com/api/v1.1/public/getticker?market=USD-HBAR\"," +
-                "\"Weight\":1.0,\"HBAR\":%.1f}]", bitrexValue);
+                "\"HBAR\":%.1f}]", bitrexValue);
         final long currentExpirationInSeconds = ERTParams.getCurrentExpirationTime();
         final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
         final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
