@@ -20,24 +20,18 @@ package com.hedera.exchange.exchanges;
  * ‍
  */
 
-import mockit.Mock;
-import mockit.MockUp;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class BitrexTestCases {
@@ -45,8 +39,8 @@ public class BitrexTestCases {
 	@Test
 	public void fetchBitrexTest() throws IOException {
 		final String urlString = "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC";
-		final String result = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.00753996," +
-				"\"Last\":0.00954162}}";
+		final String result = "{\"success\":true,\"message\":\"Data Sent\",\"result\":[{\"Bid\":0.00952751,\"Ask\":0.00753996," +
+				"\"Volume\":3219496.21980385,\"Last\":0.00954162}]}";
 		final InputStream json = new ByteArrayInputStream(result.getBytes());
 		final HttpURLConnection connection = mock(HttpURLConnection.class);
 		when(connection.getInputStream()).thenReturn(json);
@@ -57,6 +51,7 @@ public class BitrexTestCases {
 		assertTrue(bitrex.isSuccess());
 		assertEquals(0.00954162, bitrex.getHBarValue());
 		assertEquals("Data Sent", bitrex.getMessage());
+		assertEquals(3219496.21980385, bitrex.getVolume());
 	}
 
 	@Test

@@ -47,7 +47,7 @@ public final class CoinFactory {
 	public CoinFactory() {
 	}
 
-	CoinFactory(final HttpURLConnection connection) {
+	public CoinFactory(final HttpURLConnection connection) {
 		this.connection = connection;
 	}
 

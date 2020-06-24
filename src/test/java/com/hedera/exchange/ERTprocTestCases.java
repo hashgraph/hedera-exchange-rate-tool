@@ -33,10 +33,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ERTprocTestCases {
 
@@ -148,7 +149,7 @@ public class ERTprocTestCases {
     @ParameterizedTest
     @CsvSource({"src/test/resources/configs/config.json,126000,120000",
                 "src/test/resources/configs/config.json,150000,120000"})
-    public void testFloor(String configPath, long currentCentEquiv, long expectedCentEquiv) throws IOException {
+    public void testFloor(String configPath, long currentCentEquiv, long expectedCentEquiv) throws IOException, IllegalAccessException, InstantiationException {
         this.setFloorExchanges();
         final ERTParams params = ERTParams.readConfig(configPath);
         final Rate currentRate = new Rate(30000, currentCentEquiv,ERTParams.getCurrentExpirationTime());
@@ -282,75 +283,67 @@ public class ERTprocTestCases {
         };
     }
 
-    private void setFloorExchanges() throws IOException {
-        //URL mockURL = mock(URL.class);
+    private void setFloorExchanges() throws IOException, InstantiationException, IllegalAccessException {
+//        CoinFactory factory = mock(CoinFactory.class);
+//
+//        final String bitrexResult = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751," +
+//                "\"Ask\":0.0553996,\"Last\":0.0354162,\"BaseVolume\":1000}}";
+//        final InputStream bitrexJson = new ByteArrayInputStream(bitrexResult.getBytes());
+//        final HttpURLConnection bitrexConnection = mock(HttpURLConnection.class);
+//        when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
+//
+//        doReturn(bitrexConnection).when(factory)
+//                .getConnection("https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=USD-HBAR");
 
         Bitrex mockBitrex = mock(Bitrex.class);
-        final String bitrexResult = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751," +
-                "\"Ask\":0.0553996,\"Last\":0.0354162,\"BaseVolume\":1000}}";
-        final InputStream bitrexJson = new ByteArrayInputStream(bitrexResult.getBytes());
-        final HttpURLConnection bitrexConnection = mock(HttpURLConnection.class);
-        when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
-        when(mockBitrex.getConnection("mockURL")).thenReturn(bitrexConnection);
+        when(mockBitrex.getHBarValue()).thenReturn(0.0354162);
+        when(mockBitrex.getVolume()).thenReturn(1000.0);
 
+//        final String coinbaseResult = "{\"data\":{\"currency\":\"USD\", \"rates\":{\"HBAR\":\"0.038\"}}}";
+//        final InputStream coinbaseJson = new ByteArrayInputStream(coinbaseResult.getBytes());
+//        final HttpURLConnection coinbaseConnection = mock(HttpURLConnection.class);
+//        when(coinbaseConnection.getInputStream()).thenReturn(coinbaseJson);
+//
+//        doReturn(coinbaseConnection).when(factory).getConnection("");
 
         Coinbase mockCoinbase = mock(Coinbase.class);
-        final String coinbaseResult = "{\"data\":{\"currency\":\"USD\", \"rates\":{\"HBAR\":\"0.038\"}}}";
-        final InputStream coinbaseJson = new ByteArrayInputStream(coinbaseResult.getBytes());
-        final HttpURLConnection coinbaseConnection = mock(HttpURLConnection.class);
-        when(coinbaseConnection.getInputStream()).thenReturn(coinbaseJson);
-        when(mockCoinbase.getConnection("mockURL")).thenReturn(coinbaseConnection);
+        when(mockCoinbase.getHBarValue()).thenReturn(0.038);
+        when(mockCoinbase.getVolume()).thenReturn(1000.0);
 
+//        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", " +
+//                "\"last_traded_price\": 0.033, \"volume_24h\":\"1000\"}";
+//        final InputStream liquidJson = new ByteArrayInputStream(liquidResult.getBytes());
+//        final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
+//        when(liquidConnection.getInputStream()).thenReturn(liquidJson);
+//
+//        doReturn(liquidConnection).when(factory)
+//                .getConnection("https://api.liquid.com/products/557");
         Liquid mockLiquid = mock(Liquid.class);
-        final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", " +
-                "\"last_traded_price\": 0.033, \"volume_24h\":\"1000\"}";
-        final InputStream liquidJson = new ByteArrayInputStream(liquidResult.getBytes());
-        final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
-        when(liquidConnection.getInputStream()).thenReturn(liquidJson);
-        when(mockLiquid.getConnection("mockURL")).thenReturn(liquidConnection);
+        when(mockLiquid.getHBarValue()).thenReturn(0.033);
+        when(mockLiquid.getVolume()).thenReturn(1000.0);
 
+//        final String okCoinResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.033" +
+//                " \"quote_volume_24h\":\"1000\"}";
+//        final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
+//        final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
+//        when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);
+//
+//        doReturn(okCoinConnection).when(factory)
+//                .getConnection("https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker");
         OkCoin mockOkCoin = mock(OkCoin.class);
-        final String okCoinResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.033" +
-                " \"quote_volume_24h\":\"1000\"}";
-        final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
-        final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
-        when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);
-        when(mockOkCoin.getConnection("mockURL")).thenReturn(okCoinConnection);
+        when(mockOkCoin.getHBarValue()).thenReturn(0.033);
+        when(mockOkCoin.getVolume()).thenReturn(1000.0);
 
+//        final String binanceResult = "{\"symbol\": \"HBARUSD\",\"lastPrice\": 0.035," +
+//                " \"quoteVolume\":\"1000\"}";
+//        final InputStream binanceJson = new ByteArrayInputStream(binanceResult.getBytes());
+//        final HttpURLConnection binanceConnection = mock(HttpURLConnection.class);
+//        when(binanceConnection.getInputStream()).thenReturn(binanceJson);
+//
+//        doReturn(binanceConnection).when(factory)
+//                .getConnection("https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD");
         Binance mockBinance = mock(Binance.class);
-        final String binanceResult = "{\"symbol\": \"HBARUSD\",\"lastPrice\": 0.035," +
-                " \"quoteVolume\":\"1000\"}";
-        final InputStream binanceJson = new ByteArrayInputStream(binanceResult.getBytes());
-        final HttpURLConnection binanceConnection = mock(HttpURLConnection.class);
-        when(binanceConnection.getInputStream()).thenReturn(binanceJson);
-        when(mockBinance.getConnection("mockURL")).thenReturn(binanceConnection);
-
-//        new MockUp<AbstractExchange>() {
-//            @Mock
-//            HttpURLConnection getConnection(final URL url) {
-//                final String host = url.getHost();
-//                if (host.contains("bittrex")) {
-//                    return bitrexConnection;
-//                }
-//
-//                if (host.contains("liquid")) {
-//                    return liquidConnection;
-//                }
-//
-//                if (host.contains("coinbase")) {
-//                    return coinbaseConnection;
-//                }
-//
-//                if (host.contains("coinapi")) {
-//                    return okCoinConnection;
-//                }
-//
-//                if (host.contains("binance")) {
-//                    return binanceConnection;
-//                }
-//
-//                return null;
-//            }
-//        };
+        when(mockBinance.getHBarValue()).thenReturn(0.035);
+        when(mockBinance.getVolume()).thenReturn(1000.0);
     }
 }

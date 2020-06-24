@@ -21,8 +21,6 @@ package com.hedera.exchange.exchanges;
  */
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -36,20 +34,13 @@ public class BinanceTestCases {
         final String urlString = "https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD";
         final String result = "{\"quoteVolume\":\"1631.03198900\", \"lastPrice\":\"0.0429\"}";
 
-        Binance mockBinance = spy(Binance.class);
         final InputStream json = new ByteArrayInputStream(result.getBytes());
         final HttpURLConnection connection = mock(HttpURLConnection.class);
-
         when(connection.getInputStream()).thenReturn(json);
-        when(mockBinance.getConnection(any())).thenReturn(connection);
 
-        //PowerMockito.whenNew(URL.class).withArguments(urlString).thenReturn(url);
-        //when(url.openConnection()).thenReturn(connection);
-
-//        Binance binance = new Binance();
-//        binance =
-        mockBinance.load(Mockito.eq(urlString));
-        assertEquals((Double)0.0429, mockBinance.getHBarValue());
-        assertEquals((Double)1631.03198900, mockBinance.getVolume());
+        final CoinFactory factory = new CoinFactory(connection);
+        final Binance binance = factory.load(urlString, Binance.class);
+        assertEquals((Double)0.0429, binance.getHBarValue());
+        assertEquals((Double)1631.03198900, binance.getVolume());
     }
 }
