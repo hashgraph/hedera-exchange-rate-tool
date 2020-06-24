@@ -48,7 +48,7 @@ public class BitrexTestCases {
 		final HttpURLConnection connection = mock(HttpURLConnection.class);
 		Bitrex mockBitrex = mock(Bitrex.class);
 		URL mockURL = mock(URL.class);
-		when(mockBitrex.getConnection(mockURL)).thenReturn(connection);
+		when(mockBitrex.getConnection(urlString)).thenReturn(connection);
 		when(connection.getInputStream()).thenReturn(json);
 
 //		new MockUp<Bitrex>() {

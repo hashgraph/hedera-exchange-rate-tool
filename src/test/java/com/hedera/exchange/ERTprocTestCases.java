@@ -24,8 +24,10 @@ import com.hedera.exchange.exchanges.*;
 import com.hedera.hashgraph.proto.ExchangeRateSet;
 import mockit.Mock;
 import mockit.MockUp;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -174,6 +176,33 @@ public class ERTprocTestCases {
         assertEquals(expectedJson, exchangeRate.toJson());
     }
 
+    @Test
+    public void testWeightedMedian() throws Exception {
+        final ERTParams params = ERTParams.readConfig("src/test/resources/configs/config.json");
+
+        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+                params.getExchangeAPIList(),
+                params.getBound(),
+                params.getFloor(),
+                null,
+                null,
+                params.getFrequencyInSeconds()
+        );
+
+        assertEquals(1.0, ertProcess.findWeightedMedian(
+                new double[]{0.0, 1.0, 2.0} , new double[]{1.0, 1.0, 1.0}));
+        assertEquals(1.0, ertProcess.findWeightedMedian(
+                new double[]{0.0, 1.0, 2.0} , new double[]{1.0, 0.0, 1.0}));
+        assertEquals(2.0, ertProcess.findWeightedMedian(
+                new double[]{0.0, 1.0, 2.0} , new double[]{0.0, 0.0, 1.0}));
+        assertEquals(2.0, ertProcess.findWeightedMedian(
+                new double[]{0.0, 1.0, 2.0, 3.0} , new double[]{1.0, 0.0, 0.0, 1.0}));
+        assertEquals(3.0, ertProcess.findWeightedMedian(
+                new double[]{0.0, 1.0, 2.0, 3.0, 4.0} , new double[]{1.0, 0.0, 0.0, 0.0, 1.0}));
+        assertEquals(1.5, ertProcess.findWeightedMedian(
+                new double[]{0.0, 1.0, 2.0, 3.0} , new double[]{1.0, 0.1, 0.1, 1.0}));
+    }
+
 
     private void setOnlyBitrex(final double value) throws IOException {
         final String bitrexResult = String.format("{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751,\"Ask\":0.00753996," +
@@ -255,7 +284,7 @@ public class ERTprocTestCases {
     }
 
     private void setFloorExchanges() throws IOException {
-        URL mockURL = mock(URL.class);
+        //URL mockURL = mock(URL.class);
 
         Bitrex mockBitrex = mock(Bitrex.class);
         final String bitrexResult = "{\"success\":true,\"message\":\"Data Sent\",\"result\":{\"Bid\":0.00952751," +
@@ -263,7 +292,7 @@ public class ERTprocTestCases {
         final InputStream bitrexJson = new ByteArrayInputStream(bitrexResult.getBytes());
         final HttpURLConnection bitrexConnection = mock(HttpURLConnection.class);
         when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
-        when(mockBitrex.getConnection(mockURL)).thenReturn(bitrexConnection);
+        when(mockBitrex.getConnection("mockURL")).thenReturn(bitrexConnection);
 
 
         Coinbase mockCoinbase = mock(Coinbase.class);
@@ -271,7 +300,7 @@ public class ERTprocTestCases {
         final InputStream coinbaseJson = new ByteArrayInputStream(coinbaseResult.getBytes());
         final HttpURLConnection coinbaseConnection = mock(HttpURLConnection.class);
         when(coinbaseConnection.getInputStream()).thenReturn(coinbaseJson);
-        when(mockCoinbase.getConnection(mockURL)).thenReturn(coinbaseConnection);
+        when(mockCoinbase.getConnection("mockURL")).thenReturn(coinbaseConnection);
 
         Liquid mockLiquid = mock(Liquid.class);
         final String liquidResult = "{\"product_type\":\"CurrencyPair\", \"code\":\"CASH\", " +
@@ -279,7 +308,7 @@ public class ERTprocTestCases {
         final InputStream liquidJson = new ByteArrayInputStream(liquidResult.getBytes());
         final HttpURLConnection liquidConnection = mock(HttpURLConnection.class);
         when(liquidConnection.getInputStream()).thenReturn(liquidJson);
-        when(mockLiquid.getConnection(mockURL)).thenReturn(liquidConnection);
+        when(mockLiquid.getConnection("mockURL")).thenReturn(liquidConnection);
 
         OkCoin mockOkCoin = mock(OkCoin.class);
         final String okCoinResult = "{\"product_id\": \"HBAR-USD\",\"instrument_id\": \"USD-USD\",\"last\": 0.033" +
@@ -287,7 +316,7 @@ public class ERTprocTestCases {
         final InputStream okCoinJson = new ByteArrayInputStream(okCoinResult.getBytes());
         final HttpURLConnection okCoinConnection = mock(HttpURLConnection.class);
         when(okCoinConnection.getInputStream()).thenReturn(okCoinJson);
-        when(mockOkCoin.getConnection(mockURL)).thenReturn(okCoinConnection);
+        when(mockOkCoin.getConnection("mockURL")).thenReturn(okCoinConnection);
 
         Binance mockBinance = mock(Binance.class);
         final String binanceResult = "{\"symbol\": \"HBARUSD\",\"lastPrice\": 0.035," +
@@ -295,7 +324,7 @@ public class ERTprocTestCases {
         final InputStream binanceJson = new ByteArrayInputStream(binanceResult.getBytes());
         final HttpURLConnection binanceConnection = mock(HttpURLConnection.class);
         when(binanceConnection.getInputStream()).thenReturn(binanceJson);
-        when(mockBinance.getConnection(mockURL)).thenReturn(binanceConnection);
+        when(mockBinance.getConnection("mockURL")).thenReturn(binanceConnection);
 
 //        new MockUp<AbstractExchange>() {
 //            @Mock

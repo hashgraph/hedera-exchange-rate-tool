@@ -36,6 +36,7 @@ public class UpBit extends AbstractExchange {
     }
 
     @Override
+    @JsonProperty("volume")
     public Double getVolume() {
         return null;
     }

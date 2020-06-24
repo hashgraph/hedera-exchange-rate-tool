@@ -52,8 +52,7 @@ public abstract class AbstractExchange implements Exchange {
 	 */
 	public <T extends Exchange> T load(final String endpoint, final Class<T> type) {
 		try {
-			final URL url = new URL(endpoint);
-			final HttpURLConnection con = getConnection(url);
+			final HttpURLConnection con = getConnection(endpoint);
 			con.addRequestProperty("User-Agent",
 					"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36");
 			final T exchange =  OBJECT_MAPPER.readValue(con.getInputStream(), type);
@@ -89,7 +88,8 @@ public abstract class AbstractExchange implements Exchange {
 	 * @return HttpURLConnection object to the URL
 	 * @throws IOException
 	 */
-	public HttpURLConnection getConnection(final URL url) throws IOException {
+	public HttpURLConnection getConnection(final String endpoint) throws IOException {
+		final URL url = new URL(endpoint);
 		return (HttpURLConnection) url.openConnection();
 	}
 }

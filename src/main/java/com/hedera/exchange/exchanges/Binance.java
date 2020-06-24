@@ -40,6 +40,7 @@ public class Binance extends AbstractExchange {
     }
 
     @Override
+    @JsonProperty("volume")
     public Double getVolume() {
         return volume == null || volume <= 1.0 ? 0.0 : this.volume;
     }

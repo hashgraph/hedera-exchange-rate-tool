@@ -36,25 +36,26 @@ public final class Bitrex extends AbstractExchange {
 	private String message;
 
 	@JsonProperty(value="result", access = JsonProperty.Access.WRITE_ONLY)
-	private Result result;
+	private Result[] results;
 
 	@Override
 	@JsonProperty("HBAR")
 	public Double getHBarValue() {
-		if (result == null) {
+		if (results == null) {
 			return null;
 		}
 
-		return this.result.last;
+		return this.results[0].last;
 	}
 
 	@Override
+	@JsonProperty("volume")
 	public Double getVolume() {
-		if (result == null || result.volume == null || result.volume <= 1.0) {
+		if (results == null || results[0].volume == null || results[0].volume <= 1.0) {
 			return 0.0;
 		}
 
-		return this.result.volume;
+		return this.results[0].volume;
 	}
 
 	boolean isSuccess() {
@@ -66,7 +67,7 @@ public final class Bitrex extends AbstractExchange {
 	}
 
 	Result getResult() {
-		return result;
+		return results[0];
 	}
 
 	@Override

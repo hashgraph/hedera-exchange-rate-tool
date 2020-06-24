@@ -53,5 +53,5 @@ public interface Exchange {
 
 	String toJson() throws JsonProcessingException;
 
-	HttpURLConnection getConnection(URL url) throws IOException;
+	HttpURLConnection getConnection(String endpoint) throws IOException;
 }
