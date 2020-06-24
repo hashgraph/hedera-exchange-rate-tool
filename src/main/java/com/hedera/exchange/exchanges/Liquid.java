@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Anirudh, Cesar
  */
-public class Liquid extends AbstractExchange {
+public class Liquid extends ExchangeCoin {
 
 	@JsonProperty(value="last_traded_price",access = JsonProperty.Access.WRITE_ONLY)
 	private Double exchangeRate;
@@ -59,10 +59,5 @@ public class Liquid extends AbstractExchange {
 
 	public String getCode() {
 		return this.code;
-	}
-
-	@Override
-	public Liquid load(final String endpoint) {
-		return load(endpoint, Liquid.class);
 	}
 }

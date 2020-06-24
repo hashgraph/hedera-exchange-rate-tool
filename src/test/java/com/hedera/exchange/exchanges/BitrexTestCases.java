@@ -34,7 +34,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class BitrexTestCases {
@@ -46,20 +49,11 @@ public class BitrexTestCases {
 				"\"Last\":0.00954162}}";
 		final InputStream json = new ByteArrayInputStream(result.getBytes());
 		final HttpURLConnection connection = mock(HttpURLConnection.class);
-		Bitrex mockBitrex = mock(Bitrex.class);
-		URL mockURL = mock(URL.class);
-		when(mockBitrex.getConnection(urlString)).thenReturn(connection);
 		when(connection.getInputStream()).thenReturn(json);
 
-//		new MockUp<Bitrex>() {
-//			@Mock
-//			HttpURLConnection getConnection(final URL url) {
-//				return connection;
-//			}
-//		};
+		final CoinFactory factory = new CoinFactory(connection);
 
-		Bitrex bitrex = new Bitrex();
-		bitrex = bitrex.load(urlString);
+		final Bitrex bitrex = factory.load(urlString, Bitrex.class);
 		assertTrue(bitrex.isSuccess());
 		assertEquals(0.00954162, bitrex.getHBarValue());
 		assertEquals("Data Sent", bitrex.getMessage());
@@ -71,15 +65,12 @@ public class BitrexTestCases {
 		final InputStream json = new ByteArrayInputStream(result.getBytes());
 		final HttpURLConnection connection = mock(HttpURLConnection.class);
 		when(connection.getInputStream()).thenReturn(json);
-		new MockUp<Bitrex>() {
-			@Mock
-			HttpURLConnection getConnection(final URL url) {
-				return connection;
-			}
-		};
 
-		Bitrex bitrex = new Bitrex();
-		bitrex = bitrex.load("https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC");
+		final CoinFactory factory = new CoinFactory(connection);
+
+		final Bitrex bitrex = factory.load("https://mock.bittrex.com/getticker?market=BTC-LTC", Bitrex.class);
+		assertTrue(bitrex.isSuccess());
+
 		assertFalse(bitrex.isSuccess());
 		assertNull(bitrex.getHBarValue());
 		assertNull(bitrex.getResult());

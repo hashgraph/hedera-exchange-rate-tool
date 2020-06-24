@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Anirudh, Cesar
  */
-public final class Bitrex extends AbstractExchange {
+public final class Bitrex extends ExchangeCoin {
 
 	@JsonProperty(value="success", access = JsonProperty.Access.WRITE_ONLY)
 	private boolean success;
@@ -36,7 +36,7 @@ public final class Bitrex extends AbstractExchange {
 	private String message;
 
 	@JsonProperty(value="result", access = JsonProperty.Access.WRITE_ONLY)
-	private Result[] results;
+	private Result results;
 
 	@Override
 	@JsonProperty("HBAR")
@@ -45,17 +45,17 @@ public final class Bitrex extends AbstractExchange {
 			return null;
 		}
 
-		return this.results[0].last;
+		return this.results.last;
 	}
 
 	@Override
 	@JsonProperty("volume")
 	public Double getVolume() {
-		if (results == null || results[0].volume == null || results[0].volume <= 1.0) {
+		if (results == null || results.volume == null || results.volume <= 1.0) {
 			return 0.0;
 		}
 
-		return this.results[0].volume;
+		return this.results.volume;
 	}
 
 	boolean isSuccess() {
@@ -67,12 +67,7 @@ public final class Bitrex extends AbstractExchange {
 	}
 
 	Result getResult() {
-		return results[0];
-	}
-
-	@Override
-	public Bitrex load(final String endpoint) {
-		return load(endpoint, Bitrex.class);
+		return results;
 	}
 
 	private static class Result {

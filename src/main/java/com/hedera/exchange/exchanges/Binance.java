@@ -21,12 +21,11 @@ package com.hedera.exchange.exchanges;
  */
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.junit.runner.RunWith;
 
 /**
  * Implements a Binance Exchange Response
  */
-public class Binance extends AbstractExchange {
+public class Binance extends ExchangeCoin {
 
     @JsonProperty(value="lastPrice",access = JsonProperty.Access.WRITE_ONLY)
     private Double price;
@@ -45,8 +44,4 @@ public class Binance extends AbstractExchange {
         return volume == null || volume <= 1.0 ? 0.0 : this.volume;
     }
 
-    @Override
-    public Binance load(final String endpoint) {
-        return load(endpoint, Binance.class);
-    }
 }

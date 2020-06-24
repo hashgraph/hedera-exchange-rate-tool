@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Anirudh, Cesar
  */
-public final class OkCoin extends AbstractExchange {
+public final class OkCoin extends ExchangeCoin {
 
     @JsonProperty(value="product_id", access = JsonProperty.Access.WRITE_ONLY)
     private String productid;
@@ -59,10 +59,5 @@ public final class OkCoin extends AbstractExchange {
 
     public String getInstrumentid() {
         return instrumentid;
-    }
-
-    @Override
-    public OkCoin load(final String endpoint) {
-        return load(endpoint, OkCoin.class);
     }
 }

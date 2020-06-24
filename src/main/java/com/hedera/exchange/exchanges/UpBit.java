@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Anirudh, Cesar
  */
-public class UpBit extends AbstractExchange {
+public class UpBit extends ExchangeCoin {
 
     @Override
     @JsonProperty("HBAR")
@@ -39,10 +39,5 @@ public class UpBit extends AbstractExchange {
     @JsonProperty("volume")
     public Double getVolume() {
         return null;
-    }
-
-    @Override
-    public UpBit load(final String endpoint) {
-        return load(endpoint, UpBit.class);
     }
 }

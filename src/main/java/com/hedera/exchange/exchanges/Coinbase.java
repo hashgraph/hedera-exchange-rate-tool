@@ -30,7 +30,7 @@ import java.util.Map;
  *
  * @author Anirudh, Cesar
  */
-public class Coinbase extends AbstractExchange{
+public class Coinbase extends ExchangeCoin {
 
     @JsonProperty(value = "data", access = JsonProperty.Access.WRITE_ONLY)
     private Data data;
@@ -54,11 +54,6 @@ public class Coinbase extends AbstractExchange{
     @JsonIgnore
     String getCurrency() {
         return this.data.currency;
-    }
-
-    @Override
-    public Coinbase load(final String endpoint) {
-        return load(endpoint, Coinbase.class);
     }
 
     private static class Data {

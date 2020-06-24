@@ -21,14 +21,11 @@ package com.hedera.exchange.exchanges;
  */
 
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;

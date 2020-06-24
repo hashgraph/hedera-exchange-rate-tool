@@ -27,7 +27,6 @@ import mockit.MockUp;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.runners.Parameterized;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -211,7 +210,7 @@ public class ERTprocTestCases {
         final HttpURLConnection bitrexConnection = mock(HttpURLConnection.class);
         when(bitrexConnection.getInputStream()).thenReturn(bitrexJson);
 
-        new MockUp<AbstractExchange>() {
+        new MockUp<CoinFactory>() {
             @Mock
             HttpURLConnection getConnection(final URL url) {
                 final String host = url.getHost();
@@ -254,7 +253,7 @@ public class ERTprocTestCases {
         final InputStream binanceJson = new ByteArrayInputStream(binanceResult.getBytes());
         final HttpURLConnection binanceConnection = mock(HttpURLConnection.class);
         when(binanceConnection.getInputStream()).thenReturn(binanceJson);
-        new MockUp<AbstractExchange>() {
+        new MockUp<CoinFactory>() {
             @Mock
             HttpURLConnection getConnection(final URL url) {
                 final String host = url.getHost();

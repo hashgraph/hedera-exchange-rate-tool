@@ -26,7 +26,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * This class implements the methods that we perform periodically to generate Exchange rate
@@ -46,7 +45,7 @@ public class ERTproc {
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
 
-    private static final Map<String, Class<? extends AbstractExchange>> EXCHANGES = new HashMap<>();
+    private static final Map<String, Class<? extends ExchangeCoin>> EXCHANGES = new HashMap<>();
 
     static {
         EXCHANGES.put("bitrex", Bitrex.class);
@@ -149,22 +148,17 @@ public class ERTproc {
      */
     public List<Exchange> generateExchanges() throws IllegalAccessException, InstantiationException {
         List<Exchange> exchanges = new ArrayList<>();
+        final CoinFactory factory = new CoinFactory();
 
         for (final Map.Entry<String, String> api : this.exchangeApis.entrySet()) {
 
             //final Function<String, Exchange> exchangeLoader = EXCHANGES.get(api.getKey());
-            Class exchangeClass = EXCHANGES.get(api.getKey());
-            Exchange exchange = (Exchange) exchangeClass.newInstance();
-
-            if (exchange == null) {
-                LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not found", api.getKey());
-                continue;
-            }
+            final Class<? extends ExchangeCoin> exchangeClass = EXCHANGES.get(api.getKey());
 
             final String endpoint = api.getValue();
-            final Exchange actualExchange = exchange.load(endpoint); //exchangeLoader.apply(endpoint);
+            final Exchange actualExchange = factory.load(endpoint, exchangeClass); //exchangeLoader.apply(endpoint);
             if (actualExchange == null) {
-                LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not loaded", api.getKey());
+                LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not loaded for type {}", api.getKey(), exchangeClass);
                 continue;
             }
 

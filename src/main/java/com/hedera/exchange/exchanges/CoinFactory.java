@@ -21,13 +21,15 @@ package com.hedera.exchange.exchanges;
  */
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import static com.hedera.exchange.exchanges.Exchange.OBJECT_MAPPER;
 
 /**
  * This is an Abstract class the each Exchange [ Bitrex, Coinbase .. etc.. ] needs to extend.
@@ -36,12 +38,18 @@ import java.net.URL;
  *
  * @author Anirudh, Cesar
  */
-public abstract class AbstractExchange implements Exchange {
+public final class CoinFactory {
 
-	private static final Logger LOGGER = LogManager.getLogger(AbstractExchange.class);
+	private static final Logger LOGGER = LogManager.getLogger(CoinFactory.class);
 
-	@JsonProperty("Query")
-	String endPoint = "";
+	private HttpURLConnection connection;
+
+	public CoinFactory() {
+	}
+
+	CoinFactory(final HttpURLConnection connection) {
+		this.connection = connection;
+	}
 
 	/**
 	 * This Method fetches the data from the exchanges using the URL mentioned and creates an Object of type Exchange
@@ -55,7 +63,8 @@ public abstract class AbstractExchange implements Exchange {
 			final HttpURLConnection con = getConnection(endpoint);
 			con.addRequestProperty("User-Agent",
 					"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36");
-			final T exchange =  OBJECT_MAPPER.readValue(con.getInputStream(), type);
+			final InputStream inputStream = con.getInputStream();
+			final T exchange =  OBJECT_MAPPER.readValue(inputStream, type);
 			exchange.setEndPoint(endpoint);
 			con.disconnect();
 			return exchange;
@@ -65,30 +74,17 @@ public abstract class AbstractExchange implements Exchange {
 		}
 	}
 
-	@Override
-	/**
-	 * Converts the Exchange into a Json String using OBJECT_MAPPER
-	 */
-	public String toJson() throws JsonProcessingException {
-		return OBJECT_MAPPER.writeValueAsString(this);
-	}
-
-	/**
-	 * Set the url for the Exchange that we use to get the HABR-USD exchange rate
-	 * @param url Exchange Endpoint
-	 */
-	public void setEndPoint(String url) {
-		endPoint = url;
-	}
-
-	@Override
 	/**
 	 * Get the Https connection using the URL provided.
-	 * @param url URL to the exchange
+	 * @param endpoint Endpoint to the exchange
 	 * @return HttpURLConnection object to the URL
 	 * @throws IOException
 	 */
 	public HttpURLConnection getConnection(final String endpoint) throws IOException {
+		if (this.connection != null) {
+			return this.connection;
+		}
+
 		final URL url = new URL(endpoint);
 		return (HttpURLConnection) url.openConnection();
 	}

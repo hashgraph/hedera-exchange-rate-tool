@@ -49,9 +49,6 @@ public interface Exchange {
 
 	void setEndPoint(String url);
 
-	Exchange load(String endpoint);
-
 	String toJson() throws JsonProcessingException;
 
-	HttpURLConnection getConnection(String endpoint) throws IOException;
 }
