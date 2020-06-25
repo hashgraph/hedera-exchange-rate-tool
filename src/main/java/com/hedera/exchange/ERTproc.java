@@ -56,7 +56,6 @@ public class ERTproc {
         EXCHANGES.put("binance", Binance.class);
     }
 
-    private final Map<String, String> exchangeApis;
     private final long bound;
     private final long floor;
     private List<Exchange> exchanges;
@@ -66,14 +65,14 @@ public class ERTproc {
     private final long frequencyInSeconds;
 
     public ERTproc(final long hbarEquiv,
-            final Map<String, String> exchangeApis,
+            final List<Exchange> exchanges,
             final long bound,
             final long floor,
             final Rate midnightExchangeRate,
             final Rate currentExchangeRate,
             final long frequencyInSeconds) {
         this.hbarEquiv = hbarEquiv;
-        this.exchangeApis = exchangeApis;
+        this.exchanges = exchanges;
         this.bound = bound;
         this.floor = floor;
         this.midnightExchangeRate = midnightExchangeRate;
@@ -92,7 +91,6 @@ public class ERTproc {
 
         try {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
-            exchanges = generateExchanges();
             currentExchangeRate.setExpirationTime(ERTParams.getCurrentExpirationTime());
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next hour as current expiration time :{}",
                     currentExchangeRate.getExpirationTimeInSeconds());
@@ -140,34 +138,6 @@ public class ERTproc {
             throw new RuntimeException(ex);
         }
     }
-
-    /**
-     * Loads the list of Exchange objects with HBAR-USD exchange rate using the URL endpoints provided for each
-     * Exchange int he config file.
-     * @return List of Exchange objects.
-     */
-    public List<Exchange> generateExchanges() throws IllegalAccessException, InstantiationException {
-        List<Exchange> exchanges = new ArrayList<>();
-        final CoinFactory factory = new CoinFactory();
-
-        for (final Map.Entry<String, String> api : this.exchangeApis.entrySet()) {
-
-            //final Function<String, Exchange> exchangeLoader = EXCHANGES.get(api.getKey());
-            final Class<? extends ExchangeCoin> exchangeClass = EXCHANGES.get(api.getKey());
-
-            final String endpoint = api.getValue();
-            final Exchange actualExchange = factory.load(endpoint, exchangeClass); //exchangeLoader.apply(endpoint);
-            if (actualExchange == null) {
-                LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not loaded for type {}", api.getKey(), exchangeClass);
-                continue;
-            }
-
-            exchanges.add(actualExchange);
-        }
-
-        return exchanges;
-    }
-
 
     /**
      * Return the list of exchanges that worked in json string format using OBJECT_MAPPER

@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -108,9 +109,11 @@ public class ExchangeRateTool {
         final ExchangeRate midnightExchangeRate = exchangeDB.getLatestMidnightExchangeRate();
         final Rate midnightRate = midnightExchangeRate == null ? null : midnightExchangeRate.getNextRate();
         final Rate currentRate = getCurrentRate(exchangeDB, ertParams);
+        final ExchangeRateUtils exchangeRateUtils = new ExchangeRateUtils();
+        List<Exchange> exchanges = exchangeRateUtils.generateExchanges(ertParams.getExchangeAPIList());
 
         final ERTproc proc = new ERTproc(ertParams.getDefaultHbarEquiv(),
-                ertParams.getExchangeAPIList(),
+                exchanges,
                 ertParams.getBound(),
                 ertParams.getFloor(),
                 midnightRate,

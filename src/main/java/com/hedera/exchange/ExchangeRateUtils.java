@@ -24,16 +24,13 @@ import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
 import com.amazonaws.services.kms.model.DecryptRequest;
 import com.amazonaws.util.Base64;
-import com.hedera.exchange.exchanges.Exchange;
+import com.hedera.exchange.exchanges.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 /**
  * This class implements helper functions of ERT
@@ -46,6 +43,16 @@ import java.util.ListIterator;
 public class ExchangeRateUtils {
 
 	private static final Logger LOGGER = LogManager.getLogger(ExchangeRateUtils.class);
+	private static final Map<String, Class<? extends ExchangeCoin>> EXCHANGES = new HashMap<>();
+
+	static {
+		EXCHANGES.put("bitrex", Bitrex.class);
+		EXCHANGES.put("liquid", Liquid.class);
+		EXCHANGES.put("coinbase", Coinbase.class);
+		EXCHANGES.put("upbit", UpBit.class);
+		EXCHANGES.put("okcoin", OkCoin.class);
+		EXCHANGES.put("binance", Binance.class);
+	}
 
 	/**
 	 * Get the decrypted Environment variable set in AWS
@@ -61,5 +68,31 @@ public class ExchangeRateUtils {
 		final DecryptRequest request = new DecryptRequest().withCiphertextBlob(ByteBuffer.wrap(encryptedKey));
 		final ByteBuffer plainTextKey = client.decrypt(request).getPlaintext();
 		return new String(plainTextKey.array(), StandardCharsets.UTF_8);
+	}
+
+	/**
+	 * Loads the list of Exchange objects with HBAR-USD exchange rate using the URL endpoints provided for each
+	 * Exchange int he config file.
+	 * @return List of Exchange objects.
+	 */
+	public List<Exchange> generateExchanges( Map<String, String> exchangeApis) {
+		List<Exchange> exchanges = new ArrayList<>();
+		final CoinFactory factory = new CoinFactory();
+
+		for (final Map.Entry<String, String> api : exchangeApis.entrySet()) {
+
+			final Class<? extends ExchangeCoin> exchangeClass = EXCHANGES.get(api.getKey());
+
+			final String endpoint = api.getValue();
+			final Exchange actualExchange = factory.load(endpoint, exchangeClass);
+			if (actualExchange == null) {
+				LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not loaded for type {}", api.getKey(), exchangeClass);
+				continue;
+			}
+
+			exchanges.add(actualExchange);
+		}
+
+		return exchanges;
 	}
 }
