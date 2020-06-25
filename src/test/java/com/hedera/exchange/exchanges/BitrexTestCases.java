@@ -40,7 +40,7 @@ public class BitrexTestCases {
 	public void fetchBitrexTest() throws IOException {
 		final String urlString = "https://api.bittrex.com/api/v1.1/public/getticker?market=BTC-LTC";
 		final String result = "{\"success\":true,\"message\":\"Data Sent\",\"result\":[{\"Bid\":0.00952751,\"Ask\":0.00753996," +
-				"\"Volume\":3219496.21980385,\"Last\":0.00954162}]}";
+				"\"BaseVolume\":3219496.21980385,\"Last\":0.00954162}]}";
 		final InputStream json = new ByteArrayInputStream(result.getBytes());
 		final HttpURLConnection connection = mock(HttpURLConnection.class);
 		when(connection.getInputStream()).thenReturn(json);
@@ -64,7 +64,6 @@ public class BitrexTestCases {
 		final CoinFactory factory = new CoinFactory(connection);
 
 		final Bitrex bitrex = factory.load("https://mock.bittrex.com/getticker?market=BTC-LTC", Bitrex.class);
-		assertTrue(bitrex.isSuccess());
 
 		assertFalse(bitrex.isSuccess());
 		assertNull(bitrex.getHBarValue());

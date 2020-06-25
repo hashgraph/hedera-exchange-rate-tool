@@ -36,7 +36,7 @@ public final class Bitrex extends ExchangeCoin {
 	private String message;
 
 	@JsonProperty(value="result", access = JsonProperty.Access.WRITE_ONLY)
-	private Result results;
+	private Result[] results;
 
 	@Override
 	@JsonProperty("HBAR")
@@ -45,17 +45,17 @@ public final class Bitrex extends ExchangeCoin {
 			return null;
 		}
 
-		return this.results.last;
+		return this.results[0].last;
 	}
 
 	@Override
 	@JsonProperty("volume")
 	public Double getVolume() {
-		if (results == null || results.volume == null || results.volume <= 1.0) {
+		if (results == null || results[0].volume == null || results[0].volume <= 1.0) {
 			return 0.0;
 		}
 
-		return this.results.volume;
+		return this.results[0].volume;
 	}
 
 	boolean isSuccess() {
@@ -67,7 +67,10 @@ public final class Bitrex extends ExchangeCoin {
 	}
 
 	Result getResult() {
-		return results;
+		if (results == null) {
+			return null;
+		}
+		return results[0];
 	}
 
 	private static class Result {
