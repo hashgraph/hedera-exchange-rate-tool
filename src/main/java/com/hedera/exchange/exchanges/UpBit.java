@@ -30,13 +30,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class UpBit extends ExchangeCoin {
 
     @Override
-    @JsonProperty("HBAR")
     public Double getHBarValue() {
         return null;
     }
 
     @Override
-    @JsonProperty("volume")
     public Double getVolume() {
         return null;
     }

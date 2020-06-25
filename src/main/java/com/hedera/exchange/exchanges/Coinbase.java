@@ -36,7 +36,6 @@ public class Coinbase extends ExchangeCoin {
     private Data data;
 
     @Override
-    @JsonProperty("HBAR")
     public Double getHBarValue() {
         if (this.data == null || this.data.rates == null || !this.data.rates.containsKey("HBAR")) {
             return null;
@@ -46,7 +45,6 @@ public class Coinbase extends ExchangeCoin {
     }
 
     @Override
-    @JsonProperty("volume")
     public Double getVolume() {
         return null;
     }

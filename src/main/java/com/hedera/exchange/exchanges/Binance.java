@@ -39,7 +39,6 @@ public class Binance extends ExchangeCoin {
     }
 
     @Override
-    @JsonProperty("volume")
     public Double getVolume() {
         return volume == null || volume <= 1.0 ? 0.0 : this.volume;
     }

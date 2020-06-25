@@ -39,7 +39,6 @@ public final class Bitrex extends ExchangeCoin {
 	private Result[] results;
 
 	@Override
-	@JsonProperty("HBAR")
 	public Double getHBarValue() {
 		if (results == null) {
 			return null;
@@ -49,7 +48,6 @@ public final class Bitrex extends ExchangeCoin {
 	}
 
 	@Override
-	@JsonProperty("volume")
 	public Double getVolume() {
 		if (results == null || results[0].volume == null || results[0].volume <= 1.0) {
 			return 0.0;

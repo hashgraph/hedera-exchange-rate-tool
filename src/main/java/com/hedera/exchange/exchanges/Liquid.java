@@ -42,13 +42,11 @@ public class Liquid extends ExchangeCoin {
 	private Double volume;
 
 	@Override
-	@JsonProperty("HBAR")
 	public Double getHBarValue() {
 		return this.exchangeRate;
 	}
 
 	@Override
-	@JsonProperty("volume")
 	public Double getVolume() {
 		return volume == null || volume <= 1.0 ? 0.0 : this.volume;
 	}

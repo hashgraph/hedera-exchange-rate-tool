@@ -20,6 +20,7 @@ package com.hedera.exchange.exchanges;
  * ‍
  */
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,8 +44,10 @@ public interface Exchange {
 	ObjectMapper OBJECT_MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
 			false);
 
+	@JsonProperty("HBAR")
 	Double getHBarValue();
 
+	@JsonProperty("Volume")
 	Double getVolume();
 
 	void setEndPoint(String url);

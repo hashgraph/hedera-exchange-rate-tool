@@ -42,13 +42,11 @@ public final class OkCoin extends ExchangeCoin {
     private Double volume;
 
     @Override
-    @JsonProperty("HBAR")
     public Double getHBarValue() {
         return rate;
     }
 
     @Override
-    @JsonProperty("volume")
     public Double getVolume() {
         return volume == null || volume <= 1.0 ? 0.0 : this.volume;
     }
