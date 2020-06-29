@@ -37,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,14 +74,21 @@ public class ExchangeRateUtils {
 	 */
 	public static String getDecryptedEnvironmentVariableFromAWS(final String environmentVariable) {
 		final String environmentValue = System.getenv(environmentVariable);
-		return getDecryptedValueFromAWS(environmentValue);
+		final String lambdaFunctionName = System.getenv("AWS_LAMBDA_FUNCTION_NAME");
+		return getDecryptedValueFromAWS(environmentValue, lambdaFunctionName);
 	}
 
-	public static String getDecryptedValueFromAWS(final String value) {
+	public static String getDecryptedValueFromAWS(final String value, final String lambdaFunctionName) {
+		Map<String, String> encryptionContext = new HashMap<>();
+		encryptionContext.put("LambdaFunctionName", lambdaFunctionName);
 		final byte[] encryptedKey = Base64.decode(value);
+
 		final AWSKMS client = AWSKMSClientBuilder.defaultClient();
 
-		final DecryptRequest request = new DecryptRequest().withCiphertextBlob(ByteBuffer.wrap(encryptedKey));
+		final DecryptRequest request = new DecryptRequest()
+				.withCiphertextBlob(ByteBuffer.wrap(encryptedKey))
+				.withEncryptionContext(encryptionContext);
+
 		final ByteBuffer plainTextKey = client.decrypt(request).getPlaintext();
 		return new String(plainTextKey.array(), StandardCharsets.UTF_8);
 	}
