@@ -32,8 +32,16 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 public class ERTprocTestCases {
+
+    @Test
+    public void testWSKMS(){
+        assertEquals("https://s3.amazonaws.com/exchange.rate.config.integration/config.json",
+                ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI"));
+    }
+
 
     @ParameterizedTest
     @CsvSource({"src/test/resources/configs/config.json,360000,288000",
@@ -182,17 +190,17 @@ public class ERTprocTestCases {
                 params.getFrequencyInSeconds()
         );
 
-        assertEquals(1.0, ertProcess.findWeightedMedian(
+        assertEquals(1.0, ertProcess.findVolumeWeightedMedian(
                 new double[]{0.0, 1.0, 2.0} , new double[]{1.0, 1.0, 1.0}));
-        assertEquals(1.0, ertProcess.findWeightedMedian(
+        assertEquals(1.0, ertProcess.findVolumeWeightedMedian(
                 new double[]{0.0, 1.0, 2.0} , new double[]{1.0, 0.0, 1.0}));
-        assertEquals(2.0, ertProcess.findWeightedMedian(
+        assertEquals(2.0, ertProcess.findVolumeWeightedMedian(
                 new double[]{0.0, 1.0, 2.0} , new double[]{0.0, 0.0, 1.0}));
-        assertEquals(2.0, ertProcess.findWeightedMedian(
+        assertEquals(2.0, ertProcess.findVolumeWeightedMedian(
                 new double[]{0.0, 1.0, 2.0, 3.0} , new double[]{1.0, 0.0, 0.0, 1.0}));
-        assertEquals(3.0, ertProcess.findWeightedMedian(
+        assertEquals(3.0, ertProcess.findVolumeWeightedMedian(
                 new double[]{0.0, 1.0, 2.0, 3.0, 4.0} , new double[]{1.0, 0.0, 0.0, 0.0, 1.0}));
-        assertEquals(1.5, ertProcess.findWeightedMedian(
+        assertEquals(1.5, ertProcess.findVolumeWeightedMedian(
                 new double[]{0.0, 1.0, 2.0, 3.0} , new double[]{1.0, 0.1, 0.1, 1.0}));
     }
 

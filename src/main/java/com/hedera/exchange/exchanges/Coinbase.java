@@ -46,7 +46,7 @@ public class Coinbase extends ExchangeCoin {
 
     @Override
     public Double getVolume() {
-        return null;
+        return 0.0;
     }
 
     @JsonIgnore

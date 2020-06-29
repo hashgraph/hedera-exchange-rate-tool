@@ -24,8 +24,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedera.exchange.exchanges.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Comparator;
 
-import java.util.*;
 
 /**
  * This class implements the methods that we perform periodically to generate Exchange rate
@@ -44,17 +48,6 @@ import java.util.*;
 public class ERTproc {
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
-
-    private static final Map<String, Class<? extends ExchangeCoin>> EXCHANGES = new HashMap<>();
-
-    static {
-        EXCHANGES.put("bitrex", Bitrex.class);
-        EXCHANGES.put("liquid", Liquid.class);
-        EXCHANGES.put("coinbase", Coinbase.class);
-        EXCHANGES.put("upbit", UpBit.class);
-        EXCHANGES.put("okcoin", OkCoin.class);
-        EXCHANGES.put("binance", Binance.class);
-    }
 
     private final long bound;
     private final long floor;
@@ -153,7 +146,7 @@ public class ERTproc {
      * @param exchanges - list of Exchange objects that have exchange rates of HABR-USD
      * @return median of the exchange rates
      */
-    public Double calculateMedianRate(List<Exchange> exchanges) throws Exception {
+    public Double calculateMedianRate(final List<Exchange> exchanges) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Computing median");
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "removing all invalid exchanges retrieved");
@@ -178,8 +171,19 @@ public class ERTproc {
             index++;
         }
 
-        return findWeightedMedian(exchangeRates, exchangeVolumes);
+        return findVolumeWeightedMedian(exchangeRates, exchangeVolumes);
     }
+
+    public Double findVolumeWeightedMedian(double[] exchangeRates, double[] exchangeVolumes) throws Exception {
+        if( exchangeRates.length == 0 ||
+                exchangeVolumes.length == 0 ||
+                exchangeRates.length != exchangeVolumes.length ) {
+            LOGGER.error(Exchange.EXCHANGE_FILTER, "Inconsistent rates and their volumes");
+            return 0.0;
+        }
+        return findVolumeWeightedMedianAverage(exchangeRates, exchangeVolumes);
+    }
+
 
     /**
      * Return the weighted median of the given values, using the given weights.
@@ -203,22 +207,30 @@ public class ERTproc {
      *      the positive weight for each value, with higher having more influence
      * @return the weighted median
      */
-    public double findWeightedMedian(double[] values, double[] weights) throws Exception {
+    private double findVolumeWeightedMedianAverage(double[] values, double[] weights) throws Exception {
         int n = values.length;
-        double w0 = 0, w1 = 0, m = 0, total, sum, next, v0, v1;
-        total = 0;
+        double w0;
+        double w1;
+        double m;
+        double total = 0;
+        double sum;
+        double next;
+        double v0;
+        double v1;
+
         for (int i = 0; i < n; i++) {
             total += weights[i];
         }
         sum = weights[0] / 2;
-        for (int i = 0; i < n; i++) {
-            next = sum + (weights[i] + (i + 1 >= n ? 0 : weights[i + 1])) / 2.0;
+
+        for (int index = 0; index < n; index++) {
+            next = sum + (weights[index] + (index + 1 >= n ? 0 : weights[index + 1])) / 2.0;
             //sum is (sum of weights[0...i-1]) + weights[i]/2
             //next is (sum of weights[0...i]) + weights[i+1]/2
             if (next > total / 2.0) {
                 //(sum of weights[0...i]) <= (total / 2) < (sum of weights[0...i+1])
-                v0 = values[i];
-                v1 = i + 1 >= n ? 0 : values[i + 1];
+                v0 = values[index];
+                v1 = index + 1 >= n ? 0 : values[index + 1];
                 w0 = next - total / 2.0;
                 w1 = total / 2.0 - sum;
                 m = (v0 * w0 + v1 * w1) / (w0 + w1);

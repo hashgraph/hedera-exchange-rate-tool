@@ -40,7 +40,7 @@ public class BinanceTestCases {
 
         final CoinFactory factory = new CoinFactory(connection);
         final Binance binance = factory.load(urlString, Binance.class);
-        assertEquals((Double)0.0429, binance.getHBarValue());
-        assertEquals((Double)1631.03198900, binance.getVolume());
+        assertEquals(0.0429, binance.getHBarValue());
+        assertEquals(1631.03198900, binance.getVolume());
     }
 }

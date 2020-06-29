@@ -24,13 +24,24 @@ import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
 import com.amazonaws.services.kms.model.DecryptRequest;
 import com.amazonaws.util.Base64;
-import com.hedera.exchange.exchanges.*;
+import com.hedera.exchange.exchanges.Binance;
+import com.hedera.exchange.exchanges.Bitrex;
+import com.hedera.exchange.exchanges.UpBit;
+import com.hedera.exchange.exchanges.Liquid;
+import com.hedera.exchange.exchanges.OkCoin;
+import com.hedera.exchange.exchanges.Coinbase;
+import com.hedera.exchange.exchanges.CoinFactory;
+import com.hedera.exchange.exchanges.ExchangeCoin;
+import com.hedera.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class implements helper functions of ERT
@@ -75,7 +86,7 @@ public class ExchangeRateUtils {
 	 * Exchange int he config file.
 	 * @return List of Exchange objects.
 	 */
-	public List<Exchange> generateExchanges( Map<String, String> exchangeApis) {
+	public List<Exchange> generateExchanges( final Map<String, String> exchangeApis) {
 		List<Exchange> exchanges = new ArrayList<>();
 		final CoinFactory factory = new CoinFactory();
 

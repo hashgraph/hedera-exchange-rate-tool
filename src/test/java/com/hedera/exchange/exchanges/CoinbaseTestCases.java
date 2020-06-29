@@ -46,6 +46,6 @@ public class CoinbaseTestCases {
 
         assertEquals("USD", coinbase.getCurrency() );
         assertEquals(0.0098, coinbase.getHBarValue());
-        assertNull(coinbase.getVolume());
+        assertEquals(0.0, coinbase.getVolume());
     }
 }

@@ -40,7 +40,7 @@ public final class Bitrex extends ExchangeCoin {
 
 	@Override
 	public Double getHBarValue() {
-		if (results == null) {
+		if (results == null || results[0].last == null) {
 			return null;
 		}
 
@@ -62,13 +62,6 @@ public final class Bitrex extends ExchangeCoin {
 
 	String getMessage() {
 		return message;
-	}
-
-	Result getResult() {
-		if (results == null) {
-			return null;
-		}
-		return results[0];
 	}
 
 	private static class Result {

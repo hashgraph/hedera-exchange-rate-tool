@@ -67,6 +67,5 @@ public class BitrexTestCases {
 
 		assertFalse(bitrex.isSuccess());
 		assertNull(bitrex.getHBarValue());
-		assertNull(bitrex.getResult());
 	}
 }
