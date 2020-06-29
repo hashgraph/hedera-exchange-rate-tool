@@ -72,8 +72,12 @@ public class ExchangeRateUtils {
 	 * @return decrypted Environment Variable.
 	 */
 	public static String getDecryptedEnvironmentVariableFromAWS(final String environmentVariable) {
-		final byte[] encryptedKey = Base64.decode(System.getenv(environmentVariable));
+		final String environmentValue = System.getenv(environmentVariable);
+		return getDecryptedValueFromAWS(environmentValue);
+	}
 
+	public static String getDecryptedValueFromAWS(final String value) {
+		final byte[] encryptedKey = Base64.decode(value);
 		final AWSKMS client = AWSKMSClientBuilder.defaultClient();
 
 		final DecryptRequest request = new DecryptRequest().withCiphertextBlob(ByteBuffer.wrap(encryptedKey));
