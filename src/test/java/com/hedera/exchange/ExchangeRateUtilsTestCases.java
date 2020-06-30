@@ -7,8 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExchangeRateUtilsTestCases {
 
-	@Test
-	@Ignore
+//	@Test
 	public void getDecryptedEnvironmentVariableFromAWSTest() {
 		final String expectedValue = "https://s3.amazonaws.com/exchange.rate.config.integration/config.json";
 		final String encryptedValue = "AQICAHi3BYYdRzjj1ZR5ij/3mN6+GWqEbw7NTAG0fm7nzYo3MwHyBlKsmA+1lepLUe" +
