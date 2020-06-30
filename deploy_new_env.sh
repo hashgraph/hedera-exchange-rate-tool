@@ -146,7 +146,7 @@ echo "${DATABASE_NAME} has endpoint ${DATABASE_ENDPOINT}"
 echo "Downloading deployed jar from ${DEPLOYED_JAR}"
 
 
-DOWNLOADED_JAR="Exchange-Rate-Tool.jar"
+DOWNLOADED_JAR="hedera-exchange-rate-tool.jar"
 LOCAL_JAR="./${DOWNLOADED_JAR}"
 
 aws s3 sync "${DEPLOYED_JAR_PATH}" ./

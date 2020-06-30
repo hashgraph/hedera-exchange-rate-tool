@@ -98,7 +98,6 @@ public class ExchangeRateTool {
     private static void execute() throws Exception {
 
         final Ed25519PrivateKey privateOperatorKey = Ed25519PrivateKey.fromString(ertParams.getOperatorKey());
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "operator key : {}", privateOperatorKey.toString());
         final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
 
         Client client = new Client( ertAddressBook != null && !ertAddressBook.getNodes().isEmpty() ?

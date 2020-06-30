@@ -32,16 +32,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 public class ERTprocTestCases {
-
-    @Test
-    public void testWSKMS(){
-        assertEquals("https://s3.amazonaws.com/exchange.rate.config.integration/config.json",
-                ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI"));
-    }
-
 
     @ParameterizedTest
     @CsvSource({"src/test/resources/configs/config.json,360000,288000",
