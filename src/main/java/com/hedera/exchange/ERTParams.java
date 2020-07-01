@@ -321,8 +321,8 @@ public class ERTParams {
      */
     public Map<String, Map<AccountId, String>> getNetworks() {
         final Map<String, Map<AccountId, String>> networkAddresses = new HashMap<>();
-        final Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
         for (final Map.Entry<String, Map<String, String>> network : this.networks.entrySet()) {
+            Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
             for( final Map.Entry<String, String> node : network.getValue().entrySet()) {
                 final AccountId nodeId = AccountId.fromString(node.getKey());
                 accountToNodeAddresses.put(nodeId, node.getValue());
@@ -371,8 +371,8 @@ public class ERTParams {
     public long getFloor(){ return this.floor; }
 
     @JsonIgnore
-    public String getOperatorKey() {
-        return ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY");
+    public String getOperatorKey(String networkName) {
+        return ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY_" + networkName);
     }
 
     /**

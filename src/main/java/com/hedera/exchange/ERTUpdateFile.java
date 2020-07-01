@@ -55,13 +55,14 @@ public class ERTUpdateFile {
                                                         final Rate midnightRate,
                                                         Client client,
                                                         ERTParams ertParams) throws HederaStatusException, TimeoutException, InterruptedException {
+
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
         final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
 
         final String memo = String.format("currentRate : %d, nextRate : %d, midnightRate : %d",
                 exchangeRate.getCurrentRate().getCentEquiv(),
                 exchangeRate.getNextRate().getCentEquiv(),
-                midnightRate.getCentEquiv());
+                midnightRate == null ? 0 : midnightRate.getCentEquiv());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Memo for the FileUpdate tx : {}", memo);
 
         final FileId exchangeRateFileId = FileId.fromString(ertParams.getFileId());

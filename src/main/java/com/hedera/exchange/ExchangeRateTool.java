@@ -44,6 +44,7 @@ import java.util.*;
 public class ExchangeRateTool {
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
     private static final int DEFAULT_RETRIES = 4;
+    private static final List<HederaNetwork> networkClients = new ArrayList<>();
 
     private static ERTParams ertParams;
     private static ExchangeDB exchangeDB;
@@ -91,24 +92,8 @@ public class ExchangeRateTool {
      */
     private static void execute() throws Exception {
 
-        final Ed25519PrivateKey privateOperatorKey = Ed25519PrivateKey.fromString(ertParams.getOperatorKey());
-        final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
         final Map<String, Map<AccountId, String>> networks = ertParams.getNetworks();
-
-        List<HederaNetwork> networkClients = new ArrayList<>();
-
-        for(String network : networks.keySet()) {
-
-            ertAddressBook = exchangeDB.getLatestERTAddressBook(network);
-            HederaNetwork hederaNetwork = new HederaNetwork(network,
-                     new Client( ertAddressBook != null && !ertAddressBook.getNodes().isEmpty() ?
-                    ertAddressBook.getNodes() : networks.get(network))
-                .setMaxTransactionFee(ertParams.getMaxTransactionFee())
-                .setOperator(operatorId, privateOperatorKey)
-            );
-
-            networkClients.add(hederaNetwork);
-        }
+        final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
 
         final long frequencyInSeconds = ertParams.getFrequencyInSeconds();
         final ExchangeRate midnightExchangeRate = exchangeDB.getLatestMidnightExchangeRate();
@@ -127,18 +112,38 @@ public class ExchangeRateTool {
 
         final ExchangeRate exchangeRate = proc.call();
 
-        for( HederaNetwork hederaClient : networkClients ) {
+        for(String networkName : networks.keySet()) {
+
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
+                    networkName);
+
+            Ed25519PrivateKey privateOperatorKey = Ed25519PrivateKey.fromString(ertParams.getOperatorKey(networkName));
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "private key for network {} is {}",
+                    networkName, privateOperatorKey);
+
+            ertAddressBook = exchangeDB.getLatestERTAddressBook(networkName);
+
+            for(AccountId accountId : networks.get(networkName).keySet()) {
+                LOGGER.info(Exchange.EXCHANGE_FILTER, "Account {} , ipaddress {}", accountId,
+                        networks.get(networkName).get(accountId));
+            }
+
+            Client hederaClient = new Client( ertAddressBook != null && !ertAddressBook.getNodes().isEmpty() ?
+                            ertAddressBook.getNodes() : networks.get(networkName))
+                            .setMaxTransactionFee(ertParams.getMaxTransactionFee())
+                            .setOperator(operatorId, privateOperatorKey);
+
             ERTAddressBook newAddressBook = ERTUpdateFile.updateExchangeRateFile(
                     exchangeRate,
                     midnightRate,
-                    hederaClient.getHederaClient(),
+                    hederaClient,
                     ertParams
             );
 
             exchangeDB.pushERTAddressBook(
                     exchangeRate.getNextExpirationTimeInSeconds(),
                     newAddressBook,
-                    hederaClient.getNetworkName()
+                    networkName
             );
         }
 
