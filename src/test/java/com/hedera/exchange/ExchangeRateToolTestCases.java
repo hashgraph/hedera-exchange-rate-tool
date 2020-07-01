@@ -39,7 +39,7 @@ public class ExchangeRateToolTestCases {
     public void verifyNodesFromAddressBook() throws IOException {
         setup();
 
-        Map<String, String> ERTnodes = ExchangeRateTool.getNodesFromAddressBook(addressBook);
+        Map<String, String> ERTnodes = ExchangeRateUtils.getNodesFromAddressBook(addressBook);
         for( String node : ERTnodes.keySet()){
             assertEquals(ERTnodes.get(node), nodes.get(node));
         }

@@ -20,7 +20,10 @@ package com.hedera.exchange;
  * ‍
  */
 
+import com.hedera.hashgraph.sdk.account.AccountId;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -33,6 +36,15 @@ public class ERTParamsTestCases {
         assertEquals("0.0.57", ertParams.getPayAccount());
         assertEquals("0.0.112", ertParams.getFileId());
         assertEquals(15_000, ertParams.getValidationDelayInMilliseconds());
+
+        Map<String, Map<AccountId, String>> networks = ertParams.getNetworks();
+        for(String network : networks.keySet()) {
+            System.out.println("Network name is " + network);
+            for(Map.Entry<AccountId, String> node : networks.get(network).entrySet()) {
+                System.out.println("Node ID : " + node.getKey().toString());
+                System.out.println("Node Address : " + node.getValue());
+            }
+        }
     }
 
     @Test

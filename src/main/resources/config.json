@@ -18,6 +18,15 @@
 	"Nodes": {
 		"0.0.3": "0.testnet.hedera.com:50211"
 	},
+	"Networks": {
+		"publicTestNet": {
+			"0.0.3": "0.testnet.hedera.com:50211",
+			"0.0.4": "1.testnet.hedera.com:50211"
+		},
+		"performanceNet": {
+			"0.0.3": "35.196.144.134:50211"
+		}
+	},
 	"payerAccount": "0.0.57"
 }
 

@@ -33,6 +33,8 @@ import com.hedera.exchange.exchanges.Coinbase;
 import com.hedera.exchange.exchanges.CoinFactory;
 import com.hedera.exchange.exchanges.ExchangeCoin;
 import com.hedera.exchange.exchanges.Exchange;
+import com.hedera.hashgraph.proto.NodeAddress;
+import com.hedera.hashgraph.proto.NodeAddressBook;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -117,5 +119,24 @@ public class ExchangeRateUtils {
 		}
 
 		return exchanges;
+	}
+
+	/**
+	 * This method parses the address book and generates a map of nodeIds and their Addresses.
+	 * @param addressBook
+	 * @return Map<String, String> nodeId --> IPaddress
+	 */
+	public static Map<String, String> getNodesFromAddressBook(NodeAddressBook addressBook) {
+		Map<String, String> nodes =  new HashMap<>();
+		for(NodeAddress address : addressBook.getNodeAddressList()){
+			String nodeId = address.getMemo().toStringUtf8();
+			String nodeAddress = address.getIpAddress().toStringUtf8();
+			if(!nodes.containsKey(nodeId)) {
+				nodes.put(nodeId, nodeAddress + ":50211");
+			}
+			LOGGER.info(Exchange.EXCHANGE_FILTER, "found node {} and its address {}:50211 in addressBook",
+					nodeId, nodeAddress);
+		}
+		return  nodes;
 	}
 }
