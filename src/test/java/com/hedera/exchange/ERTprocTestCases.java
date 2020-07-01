@@ -20,7 +20,12 @@ package com.hedera.exchange;
  * ‍
  */
 
-import com.hedera.exchange.exchanges.*;
+import com.hedera.exchange.exchanges.Exchange;
+import com.hedera.exchange.exchanges.Bitrex;
+import com.hedera.exchange.exchanges.Binance;
+import com.hedera.exchange.exchanges.Coinbase;
+import com.hedera.exchange.exchanges.Liquid;
+import com.hedera.exchange.exchanges.OkCoin;
 import com.hedera.hashgraph.proto.ExchangeRateSet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,7 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ERTprocTestCases {
 

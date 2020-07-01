@@ -175,13 +175,20 @@ public class ERTproc {
     }
 
     public Double findVolumeWeightedMedian(double[] exchangeRates, double[] exchangeVolumes) throws Exception {
-        if( exchangeRates.length == 0 ||
-                exchangeVolumes.length == 0 ||
-                exchangeRates.length != exchangeVolumes.length ) {
-            LOGGER.error(Exchange.EXCHANGE_FILTER, "Inconsistent rates and their volumes");
-            return 0.0;
+        if( areRatesAndVolumesValid(exchangeRates, exchangeVolumes) ) {
+            return findVolumeWeightedMedianAverage(exchangeRates, exchangeVolumes);
+        } else {
+            return null;
         }
-        return findVolumeWeightedMedianAverage(exchangeRates, exchangeVolumes);
+    }
+
+    private boolean areRatesAndVolumesValid(double[] exchangeRates, double[] exchangeVolumes) {
+        if(exchangeVolumes.length == 0 ||
+                exchangeRates.length != exchangeVolumes.length) {
+            LOGGER.error(Exchange.EXCHANGE_FILTER, "Inconsistent rates and their volumes");
+            return false;
+        }
+        return true;
     }
 
 
@@ -208,7 +215,7 @@ public class ERTproc {
      * @return the weighted median
      */
     private double findVolumeWeightedMedianAverage(double[] values, double[] weights) throws Exception {
-        int n = values.length;
+        int numberOfElements = values.length;
         double weightOfValueJustBelowMiddle;
         double weightOfValueJustAboveMiddle;
         double weightedAverage;
@@ -218,26 +225,22 @@ public class ERTproc {
         double valueJustBelowMiddle;
         double valueJustAboveMiddle;
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < numberOfElements; i++) {
             totalWeight += weights[i];
         }
+        final double targetWeight = totalWeight / 2.0;
         currentWeightSum = weights[0] / 2;
 
-        for (int index = 0; index < n; index++) {
-            nextWeightSum = currentWeightSum + (weights[index] + (index + 1 >= n ? 0 : weights[index + 1])) / 2.0;
-            //currentWeightSum is (sum of weights[0...i-1]) + weights[i]/2
-            //nextWeightSum is (sum of weights[0...i]) + weights[i+1]/2
-            if (nextWeightSum > totalWeight / 2.0) {
-                //(sum of weights[0...i]) <= (total / 2) < (sum of weights[0...i+1])
+        for (int index = 0; index < numberOfElements; index++) {
+            nextWeightSum = currentWeightSum + (weights[index] + (index + 1 >= numberOfElements ? 0 : weights[index + 1])) / 2.0;
+            if (nextWeightSum > targetWeight) {
                 valueJustBelowMiddle = values[index];
-                valueJustAboveMiddle = index + 1 >= n ? 0 : values[index + 1];
-                weightOfValueJustBelowMiddle = nextWeightSum - totalWeight / 2.0;
-                weightOfValueJustAboveMiddle = totalWeight / 2.0 - currentWeightSum;
+                valueJustAboveMiddle = index + 1 >= numberOfElements ? 0 : values[index + 1];
+                weightOfValueJustBelowMiddle = nextWeightSum - targetWeight;
+                weightOfValueJustAboveMiddle = targetWeight - currentWeightSum;
                 weightedAverage = (valueJustBelowMiddle * weightOfValueJustBelowMiddle +
                         valueJustAboveMiddle * weightOfValueJustAboveMiddle) /
                         (weightOfValueJustBelowMiddle + weightOfValueJustAboveMiddle);
-                // weightedAverage is the weighted average of valueJustBelowMiddle and valueJustAboveMiddle,
-                // weighted by weightOfValueJustBelowMiddle and weightOfValueJustAboveMiddle, respectively
                 return weightedAverage;
             }
             currentWeightSum = nextWeightSum;
