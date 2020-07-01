@@ -30,13 +30,12 @@ import java.util.Map;
  *
  * @author Anirudh, Cesar
  */
-public class Coinbase extends AbstractExchange{
+public class Coinbase extends ExchangeCoin {
 
     @JsonProperty(value = "data", access = JsonProperty.Access.WRITE_ONLY)
     private Data data;
 
     @Override
-    @JsonProperty("HBAR")
     public Double getHBarValue() {
         if (this.data == null || this.data.rates == null || !this.data.rates.containsKey("HBAR")) {
             return null;
@@ -45,13 +44,14 @@ public class Coinbase extends AbstractExchange{
         return Double.valueOf(this.data.rates.get("HBAR"));
     }
 
+    @Override
+    public Double getVolume() {
+        return 0.0;
+    }
+
     @JsonIgnore
     String getCurrency() {
         return this.data.currency;
-    }
-
-    public static Coinbase load(final String endpoint) {
-        return load(endpoint, Coinbase.class);
     }
 
     private static class Data {

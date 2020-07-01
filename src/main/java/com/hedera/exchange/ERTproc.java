@@ -24,13 +24,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedera.exchange.exchanges.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Comparator;
+
 
 /**
  * This class implements the methods that we perform periodically to generate Exchange rate
@@ -50,18 +49,6 @@ public class ERTproc {
 
     private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
 
-    private static final Map<String, Function<String, Exchange>> EXCHANGES = new HashMap<>();
-
-    static {
-        EXCHANGES.put("bitrex", Bitrex::load);
-        EXCHANGES.put("liquid", Liquid::load);
-        EXCHANGES.put("coinbase", Coinbase::load);
-        EXCHANGES.put("upbit", UpBit::load);
-        EXCHANGES.put("okcoin", OkCoin::load);
-        EXCHANGES.put("binance", Binance::load);
-    }
-
-    private final Map<String, String> exchangeApis;
     private final long bound;
     private final long floor;
     private List<Exchange> exchanges;
@@ -71,14 +58,14 @@ public class ERTproc {
     private final long frequencyInSeconds;
 
     public ERTproc(final long hbarEquiv,
-            final Map<String, String> exchangeApis,
+            final List<Exchange> exchanges,
             final long bound,
             final long floor,
             final Rate midnightExchangeRate,
             final Rate currentExchangeRate,
             final long frequencyInSeconds) {
         this.hbarEquiv = hbarEquiv;
-        this.exchangeApis = exchangeApis;
+        this.exchanges = exchanges;
         this.bound = bound;
         this.floor = floor;
         this.midnightExchangeRate = midnightExchangeRate;
@@ -97,7 +84,6 @@ public class ERTproc {
 
         try {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
-            exchanges = generateExchanges();
             currentExchangeRate.setExpirationTime(ERTParams.getCurrentExpirationTime());
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next hour as current expiration time :{}",
                     currentExchangeRate.getExpirationTimeInSeconds());
@@ -108,7 +94,6 @@ public class ERTproc {
 
             final Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : {}", medianExRate);
-            LOGGER.debug(Exchange.EXCHANGE_FILTER, "Exchanges worked : {}", this.getExchangeJson());
 
             if (medianExRate == null){
                 LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed. Using current rate as next rate: {}",
@@ -148,13 +133,23 @@ public class ERTproc {
     }
 
     /**
+     * Return the list of exchanges that worked in json string format using OBJECT_MAPPER
+     * @return Json String
+     * @throws JsonProcessingException
+     */
+    public String getExchangeJson() throws JsonProcessingException {
+        return Exchange.OBJECT_MAPPER.writeValueAsString(exchanges);
+    }
+
+    /**
      * Calculates the Median among the exchange rates fetched from the exchanges
      * @param exchanges - list of Exchange objects that have exchange rates of HABR-USD
      * @return median of the exchange rates
      */
-    private Double calculateMedianRate(final List<Exchange> exchanges) {
+    public Double calculateMedianRate(final List<Exchange> exchanges) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Computing median");
 
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "removing all invalid exchanges retrieved");
         exchanges.removeIf(x -> x == null || x.getHBarValue() == null || x.getHBarValue() == 0.0);
 
         if (exchanges.size() == 0){
@@ -163,50 +158,96 @@ public class ERTproc {
         }
 
         exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "find the median");
-        if (exchanges.size() % 2 == 0 ) {
-            return (exchanges.get(exchanges.size() / 2).getHBarValue() +
-                    exchanges.get(exchanges.size() / 2 - 1).getHBarValue()) / 2;
+        LOGGER.info(Exchange.EXCHANGE_FILTER,"exchanges worked {} ", getExchangeJson());
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "sorted the exchange rates... calculate the weighted median now");
+
+        double[] exchangeRates = new double[exchanges.size()];
+        double[] exchangeVolumes = new double[exchanges.size()];
+
+        int index = 0;
+        for(Exchange exchange : exchanges) {
+            exchangeRates[index] = exchange.getHBarValue();
+            exchangeVolumes[index] = exchange.getVolume();
+            index++;
         }
-        else {
-            return exchanges.get(exchanges.size() / 2).getHBarValue();
+
+        return findVolumeWeightedMedian(exchangeRates, exchangeVolumes);
+    }
+
+    public Double findVolumeWeightedMedian(double[] exchangeRates, double[] exchangeVolumes) throws Exception {
+        if( areRatesAndVolumesValid(exchangeRates, exchangeVolumes) ) {
+            return findVolumeWeightedMedianAverage(exchangeRates, exchangeVolumes);
+        } else {
+            return null;
         }
     }
 
-    /**
-     * Loads the list of Exchange objects with HBAR-USD exchange rate using the URL endpoints provided for each
-     * Exchange int he config file.
-     * @return List of Exchange objects.
-     */
-    private List<Exchange> generateExchanges() {
-        final List<Exchange> exchanges = new ArrayList<>();
-
-        for (final Map.Entry<String, String> api : this.exchangeApis.entrySet()) {
-            final Function<String, Exchange> exchangeLoader = EXCHANGES.get(api.getKey());
-            if (exchangeLoader == null) {
-                LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not found", api.getKey());
-                continue;
-            }
-
-            final String endpoint = api.getValue();
-            final Exchange exchange = exchangeLoader.apply(endpoint);
-            if (exchange == null) {
-                LOGGER.error(Exchange.EXCHANGE_FILTER,"API {} not loaded", api.getKey());
-                continue;
-            }
-
-            exchanges.add(exchange);
+    private boolean areRatesAndVolumesValid(double[] exchangeRates, double[] exchangeVolumes) {
+        if(exchangeVolumes.length == 0 ||
+                exchangeRates.length != exchangeVolumes.length) {
+            LOGGER.error(Exchange.EXCHANGE_FILTER, "Inconsistent rates and their volumes");
+            return false;
         }
-
-        return exchanges;
+        return true;
     }
 
+
     /**
-     * Return the list of exchanges that worked in json string format using OBJECT_MAPPER
-     * @return Json String
-     * @throws JsonProcessingException
+     * Return the weighted median of the given values, using the given weights.
+     *
+     * The algorithm is equivalent to the following. Draw a bar chart, where bar
+     * number i has height value[i] and width weight[i]. At the top edge of each
+     * bar, draw a dot in the middle. Connect the dots with straight lines. Find
+     * the middle of the X axis: the height of the curve above that point is the
+     * weighted median.
+     *
+     * This differs from the algorithm by Edgeworth in 1888. That algorithm simply
+     * returns the height of the bar that is above the midpoint. That is fine if
+     * there are many data points. But it can be bad if there are very few bars,
+     * and they differ greatly in height. The algorithm used here returns a
+     * weighted average of that bar's height and it's neighbor's height, which is
+     * often a better fit to the intuitive notion of a good "representative value".
+     *
+     * @param values
+     *      the values for which the median should be found. These must be sorted ascending.
+     * @param weights
+     *      the positive weight for each value, with higher having more influence
+     * @return the weighted median
      */
-    public String getExchangeJson() throws JsonProcessingException {
-        return Exchange.OBJECT_MAPPER.writeValueAsString(exchanges);
+    private double findVolumeWeightedMedianAverage(double[] values, double[] weights) throws Exception {
+        int numberOfElements = values.length;
+        double weightOfValueJustBelowMiddle;
+        double weightOfValueJustAboveMiddle;
+        double weightedAverage;
+        double totalWeight = 0;
+        double currentWeightSum;
+        double nextWeightSum;
+        double valueJustBelowMiddle;
+        double valueJustAboveMiddle;
+
+        for (int i = 0; i < numberOfElements; i++) {
+            totalWeight += weights[i];
+        }
+        final double targetWeight = totalWeight / 2.0;
+        currentWeightSum = weights[0] / 2;
+
+        for (int index = 0; index < numberOfElements; index++) {
+            nextWeightSum = currentWeightSum + (weights[index] + (index + 1 >= numberOfElements ? 0 : weights[index + 1])) / 2.0;
+            if (nextWeightSum > targetWeight) {
+                valueJustBelowMiddle = values[index];
+                valueJustAboveMiddle = index + 1 >= numberOfElements ? 0 : values[index + 1];
+                weightOfValueJustBelowMiddle = nextWeightSum - targetWeight;
+                weightOfValueJustAboveMiddle = targetWeight - currentWeightSum;
+                weightedAverage = (valueJustBelowMiddle * weightOfValueJustBelowMiddle +
+                        valueJustAboveMiddle * weightOfValueJustAboveMiddle) /
+                        (weightOfValueJustBelowMiddle + weightOfValueJustAboveMiddle);
+                return weightedAverage;
+            }
+            currentWeightSum = nextWeightSum;
+        }
+
+        LOGGER.error(Exchange.EXCHANGE_FILTER, "This should never Happen. Given values are : \n Rates = " +
+                Arrays.toString(values) + "\n Volumes = " + Arrays.toString(weights));
+        throw new Exception("Couldn't find weighted median with the given values");
     }
 }

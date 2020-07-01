@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Anirudh, Cesar
  */
-public final class OkCoin extends AbstractExchange {
+public final class OkCoin extends ExchangeCoin {
 
     @JsonProperty(value="product_id", access = JsonProperty.Access.WRITE_ONLY)
     private String productid;
@@ -36,12 +36,19 @@ public final class OkCoin extends AbstractExchange {
     private String instrumentid;
 
     @JsonProperty(value="last", access = JsonProperty.Access.WRITE_ONLY)
-    private double rate;
+    private Double rate;
+
+    @JsonProperty(value="quote_volume_24h", access = JsonProperty.Access.WRITE_ONLY)
+    private Double volume;
 
     @Override
-    @JsonProperty("HBAR")
     public Double getHBarValue() {
         return rate;
+    }
+
+    @Override
+    public Double getVolume() {
+        return volume == null || volume <= 1.0 ? 0.0 : this.volume;
     }
 
     public String getProductid() {
@@ -50,9 +57,5 @@ public final class OkCoin extends AbstractExchange {
 
     public String getInstrumentid() {
         return instrumentid;
-    }
-
-    public static OkCoin load(final String endpoint) {
-        return load(endpoint, OkCoin.class);
     }
 }

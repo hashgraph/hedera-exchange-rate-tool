@@ -25,13 +25,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Implements a Binance Exchange Response
  */
+public class Binance extends ExchangeCoin {
 
-public class Binance extends AbstractExchange {
-
-    @JsonProperty(value="price",access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(value="lastPrice",access = JsonProperty.Access.WRITE_ONLY)
     private Double price;
 
-    @JsonProperty(value="volume",access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(value="quoteVolume",access = JsonProperty.Access.WRITE_ONLY)
     private Double volume;
 
     @Override
@@ -39,11 +38,9 @@ public class Binance extends AbstractExchange {
         return this.price;
     }
 
+    @Override
     public Double getVolume() {
-        return this.volume;
+        return volume == null || volume <= 1.0 ? 0.0 : this.volume;
     }
 
-    public static Binance load(final String endpoint) {
-        return load(endpoint, Binance.class);
-    }
 }
