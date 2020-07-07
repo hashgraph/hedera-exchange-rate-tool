@@ -20,17 +20,12 @@ package com.hedera.exchange;
  * ‍
  */
 
-import com.hedera.hashgraph.proto.NodeAddress;
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.hedera.hashgraph.sdk.Client;
-import com.hedera.hashgraph.sdk.Hbar;
-import com.hedera.hashgraph.sdk.TransactionId;
 import com.hedera.hashgraph.sdk.account.AccountId;
-import com.hedera.hashgraph.sdk.account.AccountBalanceQuery;
-import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
-import com.hedera.hashgraph.sdk.file.*;
-import com.hedera.hashgraph.proto.NodeAddressBook;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.exchanges.Exchange;
+import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,11 +39,10 @@ import java.util.*;
 public class ExchangeRateTool {
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
     private static final int DEFAULT_RETRIES = 4;
-    private static final List<HederaNetwork> networkClients = new ArrayList<>();
 
     private static ERTParams ertParams;
     private static ExchangeDB exchangeDB;
-    private static ERTAddressBook ertAddressBook;
+    private static ERTAddressBook ertAddressBookFromPreviousRun;
 
     public static void main(final String ... args) {
         run(args);
@@ -93,13 +87,14 @@ public class ExchangeRateTool {
     private static void execute() throws Exception {
 
         final Map<String, Map<AccountId, String>> networks = ertParams.getNetworks();
-        final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
 
         final long frequencyInSeconds = ertParams.getFrequencyInSeconds();
         final ExchangeRate midnightExchangeRate = exchangeDB.getLatestMidnightExchangeRate();
         final Rate midnightRate = midnightExchangeRate == null ? null : midnightExchangeRate.getNextRate();
         final Rate currentRate = getCurrentRate(exchangeDB, ertParams);
+        final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
         final ExchangeRateUtils exchangeRateUtils = new ExchangeRateUtils();
+
         List<Exchange> exchanges = exchangeRateUtils.generateExchanges(ertParams.getExchangeAPIList());
 
         final ERTproc proc = new ERTproc(ertParams.getDefaultHbarEquiv(),
@@ -117,23 +112,27 @@ public class ExchangeRateTool {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
                     networkName);
 
-            Ed25519PrivateKey privateOperatorKey = Ed25519PrivateKey.fromString(ertParams.getOperatorKey(networkName));
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "private key for network {} is {}",
-                    networkName, privateOperatorKey);
+            final Ed25519PrivateKey privateOperatorKey =
+                    Ed25519PrivateKey.fromString(ertParams.getOperatorKey(networkName));
+            ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
 
-            ertAddressBook = exchangeDB.getLatestERTAddressBook(networkName);
+            Map<AccountId, String> nodesForClient = ertAddressBookFromPreviousRun != null &&
+                    !ertAddressBookFromPreviousRun.getNodes().isEmpty() ?
+                    ertAddressBookFromPreviousRun.getNodes() :
+                    networks.get(networkName);
 
-            for(AccountId accountId : networks.get(networkName).keySet()) {
-                LOGGER.info(Exchange.EXCHANGE_FILTER, "Account {} , ipaddress {}", accountId,
-                        networks.get(networkName).get(accountId));
+            Client hederaClient = HederaNetworkCommunicator.buildClient(
+                    nodesForClient,
+                    operatorId,
+                    privateOperatorKey,
+                    ertParams.getMaxTransactionFee());
+
+            if(hederaClient == null) {
+                LOGGER.error(Exchange.EXCHANGE_FILTER, "Error while building a Hedera Client");
+                throw new Exception("Couldn't Build a Hedera Client");
             }
 
-            Client hederaClient = new Client( ertAddressBook != null && !ertAddressBook.getNodes().isEmpty() ?
-                            ertAddressBook.getNodes() : networks.get(networkName))
-                            .setMaxTransactionFee(ertParams.getMaxTransactionFee())
-                            .setOperator(operatorId, privateOperatorKey);
-
-            ERTAddressBook newAddressBook = ERTUpdateFile.updateExchangeRateFile(
+            ERTAddressBook newAddressBook = HederaNetworkCommunicator.updateExchangeRateFile(
                     exchangeRate,
                     midnightRate,
                     hederaClient,

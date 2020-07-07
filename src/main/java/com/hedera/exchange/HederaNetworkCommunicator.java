@@ -29,6 +29,7 @@ import com.hedera.hashgraph.sdk.HederaStatusException;
 import com.hedera.hashgraph.sdk.TransactionId;
 import com.hedera.hashgraph.sdk.account.AccountBalanceQuery;
 import com.hedera.hashgraph.sdk.account.AccountId;
+import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
 import com.hedera.hashgraph.sdk.file.FileContentsQuery;
 import com.hedera.hashgraph.sdk.file.FileId;
 import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
@@ -45,12 +46,23 @@ import java.util.concurrent.TimeoutException;
  *
  * @author Anirudh, Cesar
  */
-public class ERTUpdateFile {
+public class HederaNetworkCommunicator {
 
-    private static final Logger LOGGER = LogManager.getLogger(ERTUpdateFile.class);
+    private static final Logger LOGGER = LogManager.getLogger(HederaNetworkCommunicator.class);
     private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates were not updated successfully";
     private static final String ADDRESS_BOOK_FILE_ID = "0.0.101";
 
+    /**
+     * Method to send a File update transaction to hedera network and fetch the latest addressBook from the network.
+     * @param exchangeRate
+     * @param midnightRate
+     * @param client
+     * @param ertParams
+     * @return Latest AddressBook from the Hedera Network
+     * @throws HederaStatusException
+     * @throws TimeoutException
+     * @throws InterruptedException
+     */
     public static ERTAddressBook updateExchangeRateFile(final ExchangeRate exchangeRate,
                                                         final Rate midnightRate,
                                                         Client client,
@@ -95,6 +107,16 @@ public class ERTUpdateFile {
         return new ERTAddressBook();
     }
 
+    /**
+     * Helper Method to send the File Update and verify if the contents match after.
+     * @param exchangeRate
+     * @param exchangeRateFileId
+     * @param exchangeRateAsBytes
+     * @param client
+     * @param memo
+     * @param ertParams
+     * @throws Exception
+     */
     private static void updateExchangeRateFileTxnAndValidate(ExchangeRate exchangeRate,
                                                              FileId exchangeRateFileId,
                                                              byte[] exchangeRateAsBytes,
@@ -192,5 +214,27 @@ public class ERTUpdateFile {
                 .setFileId(fileId)
                 .execute(client);
         return contentsResponse;
+    }
+
+    /**
+     * This method builds a Hedera Client
+     * @param accountAddressMap
+     * @param operatorId
+     * @param privateKey
+     * @param maxTransactoinFee
+     * @return A Hedera Client or null if invalid inputs.
+     */
+    public static Client buildClient(Map<AccountId, String> accountAddressMap,
+                                     AccountId operatorId,
+                                     Ed25519PrivateKey privateKey,
+                                     long maxTransactoinFee) {
+
+        if(accountAddressMap.isEmpty() || operatorId == null || privateKey == null) {
+            return null;
+        }
+
+        return new Client(accountAddressMap)
+                .setMaxTransactionFee(maxTransactoinFee)
+                .setOperator(operatorId, privateKey);
     }
 }

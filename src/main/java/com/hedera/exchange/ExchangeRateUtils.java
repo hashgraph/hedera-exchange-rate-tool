@@ -134,7 +134,7 @@ public class ExchangeRateUtils {
 			if(!nodes.containsKey(nodeId)) {
 				nodes.put(nodeId, nodeAddress + ":50211");
 			}
-			LOGGER.info(Exchange.EXCHANGE_FILTER, "found node {} and its address {}:50211 in addressBook",
+			LOGGER.debug(Exchange.EXCHANGE_FILTER, "found node {} and its address {}:50211 in addressBook",
 					nodeId, nodeAddress);
 		}
 		return  nodes;
