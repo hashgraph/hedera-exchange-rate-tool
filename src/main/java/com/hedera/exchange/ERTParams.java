@@ -321,7 +321,7 @@ public class ERTParams {
      */
     public Map<String, Map<AccountId, String>> getNetworks() {
         final Map<String, Map<AccountId, String>> networkAddresses = new HashMap<>();
-        for (final Map.Entry<String, Map<String, String>> network : this.networks.entrySet()) {
+        for(final Map.Entry<String, Map<String, String>> network : this.networks.entrySet()) {
             Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
             for( final Map.Entry<String, String> node : network.getValue().entrySet()) {
                 final AccountId nodeId = AccountId.fromString(node.getKey());

@@ -20,7 +20,6 @@ package com.hedera.exchange;
  * ‍
  */
 
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.hedera.hashgraph.sdk.Client;
 import com.hedera.hashgraph.sdk.account.AccountId;
 import com.hedera.exchange.database.ExchangeDB;
@@ -29,7 +28,9 @@ import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+
 
 /**
  * This Class represents the whole Exchange Rate Tool application. This is main entry point for the application.

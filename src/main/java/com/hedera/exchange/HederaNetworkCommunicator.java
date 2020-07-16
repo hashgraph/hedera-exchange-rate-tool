@@ -23,10 +23,7 @@ package com.hedera.exchange;
 
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.proto.NodeAddressBook;
-import com.hedera.hashgraph.sdk.Client;
-import com.hedera.hashgraph.sdk.Hbar;
-import com.hedera.hashgraph.sdk.HederaStatusException;
-import com.hedera.hashgraph.sdk.TransactionId;
+import com.hedera.hashgraph.sdk.*;
 import com.hedera.hashgraph.sdk.account.AccountBalanceQuery;
 import com.hedera.hashgraph.sdk.account.AccountId;
 import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
@@ -42,7 +39,7 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
- * This Class represents the File Update logic of the Exchange Rate Tool.
+ * This Class provides File Update APIs of the Exchange Rate Tool.
  *
  * @author Anirudh, Cesar
  */
@@ -90,7 +87,9 @@ public class HederaNetworkCommunicator {
 
             ERTAddressBook newAddressBook = fetchAddressBook(client);
 
-            updateExchangeRateFileTxnAndValidate(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo, ertParams);
+            updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo, ertParams);
+            waitForChangesToTakeEffect(ertParams.getValidationDelayInMilliseconds());
+            validateUpdate(client, exchangeRateFileId, exchangeRateAsBytes);
 
             final Hbar newBalance = new AccountBalanceQuery()
                     .setAccountId(operatorId)
@@ -101,7 +100,7 @@ public class HederaNetworkCommunicator {
             return newAddressBook;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(Exchange.EXCHANGE_FILTER, e.getMessage());
             client.close();
         }
         return new ERTAddressBook();
@@ -117,47 +116,37 @@ public class HederaNetworkCommunicator {
      * @param ertParams
      * @throws Exception
      */
-    private static void updateExchangeRateFileTxnAndValidate(ExchangeRate exchangeRate,
+    private static void updateExchangeRateFileTxn(ExchangeRate exchangeRate,
                                                              FileId exchangeRateFileId,
                                                              byte[] exchangeRateAsBytes,
                                                              Client client,
                                                              String memo,
                                                              ERTParams ertParams) throws Exception {
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Pushing new ExchangeRate {}", exchangeRate.toJson());
+        LOGGER.info(Exchange.EXCHANGE_FILTER,"Pushing new ExchangeRate {}", exchangeRate.toJson());
         final TransactionId exchangeRateFileUpdateTransactionId = new FileUpdateTransaction()
                 .setFileId(exchangeRateFileId)
                 .setContents(exchangeRateAsBytes)
                 .setTransactionMemo(memo)
                 .execute(client);
 
-        LOGGER.info("Exchange rate file hash {} bytes and hash code {}",
+        LOGGER.info(Exchange.EXCHANGE_FILTER,"Exchange rate file hash {} bytes and hash code {}",
                 exchangeRateAsBytes.length,
                 Arrays.hashCode(exchangeRateAsBytes));
 
+        TransactionReceipt transactionReceipt = exchangeRateFileUpdateTransactionId.getReceipt(client);
         LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has status {}",
-                exchangeRateFileUpdateTransactionId.getReceipt(client).status);
+                transactionReceipt.status);
+    }
 
-        Thread.sleep(ertParams.getValidationDelayInMilliseconds());
-
-        /**
-         * commented out code:
-         *
-         * Code to get file info on the ERT file that we just updated.
-         * Could be useful in future to debug errors.
-         */
-
-//        FileInfo exchangeRateFileInfo = new FileInfoQuery()
-//                                            .setFileId(exchangeRateFileId)
-//                                            .execute(client);
-//
-//        LOGGER.info(Exchange.EXCHANGE_FILTER, "Exchange Rate file info : exp Time {} \n fileID {} \n isDeleted {} \n" +
-//                        "keys {} \n size {}",
-//                exchangeRateFileInfo.expirationTime,
-//                exchangeRateFileInfo.fileId,
-//                exchangeRateFileInfo.isDeleted,
-//                exchangeRateFileInfo.keys,
-//                exchangeRateFileInfo.size);
-
+    /**
+     * Retrieve the exchangerate file form the network and validate it with exchange rate file we just sent to make sure
+     * that the file update was successful
+     * @param client
+     * @param exchangeRateFileId
+     * @param exchangeRateAsBytes
+     * @throws Exception
+     */
+    private static void validateUpdate(Client client, FileId exchangeRateFileId, byte[] exchangeRateAsBytes) throws Exception {
         final byte[] contentsRetrieved =  getFileContentsQuery(client, exchangeRateFileId);
 
         LOGGER.info("The contents retrieved has {} bytes and hash code {}",
@@ -167,6 +156,14 @@ public class HederaNetworkCommunicator {
             LOGGER.error(Exchange.EXCHANGE_FILTER, UPDATE_ERROR_MESSAGE);
             throw new RuntimeException(UPDATE_ERROR_MESSAGE);
         }
+    }
+
+    /**
+     * we wait for some time to make sure our file update gets propagated into the network.
+     * @param validationDelayInMilliseconds
+     */
+    private static void waitForChangesToTakeEffect(long validationDelayInMilliseconds) throws InterruptedException {
+        Thread.sleep(validationDelayInMilliseconds);
     }
 
     /**

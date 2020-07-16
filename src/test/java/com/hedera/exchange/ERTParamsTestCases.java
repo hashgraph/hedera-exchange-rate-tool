@@ -38,13 +38,12 @@ public class ERTParamsTestCases {
         assertEquals(15_000, ertParams.getValidationDelayInMilliseconds());
 
         Map<String, Map<AccountId, String>> networks = ertParams.getNetworks();
-        for(String network : networks.keySet()) {
-            System.out.println("Network name is " + network);
-            for(Map.Entry<AccountId, String> node : networks.get(network).entrySet()) {
-                System.out.println("Node ID : " + node.getKey().toString());
-                System.out.println("Node Address : " + node.getValue());
-            }
-        }
+        assertEquals("0.testnet.hedera.com:50211",
+                networks.get("publicTestNet").get(AccountId.fromString("0.0.3")));
+        assertEquals("1.testnet.hedera.com:50211",
+                networks.get("publicTestNet").get(AccountId.fromString("0.0.4")));
+        assertEquals("35.196.144.134:50211",
+                networks.get("performanceNet").get(AccountId.fromString("0.0.3")));
     }
 
     @Test
