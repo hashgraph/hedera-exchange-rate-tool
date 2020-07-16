@@ -28,8 +28,10 @@ import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -44,6 +46,7 @@ public class ExchangeRateTool {
     private static ERTParams ertParams;
     private static ExchangeDB exchangeDB;
     private static ERTAddressBook ertAddressBookFromPreviousRun;
+    private static Set<String> updatedNetworks = new HashSet<>();
 
     public static void main(final String ... args) {
         run(args);
@@ -110,41 +113,45 @@ public class ExchangeRateTool {
 
         for(String networkName : networks.keySet()) {
 
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
-                    networkName);
+            if(!updatedNetworks.contains(networkName)) {
+                LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
+                        networkName);
 
-            final Ed25519PrivateKey privateOperatorKey =
-                    Ed25519PrivateKey.fromString(ertParams.getOperatorKey(networkName));
-            ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
+                final Ed25519PrivateKey privateOperatorKey =
+                        Ed25519PrivateKey.fromString(ertParams.getOperatorKey(networkName));
+                ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
 
-            Map<AccountId, String> nodesForClient = ertAddressBookFromPreviousRun != null &&
-                    !ertAddressBookFromPreviousRun.getNodes().isEmpty() ?
-                    ertAddressBookFromPreviousRun.getNodes() :
-                    networks.get(networkName);
+                Map<AccountId, String> nodesForClient = ertAddressBookFromPreviousRun != null &&
+                        !ertAddressBookFromPreviousRun.getNodes().isEmpty() ?
+                        ertAddressBookFromPreviousRun.getNodes() :
+                        networks.get(networkName);
 
-            Client hederaClient = HederaNetworkCommunicator.buildClient(
-                    nodesForClient,
-                    operatorId,
-                    privateOperatorKey,
-                    ertParams.getMaxTransactionFee());
+                Client hederaClient = HederaNetworkCommunicator.buildClient(
+                        nodesForClient,
+                        operatorId,
+                        privateOperatorKey,
+                        ertParams.getMaxTransactionFee());
 
-            if(hederaClient == null) {
-                LOGGER.error(Exchange.EXCHANGE_FILTER, "Error while building a Hedera Client");
-                throw new Exception("Couldn't Build a Hedera Client");
+                if (hederaClient == null) {
+                    LOGGER.error(Exchange.EXCHANGE_FILTER, "Error while building a Hedera Client");
+                    throw new Exception("Couldn't Build a Hedera Client");
+                }
+
+                ERTAddressBook newAddressBook = HederaNetworkCommunicator.updateExchangeRateFile(
+                        exchangeRate,
+                        midnightRate,
+                        hederaClient,
+                        ertParams
+                );
+
+                exchangeDB.pushERTAddressBook(
+                        exchangeRate.getNextExpirationTimeInSeconds(),
+                        newAddressBook,
+                        networkName
+                );
+
+                updatedNetworks.add(networkName);
             }
-
-            ERTAddressBook newAddressBook = HederaNetworkCommunicator.updateExchangeRateFile(
-                    exchangeRate,
-                    midnightRate,
-                    hederaClient,
-                    ertParams
-            );
-
-            exchangeDB.pushERTAddressBook(
-                    exchangeRate.getNextExpirationTimeInSeconds(),
-                    newAddressBook,
-                    networkName
-            );
         }
 
         exchangeDB.pushExchangeRate(exchangeRate);

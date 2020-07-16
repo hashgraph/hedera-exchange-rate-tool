@@ -87,7 +87,7 @@ public class HederaNetworkCommunicator {
 
             ERTAddressBook newAddressBook = fetchAddressBook(client);
 
-            updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo, ertParams);
+            updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo);
             waitForChangesToTakeEffect(ertParams.getValidationDelayInMilliseconds());
             validateUpdate(client, exchangeRateFileId, exchangeRateAsBytes);
 
@@ -113,15 +113,13 @@ public class HederaNetworkCommunicator {
      * @param exchangeRateAsBytes
      * @param client
      * @param memo
-     * @param ertParams
      * @throws Exception
      */
     private static void updateExchangeRateFileTxn(ExchangeRate exchangeRate,
                                                              FileId exchangeRateFileId,
                                                              byte[] exchangeRateAsBytes,
                                                              Client client,
-                                                             String memo,
-                                                             ERTParams ertParams) throws Exception {
+                                                             String memo) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER,"Pushing new ExchangeRate {}", exchangeRate.toJson());
         final TransactionId exchangeRateFileUpdateTransactionId = new FileUpdateTransaction()
                 .setFileId(exchangeRateFileId)
