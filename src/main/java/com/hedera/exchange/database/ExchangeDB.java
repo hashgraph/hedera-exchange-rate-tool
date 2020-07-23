@@ -43,7 +43,7 @@ public interface ExchangeDB {
 
 	ExchangeRate getMidnightExchangeRate(long expirationTime) throws Exception;
 
-	ERTAddressBook getLatestERTAddressBook() throws Exception;
+	ERTAddressBook getLatestERTAddressBook(String networkName) throws Exception;
 
-	void pushERTAddressBook(long expirationTime, final ERTAddressBook ertAddressBook) throws Exception;
+	void pushERTAddressBook(long expirationTime, final ERTAddressBook ertAddressBook, String networkName) throws Exception;
 }

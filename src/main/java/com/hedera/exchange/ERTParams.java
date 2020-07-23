@@ -71,6 +71,9 @@ public class ERTParams {
     @JsonProperty("Nodes")
     private Map<String, String> nodes;
 
+    @JsonProperty("Networks")
+    private Map<String, Map<String, String>> networks;
+
     @JsonProperty("payerAccount")
     private String payAccount;
 
@@ -313,6 +316,23 @@ public class ERTParams {
     }
 
     /**
+     * Return the networks ERT is sending the ERT file update to.
+     * @return Map of Network name and its Node's AccountID to its IpAddress.
+     */
+    public Map<String, Map<AccountId, String>> getNetworks() {
+        final Map<String, Map<AccountId, String>> networkAddresses = new HashMap<>();
+        for(final Map.Entry<String, Map<String, String>> network : this.networks.entrySet()) {
+            Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
+            for( final Map.Entry<String, String> node : network.getValue().entrySet()) {
+                final AccountId nodeId = AccountId.fromString(node.getKey());
+                accountToNodeAddresses.put(nodeId, node.getValue());
+            }
+            networkAddresses.put(network.getKey(), accountToNodeAddresses);
+        }
+        return networkAddresses;
+    }
+
+    /**
      * Get the Pay account to execute this ER file update transaction.
      * @return account ID in string
      */
@@ -351,8 +371,8 @@ public class ERTParams {
     public long getFloor(){ return this.floor; }
 
     @JsonIgnore
-    public String getOperatorKey() {
-        return ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY");
+    public String getOperatorKey(String networkName) {
+        return ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY_" + networkName);
     }
 
     /**

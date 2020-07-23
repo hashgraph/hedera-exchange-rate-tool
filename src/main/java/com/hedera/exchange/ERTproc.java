@@ -25,9 +25,7 @@ import com.hedera.exchange.exchanges.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Comparator;
 
 
@@ -95,7 +93,7 @@ public class ERTproc {
             final Double medianExRate = calculateMedianRate(exchanges);
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : {}", medianExRate);
 
-            if (medianExRate == null){
+            if(medianExRate == null){
                 LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed. Using current rate as next rate: {}",
                         this.currentExchangeRate.toJson());
                 final Rate nextRate = new Rate(this.currentExchangeRate.getHBarEquiv(),
@@ -152,7 +150,7 @@ public class ERTproc {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "removing all invalid exchanges retrieved");
         exchanges.removeIf(x -> x == null || x.getHBarValue() == null || x.getHBarValue() == 0.0);
 
-        if (exchanges.size() == 0){
+        if(exchanges.size() == 0){
             LOGGER.error(Exchange.EXCHANGE_FILTER, "No valid exchange rates retrieved.");
             return null;
         }
