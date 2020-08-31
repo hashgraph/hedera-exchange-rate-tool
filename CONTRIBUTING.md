@@ -19,7 +19,7 @@ This document outlines the process to help get your contribution accepted.
 
 Whether you are a user or contributor, official support channels include:
 
-- [Issues](https://github.com/swirlds/Exchange-Rate-Tool/issues)
+- [Issues](https://github.com/hashgraph/hedera-exchange-rate-tool/issues)
 - [Discord](https://discordapp.com/invite/FFb9YFX)
 
 Before opening a new issue or submitting a new pull request, it's helpful to search the project -
@@ -33,14 +33,14 @@ Issues are used as the primary method for tracking anything to do with the proje
 ### Vulnerability Disclosure
 
 Most of the time, when you find a bug, it should be reported using
-[GitHub issues](https://github.com/swirlds/Exchange-Rate-Tool/issues). However, if
+[GitHub issues](https://github.com/hashgraph/hedera-exchange-rate-tool/issues). However, if
 you are reporting a _security vulnerability_, please email a report to
 [security@hedera.com](mailto:security@hedera.com). This will give
 us a chance to try to fix the issue before it is exploited in the wild.
 
 ### Issue Types
 
-There are 3 types of issues (each with their own corresponding [label](https://github.com/swirlds/Exchange-Rate-Tool/issues/labels)):
+There are 3 types of issues (each with their own corresponding [label](https://github.com/hashgraph/hedera-exchange-rate-tool/issues/labels)):
 
 - **Bugs:** These track bugs with the code or problems with the documentation (i.e. missing or incomplete)
 - **Features:** These track specific feature requests and ideas until they are complete. If the feature is
