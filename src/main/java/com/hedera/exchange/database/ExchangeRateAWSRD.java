@@ -79,27 +79,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 
 	private static final String LATEST_EXCHANGE_QUERY = "SELECT e1.expirationTime, e1.exchangeRateFile FROM exchange_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM exchange_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
-	private static final String LATEST_ADDRESSBOOK_QUERY = "SELECT e1.expirationTime, e1.addressBook FROM address_book AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM address_book WHERE networkName = ?) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
-
-	private static final String NEW_ADDRESSBOOK_QUERY = "SELECT\n" +
-			"        e1.e1_expirationtime,\n" +
-			"        e1.e1_addressbook \n" +
-			"    FROM\n" +
-			"        (SELECT\n" +
-			"            e1.expirationTime AS e1_expirationtime,\n" +
-			"            e1.addressBook AS e1_addressbook \n" +
-			"        FROM\n" +
-			"            address_book AS e1 LIMIT 1) AS e1 \n" +
-			"    INNER JOIN\n" +
-			"        (\n" +
-			"            SELECT\n" +
-			"                MAX(expirationTime) expirationTime \n" +
-			"            FROM\n" +
-			"                address_book \n" +
-			"            WHERE\n" +
-			"                address_book.networkName = ?\n" +
-			"        ) AS e2 \n" +
-			"            ON e1.e1_expirationtime = e2.expirationTime LIMIT 1";
+	private static final String LATEST_ADDRESS_BOOK_QUERY = "SELECT e1.expirationTime, e1.addressBook FROM address_book AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM address_book WHERE networkName = ?) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
 	private static final String MIDNIGHT_EXCHANGE_QUERY = "SELECT e1.expirationTime, e1.exchangeRateFile FROM midnight_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM midnight_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
@@ -145,7 +125,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	public ERTAddressBook getLatestERTAddressBook(String networkName) throws Exception {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get latest ERTAddressBook from address_book table");
 		try (final Connection conn = getConnection();
-			 final PreparedStatement statement = conn.prepareStatement(NEW_ADDRESSBOOK_QUERY)) {
+			 final PreparedStatement statement = conn.prepareStatement(LATEST_ADDRESS_BOOK_QUERY)) {
 			statement.setString(1, networkName);
 			LOGGER.info(Exchange.EXCHANGE_FILTER,"final query for addressbook : {}",
 					statement.toString());
