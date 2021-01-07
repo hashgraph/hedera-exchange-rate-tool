@@ -176,6 +176,9 @@ public class ExchangeRateTool {
                         ertParams
                 );
 
+                // default 10 secs wait to close
+                hederaClient.close();
+
                 exchangeDB.pushERTAddressBook(
                         exchangeRate.getNextExpirationTimeInSeconds(),
                         newAddressBook,
