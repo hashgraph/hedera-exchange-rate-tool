@@ -30,3 +30,4 @@ This tool also provides 2 APIs.
   * Bittrex
   * OKCoin
   * Binance
+  * PayBito
