@@ -236,7 +236,7 @@ public class ERTprocTestCases {
     }
 
 
-    private List<Exchange> setOnlyBitrex(final double value) throws IOException {
+    private List<Exchange> setOnlyBitrex(final double value) {
 
         Bitrex mockBitrex = mock(Bitrex.class);
         when(mockBitrex.getHBarValue()).thenReturn(value);
@@ -248,7 +248,7 @@ public class ERTprocTestCases {
         return exchanges;
     }
 
-    private List<Exchange> setExchanges() throws IOException {
+    private List<Exchange> setExchanges() {
 
         Bitrex mockBitrex = mock(Bitrex.class);
         when(mockBitrex.getHBarValue()).thenReturn(0.0954162);
@@ -286,7 +286,7 @@ public class ERTprocTestCases {
 
     }
 
-    private List<Exchange> setFloorExchanges() throws IOException, InstantiationException, IllegalAccessException {
+    private List<Exchange> setFloorExchanges() {
 
         Bitrex mockBitrex = mock(Bitrex.class);
         when(mockBitrex.getHBarValue()).thenReturn(0.0354162);
