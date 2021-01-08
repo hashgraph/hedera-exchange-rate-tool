@@ -39,6 +39,7 @@
 
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <hamcrest-all.version>1.3</hamcrest-all.version>
         <mockito-junit-jupiter.version>3.3.0</mockito-junit-jupiter.version>
         <mockito2.version>3.3.0</mockito2.version>
@@ -250,6 +251,7 @@
                 <configuration>
                     <source>11</source>
                     <target>11</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
 
