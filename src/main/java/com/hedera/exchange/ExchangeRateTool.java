@@ -177,7 +177,11 @@ public class ExchangeRateTool {
                 );
 
                 // default 10 secs wait to close
-                hederaClient.close();
+                try {
+                    hederaClient.close();
+                } catch(Exception ignore) {
+                    LOGGER.warn(Exchange.EXCHANGE_FILTER, "Couldn't close the hedera client properly");
+                }
 
                 exchangeDB.pushERTAddressBook(
                         exchangeRate.getNextExpirationTimeInSeconds(),
