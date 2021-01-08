@@ -58,6 +58,7 @@ import com.amazonaws.services.kms.model.DecryptRequest;
 import com.amazonaws.util.Base64;
 import com.hedera.exchange.exchanges.Binance;
 import com.hedera.exchange.exchanges.Bitrex;
+import com.hedera.exchange.exchanges.PayBito;
 import com.hedera.exchange.exchanges.UpBit;
 import com.hedera.exchange.exchanges.Liquid;
 import com.hedera.exchange.exchanges.OkCoin;
@@ -98,6 +99,7 @@ public class ExchangeRateUtils {
 		EXCHANGES.put("upbit", UpBit.class);
 		EXCHANGES.put("okcoin", OkCoin.class);
 		EXCHANGES.put("binance", Binance.class);
+		EXCHANGES.put("paybito", PayBito.class);
 	}
 
 	/**
