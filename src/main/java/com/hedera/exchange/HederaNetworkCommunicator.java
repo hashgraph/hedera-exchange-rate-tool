@@ -93,17 +93,19 @@ public class HederaNetworkCommunicator {
      * @throws InterruptedException
      */
     public static ERTAddressBook updateExchangeRateFile(final ExchangeRate exchangeRate,
-                                                        final Rate midnightRate,
+                                                        final ExchangeRate midnightRate,
                                                         Client client,
                                                         ERTParams ertParams) throws HederaStatusException, TimeoutException, InterruptedException {
 
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
         final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
 
-        final String memo = String.format("currentRate : %d, nextRate : %d, midnightRate : %d",
-                exchangeRate.getCurrentRate().getCentEquiv(),
-                exchangeRate.getNextRate().getCentEquiv(),
-                midnightRate == null ? 0 : midnightRate.getCentEquiv());
+        final String memo = String.format("currentRate : %.4f, nextRate : %.4f, midnight-currentRate : %.4f midnight" +
+                        "-nextRate : %.4f",
+                exchangeRate.getCurrentRate().getRateinUSD(),
+                exchangeRate.getNextRate().getRateinUSD(),
+                midnightRate == null ? 0.0 : midnightRate.getCurrentRate().getRateinUSD(),
+                midnightRate == null ? 0.0 : midnightRate.getNextRate().getRateinUSD());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Memo for the FileUpdate tx : {}", memo);
 
         final FileId exchangeRateFileId = FileId.fromString(ertParams.getFileId());

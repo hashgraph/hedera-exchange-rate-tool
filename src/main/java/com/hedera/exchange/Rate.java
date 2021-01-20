@@ -249,4 +249,8 @@ public class Rate {
     public String toJson() throws JsonProcessingException {
         return OBJECT_MAPPER.writeValueAsString(this);
     }
+
+    public double getRateinUSD() {
+        return (double) centEquiv/hbarEquiv;
+    }
 }
