@@ -142,12 +142,12 @@ public class ERTproc {
             if(midnightExchangeRate != null) {
                 if(!midnightExchangeRate.getNextRate().isSmallChange(this.bound, nextRate)) {
                     LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the nextRate with {}",
-                            midnightExchangeRate.toJson());
+                            midnightExchangeRate.getNextRate().toJson());
                     nextRate = midnightExchangeRate.getNextRate().clipRate(nextRate, this.bound);
                 }
                 if(!midnightExchangeRate.getCurrentRate().isSmallChange(this.bound, currentExchangeRate)) {
-                    LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the nextRate with {}",
-                            midnightExchangeRate.toJson());
+                    LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the currentRate with {}",
+                            midnightExchangeRate.getCurrentRate().toJson());
                     currentExchangeRate = midnightExchangeRate.getCurrentRate().clipRate(currentExchangeRate, this.bound);
                 }
             } else {
