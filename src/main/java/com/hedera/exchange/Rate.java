@@ -250,6 +250,10 @@ public class Rate {
         return OBJECT_MAPPER.writeValueAsString(this);
     }
 
+    @JsonIgnore
+    /**
+     * Get the hbar rate in USD
+     */
     public double getRateinUSD() {
         return (double) centEquiv/hbarEquiv;
     }
