@@ -126,7 +126,6 @@ public class ExchangeRateTool {
 
         final long frequencyInSeconds = ertParams.getFrequencyInSeconds();
         final ExchangeRate midnightExchangeRate = exchangeDB.getLatestMidnightExchangeRate();
-        final Rate midnightRate = midnightExchangeRate == null ? null : midnightExchangeRate.getNextRate();
         final Rate currentRate = getCurrentRate(exchangeDB, ertParams);
         final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
         final ExchangeRateUtils exchangeRateUtils = new ExchangeRateUtils();
@@ -137,7 +136,7 @@ public class ExchangeRateTool {
                 exchanges,
                 ertParams.getBound(),
                 ertParams.getFloor(),
-                midnightRate,
+                midnightExchangeRate,
                 currentRate,
                 frequencyInSeconds);
 
@@ -149,7 +148,7 @@ public class ExchangeRateTool {
                 continue;
             }
 
-            updateTransactionFileForNetwork(networkName, operatorId, exchangeRate, midnightRate, networks);
+            updateTransactionFileForNetwork(networkName, operatorId, exchangeRate, midnightExchangeRate, networks);
         }
 
         exchangeDB.pushExchangeRate(exchangeRate);
@@ -165,7 +164,7 @@ public class ExchangeRateTool {
     private static void updateTransactionFileForNetwork(final String networkName,
             final AccountId operatorId,
             final ExchangeRate exchangeRate,
-            final Rate midnightRate,
+            final ExchangeRate midnightRate,
             final Map<String, Map<AccountId, String>> networks) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
                 networkName);

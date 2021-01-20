@@ -83,8 +83,8 @@ public class ERTproc {
     private final long bound;
     private final long floor;
     private List<Exchange> exchanges;
-    private final Rate midnightExchangeRate;
-    private final Rate currentExchangeRate;
+    private final ExchangeRate midnightExchangeRate;
+    private Rate currentExchangeRate;
     private final long hbarEquiv;
     private final long frequencyInSeconds;
 
@@ -92,7 +92,7 @@ public class ERTproc {
             final List<Exchange> exchanges,
             final long bound,
             final long floor,
-            final Rate midnightExchangeRate,
+            final ExchangeRate midnightExchangeRate,
             final Rate currentExchangeRate,
             final long frequencyInSeconds) {
         this.hbarEquiv = hbarEquiv;
@@ -139,10 +139,17 @@ public class ERTproc {
                     (int) (medianExRate * 100 * this.hbarEquiv),
                     nextExpirationTimeInSeconds);
 
-            if(midnightExchangeRate != null && !midnightExchangeRate.isSmallChange(this.bound, nextRate)) {
-                LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the median with {}",
-                        midnightExchangeRate.toJson());
-                    nextRate = midnightExchangeRate.clipRate(nextRate, this.bound);
+            if(midnightExchangeRate != null) {
+                if(!midnightExchangeRate.getNextRate().isSmallChange(this.bound, nextRate)) {
+                    LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the nextRate with {}",
+                            midnightExchangeRate.toJson());
+                    nextRate = midnightExchangeRate.getNextRate().clipRate(nextRate, this.bound);
+                }
+                if(!midnightExchangeRate.getCurrentRate().isSmallChange(this.bound, currentExchangeRate)) {
+                    LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the nextRate with {}",
+                            midnightExchangeRate.toJson());
+                    currentExchangeRate = midnightExchangeRate.getCurrentRate().clipRate(currentExchangeRate, this.bound);
+                }
             } else {
                 LOGGER.debug(Exchange.EXCHANGE_FILTER, "No midnight value found, or the median is not far off " +
                         "Skipping validation of the calculated median");

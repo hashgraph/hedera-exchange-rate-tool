@@ -86,7 +86,7 @@ public class ERTprocTestCases {
                 exchanges,
                 params.getBound(),
                 params.getFloor(),
-                params.getDefaultRate(),
+                new ExchangeRate(params.getDefaultRate(), params.getDefaultRate()),
                 params.getDefaultRate(),
                 params.getFrequencyInSeconds());
         final ExchangeRate exchangeRate = ertProcess.call();
@@ -157,7 +157,7 @@ public class ERTprocTestCases {
                 justBitrexExchange,
                 params.getBound(),
                 params.getFloor(),
-                currentRate,
+                new ExchangeRate(currentRate, currentRate),
                 currentRate,
                 params.getFrequencyInSeconds());
 
@@ -191,7 +191,7 @@ public class ERTprocTestCases {
                 exchanges,
                 params.getBound(),
                 params.getFloor(),
-                midnightRate,
+                new ExchangeRate(midnightRate,midnightRate),
                 currentRate,
                 params.getFrequencyInSeconds());
         final ExchangeRate exchangeRate = ertProcess.call();
