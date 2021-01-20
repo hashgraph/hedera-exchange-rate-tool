@@ -58,6 +58,7 @@ import com.hedera.exchange.exchanges.Binance;
 import com.hedera.exchange.exchanges.Coinbase;
 import com.hedera.exchange.exchanges.Liquid;
 import com.hedera.exchange.exchanges.OkCoin;
+import com.hedera.exchange.exchanges.PayBito;
 import com.hedera.hashgraph.proto.ExchangeRateSet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -235,7 +236,7 @@ public class ERTprocTestCases {
     }
 
 
-    private List<Exchange> setOnlyBitrex(final double value) throws IOException {
+    private List<Exchange> setOnlyBitrex(final double value) {
 
         Bitrex mockBitrex = mock(Bitrex.class);
         when(mockBitrex.getHBarValue()).thenReturn(value);
@@ -247,7 +248,7 @@ public class ERTprocTestCases {
         return exchanges;
     }
 
-    private List<Exchange> setExchanges() throws IOException {
+    private List<Exchange> setExchanges() {
 
         Bitrex mockBitrex = mock(Bitrex.class);
         when(mockBitrex.getHBarValue()).thenReturn(0.0954162);
@@ -269,18 +270,23 @@ public class ERTprocTestCases {
         when(mockBinance.getHBarValue()).thenReturn(0.095);
         when(mockBinance.getVolume()).thenReturn(1000.0);
 
+        PayBito mockPayBito = mock(PayBito.class);
+        when(mockPayBito.getHBarValue()).thenReturn(0.095);
+        when(mockPayBito.getVolume()).thenReturn(1000.0);
+
         List<Exchange> exchanges = new ArrayList<>();
         exchanges.add(mockBinance);
         exchanges.add(mockCoinbase);
         exchanges.add(mockBitrex);
         exchanges.add(mockLiquid);
         exchanges.add(mockOkCoin);
+        exchanges.add(mockPayBito);
 
         return exchanges;
 
     }
 
-    private List<Exchange> setFloorExchanges() throws IOException, InstantiationException, IllegalAccessException {
+    private List<Exchange> setFloorExchanges() {
 
         Bitrex mockBitrex = mock(Bitrex.class);
         when(mockBitrex.getHBarValue()).thenReturn(0.0354162);
@@ -302,12 +308,17 @@ public class ERTprocTestCases {
         when(mockBinance.getHBarValue()).thenReturn(0.035);
         when(mockBinance.getVolume()).thenReturn(1000.0);
 
+        PayBito mockPayBito = mock(PayBito.class);
+        when(mockPayBito.getHBarValue()).thenReturn(0.035);
+        when(mockPayBito.getVolume()).thenReturn(1000.0);
+
         List<Exchange> exchanges = new ArrayList<>();
         exchanges.add(mockBinance);
         exchanges.add(mockCoinbase);
         exchanges.add(mockBitrex);
         exchanges.add(mockLiquid);
         exchanges.add(mockOkCoin);
+        exchanges.add(mockPayBito);
 
         return exchanges;
     }

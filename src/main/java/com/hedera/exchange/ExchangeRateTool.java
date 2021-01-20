@@ -131,7 +131,7 @@ public class ExchangeRateTool {
         final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
         final ExchangeRateUtils exchangeRateUtils = new ExchangeRateUtils();
 
-        List<Exchange> exchanges = exchangeRateUtils.generateExchanges(ertParams.getExchangeAPIList());
+        final List<Exchange> exchanges = exchangeRateUtils.generateExchanges(ertParams.getExchangeAPIList());
 
         final ERTproc proc = new ERTproc(ertParams.getDefaultHbarEquiv(),
                 exchanges,
@@ -143,47 +143,13 @@ public class ExchangeRateTool {
 
         final ExchangeRate exchangeRate = proc.call();
 
-        for(String networkName : networks.keySet()) {
+        for(final String networkName : networks.keySet()) {
 
-            if(!updatedNetworks.contains(networkName)) {
-                LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
-                        networkName);
-
-                final Ed25519PrivateKey privateOperatorKey =
-                        Ed25519PrivateKey.fromString(ertParams.getOperatorKey(networkName));
-                ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
-
-                Map<AccountId, String> nodesForClient = ertAddressBookFromPreviousRun != null &&
-                        !ertAddressBookFromPreviousRun.getNodes().isEmpty() ?
-                        ertAddressBookFromPreviousRun.getNodes() :
-                        networks.get(networkName);
-
-                Client hederaClient = HederaNetworkCommunicator.buildClient(
-                        nodesForClient,
-                        operatorId,
-                        privateOperatorKey,
-                        ertParams.getMaxTransactionFee());
-
-                if (hederaClient == null) {
-                    LOGGER.error(Exchange.EXCHANGE_FILTER, "Error while building a Hedera Client");
-                    throw new Exception("Couldn't Build a Hedera Client");
-                }
-
-                ERTAddressBook newAddressBook = HederaNetworkCommunicator.updateExchangeRateFile(
-                        exchangeRate,
-                        midnightRate,
-                        hederaClient,
-                        ertParams
-                );
-
-                exchangeDB.pushERTAddressBook(
-                        exchangeRate.getNextExpirationTimeInSeconds(),
-                        newAddressBook,
-                        networkName
-                );
-
-                updatedNetworks.add(networkName);
+            if (updatedNetworks.contains(networkName)) {
+                continue;
             }
+
+            updateTransactionFileForNetwork(networkName, operatorId, exchangeRate, midnightRate, networks);
         }
 
         exchangeDB.pushExchangeRate(exchangeRate);
@@ -191,10 +157,56 @@ public class ExchangeRateTool {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
             exchangeDB.pushMidnightRate(exchangeRate);
         }
+
         exchangeDB.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
-
-
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
+    }
+
+    private static void updateTransactionFileForNetwork(final String networkName,
+            final AccountId operatorId,
+            final ExchangeRate exchangeRate,
+            final Rate midnightRate,
+            final Map<String, Map<AccountId, String>> networks) throws Exception {
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
+                networkName);
+
+        final Ed25519PrivateKey privateOperatorKey =
+                Ed25519PrivateKey.fromString(ertParams.getOperatorKey(networkName));
+        ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
+
+        final Map<AccountId, String> nodesForClient = ertAddressBookFromPreviousRun != null &&
+                !ertAddressBookFromPreviousRun.getNodes().isEmpty() ?
+                ertAddressBookFromPreviousRun.getNodes() :
+                networks.get(networkName);
+
+        try(final Client hederaClient = HederaNetworkCommunicator.buildClient(
+                nodesForClient,
+                operatorId,
+                privateOperatorKey,
+                ertParams.getMaxTransactionFee())) {
+
+            if (hederaClient == null) {
+                LOGGER.error(Exchange.EXCHANGE_FILTER, "Error while building a Hedera Client");
+                throw new Exception("Couldn't Build a Hedera Client");
+            }
+
+            final ERTAddressBook newAddressBook = HederaNetworkCommunicator.updateExchangeRateFile(
+                    exchangeRate,
+                    midnightRate,
+                    hederaClient,
+                    ertParams
+            );
+
+            exchangeDB.pushERTAddressBook(
+                    exchangeRate.getNextExpirationTimeInSeconds(),
+                    newAddressBook,
+                    networkName
+            );
+        } catch(Exception ex) {
+            LOGGER.warn(Exchange.EXCHANGE_FILTER, "Error while updating exchange rate file", ex);
+        }
+
+        updatedNetworks.add(networkName);
     }
 
     /**
