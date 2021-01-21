@@ -164,7 +164,7 @@ public class ExchangeRateTool {
     private static void updateTransactionFileForNetwork(final String networkName,
             final AccountId operatorId,
             final ExchangeRate exchangeRate,
-            final ExchangeRate midnightRate,
+            final ExchangeRate midnightExchangeRate,
             final Map<String, Map<AccountId, String>> networks) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
                 networkName);
@@ -191,7 +191,7 @@ public class ExchangeRateTool {
 
             final ERTAddressBook newAddressBook = HederaNetworkCommunicator.updateExchangeRateFile(
                     exchangeRate,
-                    midnightRate,
+                    midnightExchangeRate,
                     hederaClient,
                     ertParams
             );

@@ -53,6 +53,8 @@ package com.hedera.exchange;
  */
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -118,5 +120,18 @@ public class RateTestCases {
 		Rate clippedRate = midnightRate.clipRate(nextRate, bound);
 
 		assertEquals(true, midnightRate.isSmallChange(bound, clippedRate));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"120000,0.04",
+			"300000,0.10",
+			"225000,0.075",
+			"3900000,1.30",
+			"15462000,5.154"
+	})
+	public void testUSDconversion(long centEquiv, double usd) {
+		Rate rate = new Rate(30000, centEquiv, 1568592000);
+		assertEquals(usd, rate.getRateinUSD());
 	}
 }

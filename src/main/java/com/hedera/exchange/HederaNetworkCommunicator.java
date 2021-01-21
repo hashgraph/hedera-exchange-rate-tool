@@ -84,7 +84,7 @@ public class HederaNetworkCommunicator {
     /**
      * Method to send a File update transaction to hedera network and fetch the latest addressBook from the network.
      * @param exchangeRate
-     * @param midnightRate
+     * @param midnightExchangeRate
      * @param client
      * @param ertParams
      * @return Latest AddressBook from the Hedera Network
@@ -93,7 +93,7 @@ public class HederaNetworkCommunicator {
      * @throws InterruptedException
      */
     public static ERTAddressBook updateExchangeRateFile(final ExchangeRate exchangeRate,
-                                                        final ExchangeRate midnightRate,
+                                                        final ExchangeRate midnightExchangeRate,
                                                         Client client,
                                                         ERTParams ertParams) throws HederaStatusException, TimeoutException, InterruptedException {
 
@@ -104,8 +104,8 @@ public class HederaNetworkCommunicator {
                         "-nextRate : %.4f",
                 exchangeRate.getCurrentRate().getRateinUSD(),
                 exchangeRate.getNextRate().getRateinUSD(),
-                midnightRate == null ? 0.0 : midnightRate.getCurrentRate().getRateinUSD(),
-                midnightRate == null ? 0.0 : midnightRate.getNextRate().getRateinUSD());
+                midnightExchangeRate == null ? 0.0 : midnightExchangeRate.getCurrentRate().getRateinUSD(),
+                midnightExchangeRate == null ? 0.0 : midnightExchangeRate.getNextRate().getRateinUSD());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Memo for the FileUpdate tx : {}", memo);
 
         final FileId exchangeRateFileId = FileId.fromString(ertParams.getFileId());
