@@ -249,4 +249,12 @@ public class Rate {
     public String toJson() throws JsonProcessingException {
         return OBJECT_MAPPER.writeValueAsString(this);
     }
+
+    @JsonIgnore
+    /**
+     * Get the hbar rate in USD
+     */
+    public double getRateInUSD() {
+        return ((double) centEquiv/hbarEquiv) / 100;
+    }
 }

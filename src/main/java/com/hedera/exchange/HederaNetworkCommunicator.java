@@ -84,7 +84,7 @@ public class HederaNetworkCommunicator {
     /**
      * Method to send a File update transaction to hedera network and fetch the latest addressBook from the network.
      * @param exchangeRate
-     * @param midnightRate
+     * @param midnightExchangeRate
      * @param client
      * @param ertParams
      * @return Latest AddressBook from the Hedera Network
@@ -93,17 +93,19 @@ public class HederaNetworkCommunicator {
      * @throws InterruptedException
      */
     public static ERTAddressBook updateExchangeRateFile(final ExchangeRate exchangeRate,
-                                                        final Rate midnightRate,
+                                                        final ExchangeRate midnightExchangeRate,
                                                         Client client,
                                                         ERTParams ertParams) throws HederaStatusException, TimeoutException, InterruptedException {
 
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
         final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
 
-        final String memo = String.format("currentRate : %d, nextRate : %d, midnightRate : %d",
-                exchangeRate.getCurrentRate().getCentEquiv(),
-                exchangeRate.getNextRate().getCentEquiv(),
-                midnightRate == null ? 0 : midnightRate.getCentEquiv());
+        final String memo = String.format("currentRate : %.4f, nextRate : %.4f, midnight-currentRate : %.4f midnight" +
+                        "-nextRate : %.4f",
+                exchangeRate.getCurrentRate().getRateInUSD(),
+                exchangeRate.getNextRate().getRateInUSD(),
+                midnightExchangeRate == null ? 0.0 : midnightExchangeRate.getCurrentRate().getRateInUSD(),
+                midnightExchangeRate == null ? 0.0 : midnightExchangeRate.getNextRate().getRateInUSD());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Memo for the FileUpdate tx : {}", memo);
 
         final FileId exchangeRateFileId = FileId.fromString(ertParams.getFileId());
