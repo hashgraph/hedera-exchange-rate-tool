@@ -102,10 +102,10 @@ public class HederaNetworkCommunicator {
 
         final String memo = String.format("currentRate : %.4f, nextRate : %.4f, midnight-currentRate : %.4f midnight" +
                         "-nextRate : %.4f",
-                exchangeRate.getCurrentRate().getRateinUSD(),
-                exchangeRate.getNextRate().getRateinUSD(),
-                midnightExchangeRate == null ? 0.0 : midnightExchangeRate.getCurrentRate().getRateinUSD(),
-                midnightExchangeRate == null ? 0.0 : midnightExchangeRate.getNextRate().getRateinUSD());
+                exchangeRate.getCurrentRate().getRateInUSD(),
+                exchangeRate.getNextRate().getRateInUSD(),
+                midnightExchangeRate == null ? 0.0 : midnightExchangeRate.getCurrentRate().getRateInUSD(),
+                midnightExchangeRate == null ? 0.0 : midnightExchangeRate.getNextRate().getRateInUSD());
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Memo for the FileUpdate tx : {}", memo);
 
         final FileId exchangeRateFileId = FileId.fromString(ertParams.getFileId());

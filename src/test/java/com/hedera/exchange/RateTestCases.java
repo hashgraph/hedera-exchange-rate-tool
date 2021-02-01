@@ -132,6 +132,6 @@ public class RateTestCases {
 	})
 	public void testUSDconversion(long centEquiv, double usd) {
 		Rate rate = new Rate(30000, centEquiv, 1568592000);
-		assertEquals(usd, rate.getRateinUSD());
+		assertEquals(usd, rate.getRateInUSD());
 	}
 }

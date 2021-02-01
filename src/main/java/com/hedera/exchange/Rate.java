@@ -254,7 +254,7 @@ public class Rate {
     /**
      * Get the hbar rate in USD
      */
-    public double getRateinUSD() {
+    public double getRateInUSD() {
         return ((double) centEquiv/hbarEquiv) / 100;
     }
 }
