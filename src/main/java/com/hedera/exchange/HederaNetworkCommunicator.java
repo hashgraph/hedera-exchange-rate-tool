@@ -77,6 +77,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import static com.hedera.hashgraph.sdk.Client.forNetwork;
+
 /**
  * This Class provides File Update APIs of the Exchange Rate Tool.
  *
@@ -259,16 +261,16 @@ public class HederaNetworkCommunicator {
      * @param maxTransactoinFee
      * @return A Hedera Client or null if invalid inputs.
      */
-    public static Client buildClient(Map<AccountId, String> accountAddressMap,
+    public static Client buildClient(Map<String, AccountId> accountAddressMap,
                                      AccountId operatorId,
                                      PrivateKey privateKey,
-                                     long maxTransactoinFee) {
+                                     Hbar maxTransactoinFee) {
 
         if(accountAddressMap.isEmpty() || operatorId == null || privateKey == null) {
             return null;
         }
 
-        return new Client(accountAddressMap)
+        return forNetwork(accountAddressMap)
                 .setMaxTransactionFee(maxTransactoinFee)
                 .setOperator(operatorId, privateKey);
     }

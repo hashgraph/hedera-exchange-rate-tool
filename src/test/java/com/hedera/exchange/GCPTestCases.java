@@ -66,7 +66,6 @@ public class GCPTestCases {
         GCPExcahgneRateDB.pushExchangeRate(exchangeRate);
 
         */
-       GCPExchangeRateDB.main();
-
+//       GCPExchangeRateDB.main();
     }
 }

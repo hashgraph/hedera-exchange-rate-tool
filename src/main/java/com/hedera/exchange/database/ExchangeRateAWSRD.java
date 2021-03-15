@@ -142,13 +142,14 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 
 	@Override
 	public void pushERTAddressBook(long expirationTime, ERTAddressBook ertAddressBook, String networkName) throws Exception {
+		String addressBook = ertAddressBook.toJson();
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "push latest addressBook to  address_book table : {}",
-				ertAddressBook.toJson());
+				addressBook);
 		try (final Connection conn = getConnection();
 			 final PreparedStatement statement = conn.prepareStatement(
 					 "INSERT INTO address_book (expirationTime,addressBook,networkName) VALUES(?,?::JSON,?)")) {
 			statement.setLong(1, expirationTime);
-			statement.setObject(2, ertAddressBook.toJson());
+			statement.setObject(2, addressBook);
 			statement.setString(3,networkName);
 			statement.executeUpdate();
 		}

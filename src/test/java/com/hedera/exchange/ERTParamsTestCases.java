@@ -52,7 +52,7 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.hedera.hashgraph.sdk.account.AccountId;
+import com.hedera.hashgraph.sdk.AccountId;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -69,13 +69,13 @@ public class ERTParamsTestCases {
         assertEquals("0.0.112", ertParams.getFileId());
         assertEquals(15_000, ertParams.getValidationDelayInMilliseconds());
 
-        Map<String, Map<AccountId, String>> networks = ertParams.getNetworks();
-        assertEquals("0.testnet.hedera.com:50211",
-                networks.get("publicTestNet").get(AccountId.fromString("0.0.3")));
-        assertEquals("1.testnet.hedera.com:50211",
-                networks.get("publicTestNet").get(AccountId.fromString("0.0.4")));
-        assertEquals("35.196.144.134:50211",
-                networks.get("performanceNet").get(AccountId.fromString("0.0.3")));
+        Map<String, Map<String, AccountId>> networks = ertParams.getNetworks();
+        assertEquals(AccountId.fromString("0.0.3"),
+                networks.get("publicTestNet").get("0.testnet.hedera.com:50211"));
+        assertEquals(AccountId.fromString("0.0.4"),
+                networks.get("publicTestNet").get("1.testnet.hedera.com:50211"));
+        assertEquals(AccountId.fromString("0.0.3"),
+                networks.get("performanceNet").get("35.196.144.134:50211"));
     }
 
     @Test

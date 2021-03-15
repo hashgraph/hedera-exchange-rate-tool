@@ -52,6 +52,7 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -59,7 +60,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import com.hedera.hashgraph.proto.NodeAddressBook;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

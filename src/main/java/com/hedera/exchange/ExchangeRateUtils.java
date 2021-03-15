@@ -66,6 +66,7 @@ import com.hedera.exchange.exchanges.Coinbase;
 import com.hedera.exchange.exchanges.CoinFactory;
 import com.hedera.exchange.exchanges.ExchangeCoin;
 import com.hedera.exchange.exchanges.Exchange;
+import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.proto.NodeAddress;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
 import org.apache.logging.log4j.LogManager;
@@ -171,5 +172,19 @@ public class ExchangeRateUtils {
 					nodeId, nodeAddress);
 		}
 		return  nodes;
+	}
+
+	/**
+	 * Converts the string - string mapping of node id and address in the addressbook to
+	 * AccountID - string map so that, it can be used in hedera client directly.
+	 * @return
+	 */
+	public static Map<String, AccountId> getNodesForClient(Map<String, String> nodes) {
+		final Map<String, AccountId> accountToNodeAddresses = new HashMap<>();
+		for (final Map.Entry<String, String> node : nodes.entrySet()) {
+			final AccountId nodeId = AccountId.fromString(node.getKey());
+			accountToNodeAddresses.put(node.getValue(), nodeId);
+		}
+		return accountToNodeAddresses;
 	}
 }

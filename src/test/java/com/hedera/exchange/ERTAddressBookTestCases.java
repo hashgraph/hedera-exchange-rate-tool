@@ -52,7 +52,7 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.hedera.hashgraph.sdk.account.AccountId;
+import com.hedera.hashgraph.sdk.AccountId;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -71,10 +71,10 @@ public class ERTAddressBookTestCases {
 
         ERTAddressBook ERTaddressBook = ERTAddressBook.fromJson(addressBook);
 
-        assertEquals(ERTaddressBook.getNodes().get(AccountId.fromString("0.0.3")), "34.94.254.82:50211");
-        assertEquals(ERTaddressBook.getNodes().get(AccountId.fromString("0.0.4")), "35.196.34.86:50211");
-        assertEquals(ERTaddressBook.getNodes().get(AccountId.fromString("0.0.5")), "35.194.75.187:50211");
-        assertEquals(ERTaddressBook.getNodes().get(AccountId.fromString("0.0.6")), "34.82.241.226:50211");
+        assertEquals(ERTaddressBook.getNodes().get("0.0.3"), "34.94.254.82:50211");
+        assertEquals(ERTaddressBook.getNodes().get("0.0.4"), "35.196.34.86:50211");
+        assertEquals(ERTaddressBook.getNodes().get("0.0.5"), "35.194.75.187:50211");
+        assertEquals(ERTaddressBook.getNodes().get("0.0.6"), "34.82.241.226:50211");
 
     }
 

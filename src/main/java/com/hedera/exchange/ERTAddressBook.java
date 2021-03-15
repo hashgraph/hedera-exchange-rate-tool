@@ -110,17 +110,7 @@ public class ERTAddressBook {
         this.nodes = nodes;
     }
 
-    /**
-     * Converts the string - string mapping of node id and address in the addressbook to
-     * AccountID - string map so that, it can be used in hedera client directly.
-     * @return
-     */
-    public Map<AccountId, String> getNodes() {
-        final Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
-        for (final Map.Entry<String, String> node : this.nodes.entrySet()) {
-            final AccountId nodeId = AccountId.fromString(node.getKey());
-            accountToNodeAddresses.put(nodeId, node.getValue());
-        }
-        return accountToNodeAddresses;
+    public Map<String, String> getNodes() {
+        return nodes;
     }
 }

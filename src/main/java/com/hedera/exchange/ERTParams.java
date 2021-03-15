@@ -333,31 +333,31 @@ public class ERTParams {
         return this.frequencyInSeconds;
     }
 
-    /**
-     * Return the network nodes ERT is sending the ERT file update to.
-     * @return Map of Node's AccountID to its IpAddress.
-     */
-    public Map<AccountId, String> getNodes() {
-        final Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
-        for (final Map.Entry<String, String> node : this.nodes.entrySet()) {
-            final AccountId nodeId = AccountId.fromString(node.getKey());
-            accountToNodeAddresses.put(nodeId, node.getValue());
-        }
-
-        return accountToNodeAddresses;
-    }
+//    /**
+//     * Return the network nodes ERT is sending the ERT file update to.
+//     * @return Map of Node's AccountID to its IpAddress.
+//     */
+//    public Map<AccountId, String> getNodes() {
+//        final Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
+//        for (final Map.Entry<String, String> node : this.nodes.entrySet()) {
+//            final AccountId nodeId = AccountId.fromString(node.getKey());
+//            accountToNodeAddresses.put(nodeId, node.getValue());
+//        }
+//
+//        return accountToNodeAddresses;
+//    }
 
     /**
      * Return the networks ERT is sending the ERT file update to.
      * @return Map of Network name and its Node's AccountID to its IpAddress.
      */
-    public Map<String, Map<AccountId, String>> getNetworks() {
-        final Map<String, Map<AccountId, String>> networkAddresses = new HashMap<>();
+    public Map<String, Map<String, AccountId>> getNetworks() {
+        final Map<String, Map<String, AccountId>> networkAddresses = new HashMap<>();
         for(final Map.Entry<String, Map<String, String>> network : this.networks.entrySet()) {
-            Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
+            Map<String, AccountId> accountToNodeAddresses = new HashMap<>();
             for( final Map.Entry<String, String> node : network.getValue().entrySet()) {
                 final AccountId nodeId = AccountId.fromString(node.getKey());
-                accountToNodeAddresses.put(nodeId, node.getValue());
+                accountToNodeAddresses.put(node.getValue(), nodeId);
             }
             networkAddresses.put(network.getKey(), accountToNodeAddresses);
         }
