@@ -66,7 +66,7 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.hedera.hashgraph.sdk.account.AccountId;
+import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.exchange.database.AWSDBParams;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.database.ExchangeRateAWSRD;

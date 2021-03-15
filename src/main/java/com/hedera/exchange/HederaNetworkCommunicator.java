@@ -53,15 +53,22 @@ package com.hedera.exchange;
  */
 
 
+import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Exchange;
-import com.hedera.hashgraph.proto.NodeAddressBook;
-import com.hedera.hashgraph.sdk.*;
-import com.hedera.hashgraph.sdk.account.AccountBalanceQuery;
-import com.hedera.hashgraph.sdk.account.AccountId;
-import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
-import com.hedera.hashgraph.sdk.file.FileContentsQuery;
-import com.hedera.hashgraph.sdk.file.FileId;
-import com.hedera.hashgraph.sdk.file.FileUpdateTransaction;
+import com.hedera.hashgraph.sdk.AccountBalance;
+import com.hedera.hashgraph.sdk.AccountBalanceQuery;
+import com.hedera.hashgraph.sdk.AccountId;
+import com.hedera.hashgraph.sdk.Client;
+import com.hedera.hashgraph.sdk.FileContentsQuery;
+import com.hedera.hashgraph.sdk.FileId;
+import com.hedera.hashgraph.sdk.FileUpdateTransaction;
+import com.hedera.hashgraph.sdk.Hbar;
+import com.hedera.hashgraph.sdk.PrecheckStatusException;
+import com.hedera.hashgraph.sdk.PrivateKey;
+import com.hedera.hashgraph.sdk.TransactionId;
+import com.hedera.hashgraph.sdk.TransactionReceipt;
+import com.hedera.hashgraph.sdk.TransactionResponse;
+import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -88,14 +95,13 @@ public class HederaNetworkCommunicator {
      * @param client
      * @param ertParams
      * @return Latest AddressBook from the Hedera Network
-     * @throws HederaStatusException
      * @throws TimeoutException
      * @throws InterruptedException
      */
     public static ERTAddressBook updateExchangeRateFile(final ExchangeRate exchangeRate,
                                                         final ExchangeRate midnightExchangeRate,
                                                         Client client,
-                                                        ERTParams ertParams) throws HederaStatusException, TimeoutException, InterruptedException {
+                                                        ERTParams ertParams) throws TimeoutException, PrecheckStatusException {
 
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
         final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
@@ -110,7 +116,7 @@ public class HederaNetworkCommunicator {
 
         final FileId exchangeRateFileId = FileId.fromString(ertParams.getFileId());
 
-        final Hbar currentBalance = new AccountBalanceQuery()
+        final AccountBalance currentBalance = new AccountBalanceQuery()
                 .setAccountId(operatorId)
                 .execute(client);
 
@@ -125,7 +131,7 @@ public class HederaNetworkCommunicator {
             waitForChangesToTakeEffect(ertParams.getValidationDelayInMilliseconds());
             validateUpdate(client, exchangeRateFileId, exchangeRateAsBytes);
 
-            final Hbar newBalance = new AccountBalanceQuery()
+            final AccountBalance newBalance = new AccountBalanceQuery()
                     .setAccountId(operatorId)
                     .execute(client);
 
@@ -155,7 +161,7 @@ public class HederaNetworkCommunicator {
                                                              Client client,
                                                              String memo) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER,"Pushing new ExchangeRate {}", exchangeRate.toJson());
-        final TransactionId exchangeRateFileUpdateTransactionId = new FileUpdateTransaction()
+        final TransactionResponse exchangeRateFileUpdateTransactionId = new FileUpdateTransaction()
                 .setFileId(exchangeRateFileId)
                 .setContents(exchangeRateAsBytes)
                 .setTransactionMemo(memo)
@@ -233,16 +239,16 @@ public class HederaNetworkCommunicator {
      * @throws Exception
      */
     private static byte[] getFileContentsQuery(Client client, FileId fileId) throws Exception {
-        final long getContentsQueryFee = new FileContentsQuery()
+        final Hbar getContentsQueryFee = new FileContentsQuery()
                 .setFileId(fileId)
                 .getCost(client);
         LOGGER.debug(Exchange.EXCHANGE_FILTER, "Cost to get file {} contents is : {}", fileId, getContentsQueryFee);
         client.setMaxQueryPayment(getContentsQueryFee);
 
-        byte[] contentsResponse = new FileContentsQuery()
+        final ByteString contentsResponse = new FileContentsQuery()
                 .setFileId(fileId)
                 .execute(client);
-        return contentsResponse;
+        return contentsResponse.toByteArray();
     }
 
     /**
@@ -255,7 +261,7 @@ public class HederaNetworkCommunicator {
      */
     public static Client buildClient(Map<AccountId, String> accountAddressMap,
                                      AccountId operatorId,
-                                     Ed25519PrivateKey privateKey,
+                                     PrivateKey privateKey,
                                      long maxTransactoinFee) {
 
         if(accountAddressMap.isEmpty() || operatorId == null || privateKey == null) {

@@ -66,13 +66,12 @@ import com.hedera.exchange.exchanges.Coinbase;
 import com.hedera.exchange.exchanges.CoinFactory;
 import com.hedera.exchange.exchanges.ExchangeCoin;
 import com.hedera.exchange.exchanges.Exchange;
-import com.hedera.hashgraph.proto.NodeAddress;
-import com.hedera.hashgraph.proto.NodeAddressBook;
+import com.hedera.hashgraph.sdk.proto.NodeAddress;
+import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -52,11 +52,11 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.Client;
-import com.hedera.hashgraph.sdk.account.AccountId;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.exchanges.Exchange;
-import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
+import com.hedera.hashgraph.sdk.PrivateKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -169,8 +169,8 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
                 networkName);
 
-        final Ed25519PrivateKey privateOperatorKey =
-                Ed25519PrivateKey.fromString(ertParams.getOperatorKey(networkName));
+        final PrivateKey privateOperatorKey =
+                PrivateKey.fromString(ertParams.getOperatorKey(networkName));
         ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
 
         final Map<AccountId, String> nodesForClient = ertAddressBookFromPreviousRun != null &&
@@ -201,8 +201,6 @@ public class ExchangeRateTool {
                     newAddressBook,
                     networkName
             );
-        } catch(Exception ex) {
-            LOGGER.warn(Exchange.EXCHANGE_FILTER, "Error while updating exchange rate file", ex);
         }
 
         updatedNetworks.add(networkName);
