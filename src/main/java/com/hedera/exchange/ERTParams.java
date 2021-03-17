@@ -412,7 +412,7 @@ public class ERTParams {
      * @return
      */
     public Rate getDefaultRate() {
-        return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, this.getCurrentExpirationTime());
+        return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, ExchangeRateUtils.getCurrentExpirationTime());
     }
 
     /**
@@ -421,19 +421,6 @@ public class ERTParams {
      */
     public long getValidationDelayInMilliseconds() {
         return this.validationDelayInMilliseconds;
-    }
-
-    /**
-     * Get the EPOC time of the end of the current hour in seconds in UTC.
-     * for example, say the current date and time is October 31st 2019, 10:34 AM
-     * then currentExpirationTime will be 1572537600 in UTC
-     * @return
-     */
-    public static long getCurrentExpirationTime() {
-        final long currentTime = System.currentTimeMillis();
-        final long currentHourOnTheDot = currentTime - (currentTime % 3_600_000);
-        final long currentExpirationTime = currentHourOnTheDot + 3_600_000;
-        return currentExpirationTime / 1000;
     }
 
     /**

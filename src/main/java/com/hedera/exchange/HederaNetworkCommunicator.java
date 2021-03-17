@@ -65,7 +65,6 @@ import com.hedera.hashgraph.sdk.FileUpdateTransaction;
 import com.hedera.hashgraph.sdk.Hbar;
 import com.hedera.hashgraph.sdk.PrecheckStatusException;
 import com.hedera.hashgraph.sdk.PrivateKey;
-import com.hedera.hashgraph.sdk.TransactionId;
 import com.hedera.hashgraph.sdk.TransactionReceipt;
 import com.hedera.hashgraph.sdk.TransactionResponse;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
@@ -214,12 +213,12 @@ public class HederaNetworkCommunicator {
      * @throws Exception
      */
     private ERTAddressBook fetchAddressBook(Client client) throws Exception {
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "fetching the addressbook");
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "fetching the addressBook");
 
         final FileId addressBookFileId = FileId.fromString(ADDRESS_BOOK_FILE_ID);
         final NodeAddressBook addressBook = NodeAddressBook.parseFrom(
                 getFileContentsQuery(client, addressBookFileId));
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "addressbook file contents {}", addressBook);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "addressBook file contents {}", addressBook);
 
         Map<String, String> addressBookNodes = new HashMap<>();
         if (addressBook.getNodeAddressCount() > 0) {

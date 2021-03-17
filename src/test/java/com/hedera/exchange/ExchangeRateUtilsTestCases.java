@@ -52,12 +52,52 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.hedera.exchange.exchanges.Exchange;
+import com.hedera.hashgraph.sdk.AccountId;
+import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ExchangeRateUtilsTestCases {
+
+	private Map<String, String> nodes =  new HashMap<>();
+	private NodeAddressBook addressBook;
+
+	@Test
+	public void verifyNodesFromAddressBook() throws IOException {
+		setupAddressBook();
+
+		Map<String, String> ERTnodes = ExchangeRateUtils.getNodesFromAddressBook(addressBook);
+		for( String node : ERTnodes.keySet()){
+			assertEquals(ERTnodes.get(node), nodes.get(node));
+		}
+	}
+
+	@Test
+	public void getNodesForClientTest() throws IOException {
+		//setup
+		setupAddressBook();
+
+		//when
+		Map<String, AccountId> nodesForClient = ExchangeRateUtils.getNodesForClient(nodes);
+
+		//then
+		assertEquals(13, nodesForClient.size());
+		assertEquals(3, nodesForClient.get("35.237.182.66:50211").num);
+		assertEquals(7, nodesForClient.get("34.94.236.63:50211").num);
+		assertEquals(11, nodesForClient.get("35.246.250.176:50211").num);
+		assertEquals(15, nodesForClient.get("34.87.47.168:50211").num);
+	}
 
 	@Test
 	@Disabled
@@ -67,5 +107,46 @@ public class ExchangeRateUtilsTestCases {
 				"+0rgeFAAAApzCBpAYJKoZIhvcNAQcGoIGWMIGTAgEAMIGNBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDLHJjkIANloMVIhCdgIBEIBg9HnXBKnxE3c4H5/17ilQR0G6DqZKH6dzBnhkUAjYbg1sBuStjVA8rQwBUtiSKO7b5ehQh+OxnrJxVbHAZNylSH71fr7OICMI3iA2qkIM8gtWNG1htphGhkDLCRcaw5Xh";
 		final String lambdaFunctioName = "exchange-rate-tool-lambda-integration";
 		assertEquals(expectedValue, ExchangeRateUtils.getDecryptedValueFromAWS(encryptedValue, lambdaFunctioName));
+	}
+
+	@Test
+	public void generateExchangesTest() {
+		//setup
+		Map<String, String> exchangeAPIs = new HashMap<String, String>() {{
+			put("bitrex", "https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=USD-HBAR");
+			put("okcoin", "https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker");
+			put("paybito", "https://trade.paybito.com/api/trades/HBAR_USD");
+		}};
+
+		//when
+		List<Exchange> exchanges = ExchangeRateUtils.generateExchanges(exchangeAPIs);
+
+		//then
+		assertEquals(3, exchanges.size());
+		assertNotNull(exchanges.get(0).getHBarValue());
+		assertNotNull(exchanges.get(1).getHBarValue());
+		assertNotNull(exchanges.get(2).getHBarValue());
+	}
+
+	private void setupAddressBook() throws IOException {
+		File addressBookFile = new File("src/test/resources/addressBook.bin");
+		FileInputStream fis = new FileInputStream(addressBookFile);
+		byte[] content = new byte[(int) addressBookFile.length()];
+		fis.read(content);
+		addressBook = NodeAddressBook.parseFrom(content);
+
+		nodes.put("0.0.3", "35.237.182.66:50211");
+		nodes.put("0.0.4", "35.245.226.22:50211");
+		nodes.put("0.0.5", "34.68.9.203:50211");
+		nodes.put("0.0.6", "34.83.131.197:50211");
+		nodes.put("0.0.7", "34.94.236.63:50211");
+		nodes.put("0.0.8", "35.203.26.115:50211");
+		nodes.put("0.0.9", "34.77.3.213:50211");
+		nodes.put("0.0.10", "35.197.237.44:50211");
+		nodes.put("0.0.11", "35.246.250.176:50211");
+		nodes.put("0.0.12", "34.90.117.105:50211");
+		nodes.put("0.0.13", "35.200.57.21:50211");
+		nodes.put("0.0.14", "34.92.120.143:50211");
+		nodes.put("0.0.15", "34.87.47.168:50211");
 	}
 }

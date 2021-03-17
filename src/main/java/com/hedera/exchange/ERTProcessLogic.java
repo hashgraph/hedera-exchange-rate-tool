@@ -115,7 +115,7 @@ public class ERTProcessLogic {
 
         try {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
-            currentExchangeRate.setExpirationTime(ERTParams.getCurrentExpirationTime());
+            currentExchangeRate.setExpirationTime(ExchangeRateUtils.getCurrentExpirationTime());
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next hour as current expiration time :{}",
                     currentExchangeRate.getExpirationTimeInSeconds());
             final long nextExpirationTimeInSeconds = currentExchangeRate.getExpirationTimeInSeconds() + frequencyInSeconds;

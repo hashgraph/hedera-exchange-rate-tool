@@ -134,11 +134,11 @@ public class ExchangeRateUtils {
 	 * Exchange int he config file.
 	 * @return List of Exchange objects.
 	 */
-	public static List<Exchange> generateExchanges( final Map<String, String> exchangeApis) {
+	public static List<Exchange> generateExchanges( final Map<String, String> exchangeAPIs) {
 		List<Exchange> exchanges = new ArrayList<>();
 		final CoinFactory factory = new CoinFactory();
 
-		for (final Map.Entry<String, String> api : exchangeApis.entrySet()) {
+		for (final Map.Entry<String, String> api : exchangeAPIs.entrySet()) {
 
 			final Class<? extends ExchangeCoin> exchangeClass = EXCHANGES.get(api.getKey());
 
@@ -186,5 +186,18 @@ public class ExchangeRateUtils {
 			accountToNodeAddresses.put(node.getValue(), nodeId);
 		}
 		return accountToNodeAddresses;
+	}
+
+	/**
+	 * Get the EPOC time of the end of the current hour in seconds in UTC.
+	 * for example, say the current date and time is October 31st 2019, 10:34 AM
+	 * then currentExpirationTime will be 1572537600 in UTC
+	 * @return
+	 */
+	public static long getCurrentExpirationTime() {
+		final long currentTime = System.currentTimeMillis();
+		final long currentHourOnTheDot = currentTime - (currentTime % 3_600_000);
+		final long currentExpirationTime = currentHourOnTheDot + 3_600_000;
+		return currentExpirationTime / 1000;
 	}
 }

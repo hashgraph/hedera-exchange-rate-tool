@@ -148,7 +148,7 @@ public class ERTProcessLogicTestCases {
         final String exchangesInJson = bitrexValue == 0.0 ? "[]" : String.format("[{\"volume\":1000.0," +
                 "\"Query\":\"https://api.bittrex.com/api/v1.1/public/getticker?market=USD-HBAR\"," +
                 "\"HBAR\":%.1f}]", bitrexValue);
-        final long currentExpirationInSeconds = ERTParams.getCurrentExpirationTime();
+        final long currentExpirationInSeconds = ExchangeRateUtils.getCurrentExpirationTime();
         final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
         final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
 
@@ -184,8 +184,8 @@ public class ERTProcessLogicTestCases {
     public void testFloor(String configPath, long currentCentEquiv, long expectedCentEquiv) throws IOException, IllegalAccessException, InstantiationException {
         List<Exchange> exchanges = this.setFloorExchanges();
         final ERTParams params = ERTParams.readConfig(configPath);
-        final Rate currentRate = new Rate(30000, currentCentEquiv,ERTParams.getCurrentExpirationTime());
-        final Rate midnightRate = new Rate(30000, currentCentEquiv,ERTParams.getCurrentExpirationTime());
+        final Rate currentRate = new Rate(30000, currentCentEquiv,ExchangeRateUtils.getCurrentExpirationTime());
+        final Rate midnightRate = new Rate(30000, currentCentEquiv,ExchangeRateUtils.getCurrentExpirationTime());
 
         final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 exchanges,
