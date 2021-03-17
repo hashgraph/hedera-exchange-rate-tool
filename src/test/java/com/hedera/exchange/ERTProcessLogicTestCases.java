@@ -72,7 +72,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ERTprocTestCases {
+public class ERTProcessLogicTestCases {
 
     @ParameterizedTest
     @CsvSource({"src/test/resources/configs/config.json,360000,288000",
@@ -82,7 +82,7 @@ public class ERTprocTestCases {
         List<Exchange> exchanges = this.setExchanges();
 
         final ERTParams params = ERTParams.readConfig(configPath);
-        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+        final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 exchanges,
                 params.getBound(),
                 params.getFloor(),
@@ -111,7 +111,7 @@ public class ERTprocTestCases {
         List<Exchange> exchanges = this.setExchanges();
 
         final ERTParams params = ERTParams.readConfig(configPath);
-        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+        final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 exchanges,
                 params.getBound(),
                 params.getFloor(),
@@ -153,7 +153,7 @@ public class ERTprocTestCases {
         final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
 
         final ERTParams params = ERTParams.readConfig(configPath);
-        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+        final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 justBitrexExchange,
                 params.getBound(),
                 params.getFloor(),
@@ -187,7 +187,7 @@ public class ERTprocTestCases {
         final Rate currentRate = new Rate(30000, currentCentEquiv,ERTParams.getCurrentExpirationTime());
         final Rate midnightRate = new Rate(30000, currentCentEquiv,ERTParams.getCurrentExpirationTime());
 
-        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+        final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 exchanges,
                 params.getBound(),
                 params.getFloor(),
@@ -212,7 +212,7 @@ public class ERTprocTestCases {
     public void testWeightedMedian() throws Exception {
         final ERTParams params = ERTParams.readConfig("src/test/resources/configs/config.json");
         List<Exchange> emptyList = new ArrayList<>();
-        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+        final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 emptyList,
                 params.getBound(),
                 params.getFloor(),

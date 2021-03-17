@@ -1,4 +1,4 @@
-package com.hedera.exchange;
+package com.hedera.exchange.api;
 
 /*-
  * ‌
@@ -52,64 +52,62 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hedera.exchange.ExchangeRate;
+import com.hedera.exchange.database.AWSDBParams;
+import com.hedera.exchange.database.ExchangeDB;
+import com.hedera.exchange.database.ExchangeRateAWSRD;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * This class represents all the data that we pull in to run an instance of Exchange Rate tool
+ * This class implements an API that one can trigger using an AWS lambda for example and get the latest Exchange rate file
+ * from the database.
+ *
+ * @author Anirudh, Cesar
  */
-public class ExchangeRateHistory {
+public class ExchangeRateAPI {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	private static Map<String, String> HEADERS = new HashMap<>();
 
-    @JsonProperty("ExpirationTime")
-    private String expirationTime;
+	static {
+		HEADERS.put("Access-Control-Allow-Origin", "*");
+	}
 
-    @JsonProperty("QueriedRate")
-    private String queriedRate;
+	public static LambdaResponse getLatest() throws Exception {
+		final ExchangeDB exchangeDb = new ExchangeRateAWSRD(new AWSDBParams());
+		final ExchangeRate latestExchangeRate = exchangeDb.getLatestExchangeRate();
+		if (latestExchangeRate == null) {
+			return new LambdaResponse(200, "No exchange rate available yet");
+		}
 
-    @JsonProperty("MedianRate")
-    private double medianRate;
+		return new LambdaResponse(200, latestExchangeRate.toJson());
+	}
 
-    @JsonProperty("Smoothed")
-    private boolean isSmoothed;
+	public static class LambdaResponse {
+		private int statusCode;
 
-    @JsonProperty("MidnightRate")
-    private ExchangeRate midnightRate;
+		private String body;
 
-    @JsonProperty("CurrentRate")
-    private Rate currentRate;
+		LambdaResponse(final int statusCode, final String body) {
+			this.statusCode = statusCode;
+			this.body = body;
+		}
 
-    @JsonProperty("NextRate")
-    private Rate nextRate;
+		public int getStatusCode() {
+			return statusCode;
+		}
 
-    @JsonCreator
-    public ExchangeRateHistory( @JsonProperty("ExpirationTime") final String expirationTime,
-                                @JsonProperty("QueriedRate") final String queriedRate,
-                                @JsonProperty("MedianRate") final double medianRate,
-                                @JsonProperty("Smoothed") final boolean isSmoothed,
-                                @JsonProperty("MidnightRate") final ExchangeRate midnightRate,
-                                @JsonProperty("CurrentRate") final Rate currentRate,
-                                @JsonProperty("NextRate") final Rate nextRate ) {
-        this.expirationTime = expirationTime;
-        this.queriedRate = queriedRate;
-        this.medianRate = medianRate;
-        this.isSmoothed = isSmoothed;
-        this.midnightRate = midnightRate;
-        this.currentRate = currentRate;
-        this.nextRate = nextRate;
-    }
+		public String getBody() {
+			return body;
+		}
 
-    /**
-     * Converts the ExchangeRateHistory object into a Json String
-     * @return Json String
-     * @throws JsonProcessingException
-     */
-    public String toJson() throws JsonProcessingException {
-        final ExchangeRateHistory[] rateHistory = new ExchangeRateHistory[] { this };
-        return OBJECT_MAPPER.writeValueAsString(rateHistory);
-    }
+		public boolean isBase64Encoded() {
+			return false;
+		}
 
+		public Map<String, String> getHeaders() {
+			return HEADERS;
+		}
+	}
 }

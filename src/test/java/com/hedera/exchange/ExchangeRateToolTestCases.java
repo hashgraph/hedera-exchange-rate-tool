@@ -54,6 +54,7 @@ package com.hedera.exchange;
 
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -76,6 +77,17 @@ public class ExchangeRateToolTestCases {
             assertEquals(ERTnodes.get(node), nodes.get(node));
         }
     }
+
+//    @Test
+//    public void retryWorks() {
+//        ExchangeRateTool ertMock = Mockito.spy(ExchangeRateTool.class);
+//
+//        Mockito.doThrow(new Exception()).when(ExchangeRateTool.class,
+//                "updateTransactionFileForNetwork",
+//                Mockito.any()
+//                );
+//
+//    }
 
     public void setup() throws IOException {
         File addressBookFile = new File("src/test/resources/addressBook.bin");

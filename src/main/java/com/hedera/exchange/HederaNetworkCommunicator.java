@@ -100,7 +100,7 @@ public class HederaNetworkCommunicator {
      * @throws TimeoutException
      * @throws InterruptedException
      */
-    public static ERTAddressBook updateExchangeRateFile(final ExchangeRate exchangeRate,
+    public ERTAddressBook updateExchangeRateFile(final ExchangeRate exchangeRate,
                                                         final ExchangeRate midnightExchangeRate,
                                                         Client client,
                                                         ERTParams ertParams) throws TimeoutException, PrecheckStatusException {
@@ -157,7 +157,7 @@ public class HederaNetworkCommunicator {
      * @param memo
      * @throws Exception
      */
-    private static void updateExchangeRateFileTxn(ExchangeRate exchangeRate,
+    private void updateExchangeRateFileTxn(ExchangeRate exchangeRate,
                                                              FileId exchangeRateFileId,
                                                              byte[] exchangeRateAsBytes,
                                                              Client client,
@@ -186,7 +186,7 @@ public class HederaNetworkCommunicator {
      * @param exchangeRateAsBytes
      * @throws Exception
      */
-    private static void validateUpdate(Client client, FileId exchangeRateFileId, byte[] exchangeRateAsBytes) throws Exception {
+    private void validateUpdate(Client client, FileId exchangeRateFileId, byte[] exchangeRateAsBytes) throws Exception {
         final byte[] contentsRetrieved =  getFileContentsQuery(client, exchangeRateFileId);
 
         LOGGER.info("The contents retrieved has {} bytes and hash code {}",
@@ -202,7 +202,7 @@ public class HederaNetworkCommunicator {
      * we wait for some time to make sure our file update gets propagated into the network.
      * @param validationDelayInMilliseconds
      */
-    private static void waitForChangesToTakeEffect(long validationDelayInMilliseconds) throws InterruptedException {
+    private void waitForChangesToTakeEffect(long validationDelayInMilliseconds) throws InterruptedException {
         Thread.sleep(validationDelayInMilliseconds);
     }
 
@@ -213,7 +213,7 @@ public class HederaNetworkCommunicator {
      *          contents of the address book fetched from the Client
      * @throws Exception
      */
-    private static ERTAddressBook fetchAddressBook(Client client) throws Exception {
+    private ERTAddressBook fetchAddressBook(Client client) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "fetching the addressbook");
 
         final FileId addressBookFileId = FileId.fromString(ADDRESS_BOOK_FILE_ID);
@@ -240,7 +240,7 @@ public class HederaNetworkCommunicator {
      * @return contents of the file in byte{] format
      * @throws Exception
      */
-    private static byte[] getFileContentsQuery(Client client, FileId fileId) throws Exception {
+    private byte[] getFileContentsQuery(Client client, FileId fileId) throws Exception {
         final Hbar getContentsQueryFee = new FileContentsQuery()
                 .setFileId(fileId)
                 .getCost(client);
@@ -261,7 +261,7 @@ public class HederaNetworkCommunicator {
      * @param maxTransactoinFee
      * @return A Hedera Client or null if invalid inputs.
      */
-    public static Client buildClient(Map<String, AccountId> accountAddressMap,
+    public Client buildClient(Map<String, AccountId> accountAddressMap,
                                      AccountId operatorId,
                                      PrivateKey privateKey,
                                      Hbar maxTransactoinFee) {

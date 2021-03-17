@@ -76,9 +76,9 @@ import java.util.List;
  *  
  * @author Anirudh, Cesar
  */
-public class ERTproc {
+public class ERTProcessLogic {
 
-    private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
+    private static final Logger LOGGER = LogManager.getLogger(ERTProcessLogic.class);
 
     private final long bound;
     private final long floor;
@@ -88,7 +88,7 @@ public class ERTproc {
     private final long hbarEquiv;
     private final long frequencyInSeconds;
 
-    public ERTproc(final long hbarEquiv,
+    public ERTProcessLogic(final long hbarEquiv,
             final List<Exchange> exchanges,
             final long bound,
             final long floor,
@@ -184,7 +184,7 @@ public class ERTproc {
      * @param exchanges - list of Exchange objects that have exchange rates of HABR-USD
      * @return median of the exchange rates
      */
-    public Double calculateMedianRate(final List<Exchange> exchanges) throws Exception {
+    private Double calculateMedianRate(final List<Exchange> exchanges) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Computing median");
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "removing all invalid exchanges retrieved");
@@ -212,7 +212,7 @@ public class ERTproc {
         return findVolumeWeightedMedian(exchangeRates, exchangeVolumes);
     }
 
-    public Double findVolumeWeightedMedian(double[] exchangeRates, double[] exchangeVolumes) throws Exception {
+    protected Double findVolumeWeightedMedian(double[] exchangeRates, double[] exchangeVolumes) throws Exception {
         if( areRatesAndVolumesValid(exchangeRates, exchangeVolumes) ) {
             return findVolumeWeightedMedianAverage(exchangeRates, exchangeVolumes);
         } else {

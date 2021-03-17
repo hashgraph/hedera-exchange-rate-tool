@@ -134,7 +134,7 @@ public class ExchangeRateUtils {
 	 * Exchange int he config file.
 	 * @return List of Exchange objects.
 	 */
-	public List<Exchange> generateExchanges( final Map<String, String> exchangeApis) {
+	public static List<Exchange> generateExchanges( final Map<String, String> exchangeApis) {
 		List<Exchange> exchanges = new ArrayList<>();
 		final CoinFactory factory = new CoinFactory();
 

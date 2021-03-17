@@ -1,4 +1,4 @@
-package com.hedera.exchange;
+package com.hedera.exchange.api;
 
 /*-
  * ‌
@@ -59,6 +59,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.hedera.exchange.ExchangeRate;
+import com.hedera.exchange.Rate;
 import com.hedera.exchange.database.AWSDBParams;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.database.ExchangeRateAWSRD;

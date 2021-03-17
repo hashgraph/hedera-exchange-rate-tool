@@ -84,7 +84,8 @@ public class ExchangeRateTool {
     private static Set<String> updatedNetworks = new HashSet<>();
 
     public static void main(final String ... args) {
-        run(args);
+        ExchangeRateTool ert = new ExchangeRateTool();
+        ert.run(args);
     }
 
     /**
@@ -92,7 +93,7 @@ public class ExchangeRateTool {
      * mentioned in DEFAULT_RETRIES.
      * @param args
      */
-    private static void run(final String ... args) {
+    private void run(final String ... args) {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
         final int maxRetries = DEFAULT_RETRIES;
         int currentTries = 0;
@@ -123,7 +124,7 @@ public class ExchangeRateTool {
      * - Write the generated exchange rate files into the Database
      * @throws Exception
      */
-    private static void execute() throws Exception {
+    private void execute() throws Exception {
 
         final Map<String, Map<String, AccountId>> networks = ertParams.getNetworks();
 
@@ -131,11 +132,10 @@ public class ExchangeRateTool {
         final ExchangeRate midnightExchangeRate = exchangeDB.getLatestMidnightExchangeRate();
         final Rate currentRate = getCurrentRate(exchangeDB, ertParams);
         final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
-        final ExchangeRateUtils exchangeRateUtils = new ExchangeRateUtils();
 
-        final List<Exchange> exchanges = exchangeRateUtils.generateExchanges(ertParams.getExchangeAPIList());
+        final List<Exchange> exchanges = ExchangeRateUtils.generateExchanges(ertParams.getExchangeAPIList());
 
-        final ERTproc proc = new ERTproc(ertParams.getDefaultHbarEquiv(),
+        final ERTProcessLogic proc = new ERTProcessLogic(ertParams.getDefaultHbarEquiv(),
                 exchanges,
                 ertParams.getBound(),
                 ertParams.getFloor(),
@@ -164,13 +164,15 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
-    private static void updateTransactionFileForNetwork(final String networkName,
+    private void updateTransactionFileForNetwork(final String networkName,
             final AccountId operatorId,
             final ExchangeRate exchangeRate,
             final ExchangeRate midnightExchangeRate,
             final Map<String, Map<String, AccountId>> networks) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
                 networkName);
+
+        HederaNetworkCommunicator hnc = new HederaNetworkCommunicator();
 
         final PrivateKey privateOperatorKey =
                 PrivateKey.fromString(ertParams.getOperatorKey(networkName));
@@ -181,7 +183,7 @@ public class ExchangeRateTool {
                 getNodesForClient(ertAddressBookFromPreviousRun.getNodes()) :
                 networks.get(networkName);
 
-        try(final Client hederaClient = HederaNetworkCommunicator.buildClient(
+        try(final Client hederaClient = hnc.buildClient(
                 nodesForClient,
                 operatorId,
                 privateOperatorKey,
@@ -192,7 +194,7 @@ public class ExchangeRateTool {
                 throw new Exception("Couldn't Build a Hedera Client");
             }
 
-            final ERTAddressBook newAddressBook = HederaNetworkCommunicator.updateExchangeRateFile(
+            final ERTAddressBook newAddressBook = hnc.updateExchangeRateFile(
                     exchangeRate,
                     midnightExchangeRate,
                     hederaClient,
@@ -217,7 +219,7 @@ public class ExchangeRateTool {
      * @return Rate object
      * @throws Exception
      */
-    private static Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
+    private Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
         final ExchangeRate exchangeRate = exchangeDb.getLatestExchangeRate();
         if (exchangeRate != null) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
