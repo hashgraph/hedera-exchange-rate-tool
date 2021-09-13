@@ -165,7 +165,7 @@ public class HederaNetworkCommunicator {
                                                              String memo) throws TimeoutException,
             PrecheckStatusException, IOException, ReceiptStatusException {
         int retryCount = 0;
-        TransactionReceipt transactionReceipt = null;
+        TransactionReceipt transactionReceipt;
         while(true) {
             try {
                 LOGGER.info(Exchange.EXCHANGE_FILTER, "Pushing new ExchangeRate {}", exchangeRate.toJson());

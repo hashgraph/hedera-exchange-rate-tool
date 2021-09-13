@@ -247,14 +247,14 @@ public class ExchangeRateTool {
 
 
     public void setErtParams(ERTParams ertParams) {
-        ertParams = ertParams;
+        this.ertParams = ertParams;
     }
 
     public void setExchangeDB(ExchangeDB exchangeDB) {
-        exchangeDB = exchangeDB;
+        this.exchangeDB = exchangeDB;
     }
 
     public void setErtAddressBookFromPreviousRun(ERTAddressBook ertAddressBookFromPreviousRun) {
-        ertAddressBookFromPreviousRun = ertAddressBookFromPreviousRun;
+        this.ertAddressBookFromPreviousRun = ertAddressBookFromPreviousRun;
     }
 }
