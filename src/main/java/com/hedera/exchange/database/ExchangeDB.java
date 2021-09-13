@@ -55,27 +55,33 @@ package com.hedera.exchange.database;
 import com.hedera.exchange.ERTAddressBook;
 import com.hedera.exchange.ExchangeRate;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 public interface ExchangeDB {
 
-	ExchangeRate getLatestExchangeRate() throws Exception;
+	ExchangeRate getLatestExchangeRate() throws SQLException, IOException;
 
-	ExchangeRate getExchangeRate(long expirationTime) throws  Exception;
+	ExchangeRate getExchangeRate(long expirationTime) throws  SQLException, IOException;
 
-	ExchangeRate getLatestMidnightExchangeRate() throws Exception;
+	ExchangeRate getLatestMidnightExchangeRate() throws SQLException, IOException;
 
-	public String getQueriedRate(long expirationTime) throws Exception;
+	public String getQueriedRate(long expirationTime) throws SQLException;
 
-	public String getLatestQueriedRate() throws Exception;
+	public String getLatestQueriedRate() throws SQLException;
 
-	void pushExchangeRate(final ExchangeRate exchangeRate) throws Exception;
+	void pushExchangeRate(final ExchangeRate exchangeRate) throws SQLException, IOException;
 
-	void pushMidnightRate(final ExchangeRate exchangeRate) throws Exception;
+	void pushMidnightRate(final ExchangeRate exchangeRate) throws SQLException, IOException;
 
-	void pushQueriedRate(final long expirationTime, final String queriedRate) throws Exception;
+	void pushQueriedRate(final long expirationTime, final String queriedRate) throws SQLException;
 
-	ExchangeRate getMidnightExchangeRate(long expirationTime) throws Exception;
+	ExchangeRate getMidnightExchangeRate(long expirationTime) throws SQLException, IOException;
 
-	ERTAddressBook getLatestERTAddressBook(String networkName) throws Exception;
+	ERTAddressBook getLatestERTAddressBook(String networkName) throws SQLException, IOException;
 
-	void pushERTAddressBook(long expirationTime, final ERTAddressBook ertAddressBook, String networkName) throws Exception;
+	void pushERTAddressBook(
+			long expirationTime,
+			final ERTAddressBook ertAddressBook,
+			String networkName) throws SQLException, IOException;
 }

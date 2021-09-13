@@ -53,6 +53,7 @@ package com.hedera.exchange;
  */
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.AccountBalance;
@@ -65,18 +66,24 @@ import com.hedera.hashgraph.sdk.FileUpdateTransaction;
 import com.hedera.hashgraph.sdk.Hbar;
 import com.hedera.hashgraph.sdk.PrecheckStatusException;
 import com.hedera.hashgraph.sdk.PrivateKey;
+import com.hedera.hashgraph.sdk.ReceiptStatusException;
 import com.hedera.hashgraph.sdk.TransactionReceipt;
+import com.hedera.hashgraph.sdk.TransactionReceiptQuery;
 import com.hedera.hashgraph.sdk.TransactionResponse;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import static com.hedera.exchange.ExchangeRateTool.DEFAULT_RETRIES;
 import static com.hedera.hashgraph.sdk.Client.forNetwork;
+import static com.hedera.hashgraph.sdk.Status.EXCHANGE_RATE_CHANGE_LIMIT_EXCEEDED;
+import static com.hedera.hashgraph.sdk.Status.SUCCESS;
 
 /**
  * This Class provides File Update APIs of the Exchange Rate Tool.
@@ -102,7 +109,7 @@ public class HederaNetworkCommunicator {
     public ERTAddressBook updateExchangeRateFile(final ExchangeRate exchangeRate,
                                                         final ExchangeRate midnightExchangeRate,
                                                         Client client,
-                                                        ERTParams ertParams) throws TimeoutException, PrecheckStatusException {
+                                                        ERTParams ertParams) throws Exception {
 
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
         final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
@@ -121,30 +128,25 @@ public class HederaNetworkCommunicator {
                 .setAccountId(operatorId)
                 .execute(client);
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before the process of updating the Exchange Rate file: {}",
-                currentBalance);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before updating the Exchange Rate file: {}",
+                currentBalance.hbars.toString());
 
-        try {
+        ERTAddressBook newAddressBook = fetchAddressBook(client);
 
-            ERTAddressBook newAddressBook = fetchAddressBook(client);
+        updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo);
 
-            updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo);
-            waitForChangesToTakeEffect(ertParams.getValidationDelayInMilliseconds());
-            validateUpdate(client, exchangeRateFileId, exchangeRateAsBytes);
+        waitForChangesToTakeEffect(ertParams.getValidationDelayInMilliseconds());
 
-            final AccountBalance newBalance = new AccountBalanceQuery()
-                    .setAccountId(operatorId)
-                    .execute(client);
+        validateUpdate(client, exchangeRateFileId, exchangeRateAsBytes);
 
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the Exchange Rate file: {}", newBalance);
+        final AccountBalance newBalance = new AccountBalanceQuery()
+                .setAccountId(operatorId)
+                .execute(client);
 
-            return newAddressBook;
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the Exchange Rate file: {}",
+                newBalance.hbars.toString());
 
-        } catch (Exception e) {
-            LOGGER.error(Exchange.EXCHANGE_FILTER, e.getMessage());
-            client.close();
-        }
-        return new ERTAddressBook();
+        return newAddressBook;
     }
 
     /**
@@ -160,21 +162,59 @@ public class HederaNetworkCommunicator {
                                                              FileId exchangeRateFileId,
                                                              byte[] exchangeRateAsBytes,
                                                              Client client,
-                                                             String memo) throws Exception {
-        LOGGER.info(Exchange.EXCHANGE_FILTER,"Pushing new ExchangeRate {}", exchangeRate.toJson());
-        final TransactionResponse exchangeRateFileUpdateTransactionId = new FileUpdateTransaction()
-                .setFileId(exchangeRateFileId)
-                .setContents(exchangeRateAsBytes)
-                .setTransactionMemo(memo)
-                .execute(client);
+                                                             String memo) throws TimeoutException,
+            PrecheckStatusException, IOException, ReceiptStatusException {
+        int retryCount = 0;
+        TransactionReceipt transactionReceipt = null;
+        while(true) {
+            try {
+                LOGGER.info(Exchange.EXCHANGE_FILTER, "Pushing new ExchangeRate {}", exchangeRate.toJson());
+                final TransactionResponse response = new FileUpdateTransaction()
+                        .setFileId(exchangeRateFileId)
+                        .setContents(exchangeRate.toExchangeRateSet().toByteArray())
+                        .setTransactionMemo(memo)
+                        .execute(client);
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER,"Exchange rate file hash {} bytes and hash code {}",
-                exchangeRateAsBytes.length,
-                Arrays.hashCode(exchangeRateAsBytes));
+                LOGGER.info(Exchange.EXCHANGE_FILTER, "Exchange rate file hash {} bytes and hash code {}",
+                        exchangeRateAsBytes.length,
+                        Arrays.hashCode(exchangeRateAsBytes));
 
-        TransactionReceipt transactionReceipt = exchangeRateFileUpdateTransactionId.getReceipt(client);
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "First update has status {}",
-                transactionReceipt.status);
+                transactionReceipt = response.getReceipt(client);
+                if(transactionReceipt.status.toString().equals(SUCCESS.toString())) {
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "File update has status {}",
+                            SUCCESS.toString());
+                    return;
+                }
+            } catch (ReceiptStatusException ex) {
+                if(ex.receipt.status == EXCHANGE_RATE_CHANGE_LIMIT_EXCEEDED) {
+                    LOGGER.error(Exchange.EXCHANGE_FILTER, "ReceiptStatusException : {}", ex.getMessage());
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "Retrying with a new rate that is closer to rate in receipt.");
+
+                    transactionReceipt = ex.receipt;
+
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "{} update has status {}", retryCount,
+                            transactionReceipt.status);
+
+                    com.hedera.hashgraph.sdk.ExchangeRate activeRateFromReceipt = transactionReceipt.exchangeRate;
+
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "Exchange Rates from receipt {}",
+                            activeRateFromReceipt.toString());
+
+                    Rate activeRate = new Rate(activeRateFromReceipt.hbars,
+                            activeRateFromReceipt.cents,
+                            activeRateFromReceipt.expirationTime.getEpochSecond());
+
+                    exchangeRate = ExchangeRateUtils.calculateNewExchangeRate(activeRate, exchangeRate);
+
+                    if (++retryCount == DEFAULT_RETRIES) throw ex;
+                } else {
+                    throw ex;
+                }
+            } catch (PrecheckStatusException ex) {
+                LOGGER.error(Exchange.EXCHANGE_FILTER, "PrecheckStatusException : {}", ex.getMessage());
+                if( ++retryCount == DEFAULT_RETRIES ) throw ex;
+            }
+        }
     }
 
     /**

@@ -52,19 +52,113 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
+import com.hedera.exchange.database.ExchangeDB;
+import com.hedera.exchange.database.ExchangeRateAWSRD;
+import com.hedera.hashgraph.sdk.AccountId;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.hedera.exchange.ExchangeRateTool.DEFAULT_RETRIES;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ExchangeRateToolTestCases {
 
+	ExchangeRateTool mockERT;
+	String networkName;
+	Map<String, Map<String, AccountId>> networks;
+	AccountId operatorId;
+	ExchangeRate exchangeRate;
+	ExchangeRate midnightExchangeRate;
+	ERTParams ertParams;
+	ExchangeDB exchangeDB;
+	ERTAddressBook ertAddressBookFromPreviousRun;
+
+//	@Test
+//	public void doesRetryTest() throws Exception {
+//		//setup
+//		setup();
+//		doThrow(new Exception()).when(mockERT).fileUpdateTransactionForNetwork(
+//				networkName, operatorId, exchangeRate, midnightExchangeRate, networks);
+//
+//		//when
+//		mockERT.performFileUpdateOnNetwork(networkName,networks,operatorId,exchangeRate,midnightExchangeRate);
+//
+//		//assert
+//		verify(mockERT, times(DEFAULT_RETRIES)).fileUpdateTransactionForNetwork(
+//				networkName, operatorId, exchangeRate, midnightExchangeRate, networks
+//		);
+//	}
+
+	@Test
+	public void callsFileUpdateOnEachNetwork() throws Exception {
+		//given
+		mockSetup();
+
+		//when
+		mockERT.execute();
+
+		//then
+		verify(mockERT, times(1)).fileUpdateTransactionForNetwork(
+				"localHost",
+				AccountId.fromString("0.0.57"),
+				exchangeRate,
+				midnightExchangeRate,
+				networks.get("localHost")
+		);
+	}
+
+	private void mockSetup() throws IOException, SQLException {
+		ertParams = mock(ERTParams.class);
+		exchangeDB = mock(ExchangeRateAWSRD.class);
+
+		try (MockedStatic<ERTParams> mockParams = Mockito.mockStatic(ERTParams.class)) {
+			mockParams.when( () -> ERTParams.readConfig((String) any())).thenReturn(ertParams);
+		}
+		when(ertParams.getExchangeDB()).thenReturn(exchangeDB);
+
+		mockERT = new ExchangeRateTool();
+//		mockERT.setExchangeDB(exchangeDB);
+//		mockERT.setErtParams(ertParams);
+
+		networkName = "localHost";
+		operatorId = AccountId.fromString("0.0.57");
+		exchangeRate = new ExchangeRate(
+				new Rate(1, 10, 123456),
+				new Rate(1,11,128910)
+		);
+		midnightExchangeRate = new ExchangeRate(
+				new Rate(1, 9, 123456),
+				new Rate(1,10,128910)
+		);
+		networks = new HashMap<>() {{
+			put("localHost", new HashMap<>() {{
+				put("127.0.0.1:501211", AccountId.fromString("0.0.3"));
+			}});
+		}};
+		Map<String, String> exchangeAPIs = new HashMap<>() {{
+			put("bitrex", "https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=USD-HBAR");
+			put("okcoin", "https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker");
+			put("paybito", "https://trade.paybito.com/api/trades/HBAR_USD");
+		}};
+
+		when(ertParams.getNetworks()).thenReturn(networks);
+		when(ertParams.getFrequencyInSeconds()).thenReturn(3600L);
+		when(exchangeDB.getLatestMidnightExchangeRate()).thenReturn(midnightExchangeRate);
+		when(exchangeDB.getLatestExchangeRate()).thenReturn(exchangeRate);
+		when(ertParams.getOperatorId()).thenReturn("0.0.57");
+		when(ertParams.getExchangeAPIList()).thenReturn(exchangeAPIs);
+
+	}
 
 }
