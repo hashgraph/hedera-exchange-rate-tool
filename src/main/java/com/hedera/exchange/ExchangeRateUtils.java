@@ -93,6 +93,8 @@ public class ExchangeRateUtils {
 
 	private static final Logger LOGGER = LogManager.getLogger(ExchangeRateUtils.class);
 	private static final Map<String, Class<? extends ExchangeCoin>> EXCHANGES = new HashMap<>();
+	private static final int MILLI_SECS_IN_ONE_HOUR = 3_600_000;
+	private static final int MILLI_SECS_IN_ONE_SEC = 1_000;
 
 	static {
 		EXCHANGES.put("bitrex", Bitrex.class);
@@ -136,7 +138,7 @@ public class ExchangeRateUtils {
 	 * Exchange int he config file.
 	 * @return List of Exchange objects.
 	 */
-	public static List<Exchange> generateExchanges( final Map<String, String> exchangeAPIs) {
+	public static List<Exchange> generateExchanges(final Map<String, String> exchangeAPIs) {
 		List<Exchange> exchanges = new ArrayList<>();
 		final CoinFactory factory = new CoinFactory();
 
@@ -181,7 +183,7 @@ public class ExchangeRateUtils {
 	 * AccountID - string map so that, it can be used in hedera client directly.
 	 * @return
 	 */
-	public static Map<String, AccountId> getNodesForClient(Map<String, String> nodes) {
+	public static Map<String, AccountId> getNodesForClient(final Map<String, String> nodes) {
 		final Map<String, AccountId> accountToNodeAddresses = new HashMap<>();
 		for (final Map.Entry<String, String> node : nodes.entrySet()) {
 			final AccountId nodeId = AccountId.fromString(node.getKey());
@@ -198,9 +200,9 @@ public class ExchangeRateUtils {
 	 */
 	public static long getCurrentExpirationTime() {
 		final long currentTime = System.currentTimeMillis();
-		final long currentHourOnTheDot = currentTime - (currentTime % 3_600_000);
-		final long currentExpirationTime = currentHourOnTheDot + 3_600_000;
-		return currentExpirationTime / 1000;
+		final long currentHourOnTheDot = currentTime - (currentTime % MILLI_SECS_IN_ONE_HOUR);
+		final long currentExpirationTime = currentHourOnTheDot + MILLI_SECS_IN_ONE_HOUR;
+		return currentExpirationTime / MILLI_SECS_IN_ONE_SEC;
 	}
 
 	/**

@@ -157,7 +157,7 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
-    protected int fileUpdateTransactionForNetwork(
+    protected void fileUpdateTransactionForNetwork(
             final String networkName,
             final AccountId operatorId,
             final ExchangeRate exchangeRate,
@@ -166,7 +166,7 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
                 networkName);
 
-        HederaNetworkCommunicator hnc = new HederaNetworkCommunicator();
+        final HederaNetworkCommunicator hnc = new HederaNetworkCommunicator();
 
         final PrivateKey privateOperatorKey =
                 PrivateKey.fromString(ertParams.getOperatorKey(networkName));
@@ -211,19 +211,18 @@ public class ExchangeRateTool {
                                 networkName
                         );
                     }
-                    return 0;
+                    return;
                 } catch (Exception ex) {
                     currentTries++;
                     LOGGER.error(Exchange.EXCHANGE_FILTER,
-                            "Failed to execute at try {}/{} with exception {} on network {}. Retrying",
+                            "Failed to execute at try {}/{} on network {}. Retrying. {}",
                             currentTries,
                             maxRetries,
-                            ex.getMessage(),
-                            networkName);
+                            networkName,
+                            ex);
                 }
             }
         }
-        return 1;
     }
 
     /**
@@ -234,7 +233,7 @@ public class ExchangeRateTool {
      * @return Rate object
      * @throws Exception
      */
-    private Rate getCurrentRate (final ExchangeDB exchangeDb, final ERTParams params) throws SQLException, IOException {
+    private Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws SQLException, IOException {
         final ExchangeRate exchangeRate = exchangeDb.getLatestExchangeRate();
         if (exchangeRate != null) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
@@ -245,16 +244,11 @@ public class ExchangeRateTool {
         return params.getDefaultRate();
     }
 
-
-    public void setErtParams(ERTParams ertParams) {
+    public void setErtParams(final ERTParams ertParams) {
         this.ertParams = ertParams;
     }
 
-    public void setExchangeDB(ExchangeDB exchangeDB) {
+    public void setExchangeDB(final ExchangeDB exchangeDB) {
         this.exchangeDB = exchangeDB;
-    }
-
-    public void setErtAddressBookFromPreviousRun(ERTAddressBook ertAddressBookFromPreviousRun) {
-        this.ertAddressBookFromPreviousRun = ertAddressBookFromPreviousRun;
     }
 }

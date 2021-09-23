@@ -333,20 +333,6 @@ public class ERTParams {
         return this.frequencyInSeconds;
     }
 
-//    /**
-//     * Return the network nodes ERT is sending the ERT file update to.
-//     * @return Map of Node's AccountID to its IpAddress.
-//     */
-//    public Map<AccountId, String> getNodes() {
-//        final Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
-//        for (final Map.Entry<String, String> node : this.nodes.entrySet()) {
-//            final AccountId nodeId = AccountId.fromString(node.getKey());
-//            accountToNodeAddresses.put(nodeId, node.getValue());
-//        }
-//
-//        return accountToNodeAddresses;
-//    }
-
     /**
      * Return the networks ERT is sending the ERT file update to.
      * @return Map of Network name and its Node's AccountID to its IpAddress.
