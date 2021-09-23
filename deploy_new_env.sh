@@ -166,7 +166,7 @@ echo "URI for configuration file: ${CONFIG_URI}"
 
 echo "Encrypting password"
 
-KMS_KEY_ID="b475550c-0a43-440e-bf05-d045d6ce3803"
+KMS_KEY_ID=<paste_KMS_key_ID_here>
 
 
 ENCRYPTED_PASSWORD=$(aws kms encrypt \
@@ -239,7 +239,7 @@ LAMBDA_ARN=$(aws lambda create-function \
               --handler com.hedera.exchange.ExchangeRateTool::main \
               --publish \
               --memory-size 1024 \
-              --role arn:aws:iam::772706802921:role/service-role/test \
+              --role <role_here> \
               --timeout 60 \
               --zip-file fileb://"${FILE_URI}" \
               --environment "Variables={DEFAULT_CONFIG_URI=${ENCRYPTED_CONFIG_URI},DATABASE=${ENCRYPTED_DATABASE},ENDPOINT=${ENCRYPTED_JDBC_ENDPOINT},OPERATOR_KEY=${ENCRYPTED_OPERATOR_KEY},USERNAME=${ENCRYPTED_USERNAME},PASSWORD=${ENCRYPTED_PASSWORD}}" \
@@ -290,7 +290,7 @@ LAMBDA_API_ARN=$(aws lambda create-function \
               --handler com.hedera.exchange.ExchangeRateApi::getLatest \
               --publish \
               --memory-size 1024 \
-              --role arn:aws:iam::772706802921:role/service-role/test \
+              --role <role_here> \
               --timeout 60 \
               --zip-file fileb://"${FILE_URI}" \
               --environment "Variables={DATABASE=${ENCRYPTED_DATABASE},ENDPOINT=${ENCRYPTED_JDBC_ENDPOINT},USERNAME=${ENCRYPTED_USERNAME},PASSWORD=${ENCRYPTED_PASSWORD}}" \
