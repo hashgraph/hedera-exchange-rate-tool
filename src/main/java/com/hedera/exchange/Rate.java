@@ -133,7 +133,7 @@ public class Rate {
                     nextRate.toJson(), this.toJson());
             return true;
         } else {
-            LOGGER.warn("Calculated median {} is Valid with Midnight Rate as {}",
+            LOGGER.warn("Calculated median {} is Invalid with Midnight Rate as {}",
                     nextRate.toJson(), this.toJson());
             return false;
         }
