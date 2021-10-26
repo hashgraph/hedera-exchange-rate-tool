@@ -52,22 +52,22 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.Client;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.Hbar;
 import com.hedera.hashgraph.sdk.PrivateKey;
+import com.hedera.hashgraph.sdk.ReceiptStatusException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 import static com.hedera.exchange.ExchangeRateUtils.getNodesForClient;
 
@@ -79,11 +79,11 @@ import static com.hedera.exchange.ExchangeRateUtils.getNodesForClient;
  */
 public class ExchangeRateTool {
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
+
     static final int DEFAULT_RETRIES = 4;
 
     private ERTParams ertParams;
     private ExchangeDB exchangeDB;
-    private ERTAddressBook ertAddressBookFromPreviousRun;
 
     public static void main(final String ... args) {
         ExchangeRateTool ert = new ExchangeRateTool();
@@ -102,7 +102,10 @@ public class ExchangeRateTool {
             exchangeDB = ertParams.getExchangeDB();
             execute();
         } catch (Exception ex) {
-            LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute with exception : {}", ex.getMessage());
+            var subject = "ERT Run Failed";
+            var message = ex.getMessage() + "\n";
+            LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
+            ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex));
         }
     }
 
@@ -113,9 +116,14 @@ public class ExchangeRateTool {
      * - perform the FIle Update transaction
      * - check if the transaction was successful
      * - Write the generated exchange rate files into the Database
-     * @throws Exception
+     * @throws IOException
+     *          Throws IOException when the retrieved content from DB is not parsable.
+     * @throws SQLException
+     *          Throws SQL Exception when it failed to retrieve exchange rates from DB.
+     * @throws TimeoutException
+     *          Throws Timeout Exception when unable to complete a Hedera Transaction with in the timeout.
      */
-    protected void execute() throws Exception {
+    protected void execute() throws IOException, SQLException, TimeoutException {
 
         final Map<String, Map<String, AccountId>> networks = ertParams.getNetworks();
 
@@ -162,15 +170,17 @@ public class ExchangeRateTool {
             final AccountId operatorId,
             final ExchangeRate exchangeRate,
             final ExchangeRate midnightExchangeRate,
-            final Map<String, AccountId> nodesFromConfig) throws Exception {
+            final Map<String, AccountId> nodesFromConfig) throws IOException, SQLException, TimeoutException {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
                 networkName);
+        ERTNotificationHelper.publishMessage(
+                "TestMessage : Running ERT on " + networkName, "Test");
 
-        final HederaNetworkCommunicator hnc = new HederaNetworkCommunicator();
+        final HederaNetworkCommunicator hnc = new HederaNetworkCommunicator(networkName);
 
         final PrivateKey privateOperatorKey =
                 PrivateKey.fromString(ertParams.getOperatorKey(networkName));
-        ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
+        final ERTAddressBook ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
 
         final Map<String, AccountId> nodesForClient = ertAddressBookFromPreviousRun != null &&
                 !getNodesForClient(ertAddressBookFromPreviousRun.getNodes()).isEmpty() ?
@@ -189,7 +199,9 @@ public class ExchangeRateTool {
 
             if (hederaClient == null) {
                 LOGGER.error(Exchange.EXCHANGE_FILTER, "Error while building a Hedera Client");
-                throw new Exception("Couldn't Build a Hedera Client");
+                var subject = String.format("Couldn't Build a Hedera Client on %s", networkName);
+                ERTNotificationHelper.publishMessage(subject, "Retrying..");
+                throw new IllegalStateException(subject);
             }
 
             final int maxRetries = DEFAULT_RETRIES;
@@ -212,7 +224,15 @@ public class ExchangeRateTool {
                         );
                     }
                     return;
-                } catch (Exception ex) {
+                }
+                catch (ReceiptStatusException rex) {
+                    // Only retry if its not ReceiptStatusException as it is already handled in
+                    // HederaNetworkCommunicator.updateExchangeRateFileTxn
+                    LOGGER.error(Exchange.EXCHANGE_FILTER,
+                            "Failed to update the network withe calculated rates with 4 retries.");
+                    return;
+                }
+                catch (Exception ex) {
                     currentTries++;
                     LOGGER.error(Exchange.EXCHANGE_FILTER,
                             "Failed to execute at try {}/{} on network {}. Retrying. {}",
@@ -228,10 +248,15 @@ public class ExchangeRateTool {
     /**
      * Get the current Exchange Rate from the database.
      * If not found, get the default rate from the config file.
-     * @param exchangeDb Database class that we are using.
-     * @param params ERTParams object to read the config file.
+     * @param exchangeDb
+     *          Database class that we are using.
+     * @param params
+     *          ERTParams object to read the config file.
      * @return Rate object
-     * @throws Exception
+     * @throws IOException
+     *          Throws IOException when the retrieved content from DB is not parsable.
+     * @throws SQLException
+     *          Throws SQL Exception when it failed to retrieve exchange rates from DB.
      */
     private Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws SQLException, IOException {
         final ExchangeRate exchangeRate = exchangeDb.getLatestExchangeRate();
@@ -242,13 +267,5 @@ public class ExchangeRateTool {
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Using default exchange rate as current exchange rate");
         return params.getDefaultRate();
-    }
-
-    public void setErtParams(final ERTParams ertParams) {
-        this.ertParams = ertParams;
-    }
-
-    public void setExchangeDB(final ExchangeDB exchangeDB) {
-        this.exchangeDB = exchangeDB;
     }
 }

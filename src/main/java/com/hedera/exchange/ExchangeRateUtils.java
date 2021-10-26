@@ -55,6 +55,8 @@ package com.hedera.exchange;
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
 import com.amazonaws.services.kms.model.DecryptRequest;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.util.Base64;
 import com.hedera.exchange.exchanges.Binance;
 import com.hedera.exchange.exchanges.Bitrex;
@@ -89,7 +91,7 @@ import java.util.Map;
  *
  * @author Anirudh, Cesar
  */
-public class ExchangeRateUtils {
+public final class ExchangeRateUtils {
 
 	private static final Logger LOGGER = LogManager.getLogger(ExchangeRateUtils.class);
 	private static final Map<String, Class<? extends ExchangeCoin>> EXCHANGES = new HashMap<>();
@@ -106,6 +108,10 @@ public class ExchangeRateUtils {
 		EXCHANGES.put("paybito", PayBito.class);
 	}
 
+	private ExchangeRateUtils() {
+		throw new UnsupportedOperationException("Utility class");
+	}
+
 	/**
 	 * Get the decrypted Environment variable set in AWS
 	 * for example: the DB endpoint, username, password to access the Database, config file path etc..
@@ -118,7 +124,7 @@ public class ExchangeRateUtils {
 		return getDecryptedValueFromAWS(environmentValue, lambdaFunctionName);
 	}
 
-	public static String getDecryptedValueFromAWS(final String value, final String lambdaFunctionName) {
+	static String getDecryptedValueFromAWS(final String value, final String lambdaFunctionName) {
 		Map<String, String> encryptionContext = new HashMap<>();
 		encryptionContext.put("LambdaFunctionName", lambdaFunctionName);
 		final byte[] encryptedKey = Base64.decode(value);
@@ -164,7 +170,7 @@ public class ExchangeRateUtils {
 	 * @param addressBook
 	 * @return Map<String, String> nodeId --> IPaddress
 	 */
-	public static Map<String, String> getNodesFromAddressBook(NodeAddressBook addressBook) {
+	public static Map<String, String> getNodesFromAddressBook(final NodeAddressBook addressBook) {
 		Map<String, String> nodes =  new HashMap<>();
 		for(NodeAddress address : addressBook.getNodeAddressList()){
 			String nodeId = address.getMemo().toStringUtf8();
@@ -227,7 +233,7 @@ public class ExchangeRateUtils {
 	 *      the positive weight for each value, with higher having more influence
 	 * @return the weighted median
 	 */
-	public static double findVolumeWeightedMedianAverage(double[] values, double[] weights) throws IOException {
+	public static double findVolumeWeightedMedianAverage(final double[] values, final double[] weights) throws IOException {
 		int numberOfElements = values.length;
 		double weightOfValueJustBelowMiddle;
 		double weightOfValueJustAboveMiddle;

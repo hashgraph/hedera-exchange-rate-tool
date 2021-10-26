@@ -52,6 +52,13 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.internal.StaticCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.AmazonSNSException;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
@@ -65,6 +72,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hedera.exchange.ERTNotificationHelper.LOGGER;
+import static com.hedera.exchange.ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -77,9 +86,9 @@ class ExchangeRateUtilsTestCases {
 	void verifyNodesFromAddressBook() throws IOException {
 		setupAddressBook();
 
-		final Map<String, String> ERTnodes = ExchangeRateUtils.getNodesFromAddressBook(addressBook);
-		for( String node : ERTnodes.keySet()){
-			assertEquals(ERTnodes.get(node), nodes.get(node),
+		final Map<String, String> nodesFromAddressBook = ExchangeRateUtils.getNodesFromAddressBook(addressBook);
+		for( String node : nodesFromAddressBook.keySet()){
+			assertEquals(nodesFromAddressBook.get(node), nodes.get(node),
 					"Nodes from AddressBook are not loaded correctly");
 		}
 	}

@@ -202,11 +202,15 @@ public class ERTParams {
 
     /**
      * Read Config file from the Amazon S3 bucket
-     * @param endpoint - url for the config file in the amazon s3 bucket.
+     * @param endpoint
+     *          url for the config file in the amazon s3 bucket.
      * @return ERTParams object
+     * @throws IllegalArgumentException
+     *          Throws IllegalArgumentException if the endpoint provided is not found.
      * @throws IOException
+     *          Throws IOException failed to read the config file.
      */
-    private static ERTParams readConfigFromAWSS3(final String endpoint) throws IOException {
+    private static ERTParams readConfigFromAWSS3(final String endpoint) throws IllegalArgumentException, IOException{
         LOGGER.info("Reading configuration file from AWS S3: {}", endpoint);
         final String[] s3Params = endpoint.split("/");
         if (s3Params.length < 3) {
@@ -221,17 +225,19 @@ public class ERTParams {
     /**
      * Helper method to read config file from the s3 bucket once you have the url to the file in the s3 bucket.
      * @param bucketName
+     *          The S3 bucket to read config file from
      * @param key
+     *          Name of the config file
      * @return ERTParams object
      * @throws IOException
+     *          Throws IOException when failed to parse the config file.
      */
     private static ERTParams readConfigFromAWSS3(final String bucketName, final String key) throws IOException {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Reading configuration from S3 bucket: {} and key {}", bucketName, key);
         final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
 
         try (final S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key))) {
-            final ERTParams ertParams = OBJECT_MAPPER.readValue(fullObject.getObjectContent(), ERTParams.class);
-            return ertParams;
+            return OBJECT_MAPPER.readValue(fullObject.getObjectContent(), ERTParams.class);
         }
     }
 
@@ -256,9 +262,12 @@ public class ERTParams {
     /**
      * Helper method to read config file from the Google Cloud storage
      * @param bucketName
+     *          The GCP bucket to read config file from
      * @param srcFileName
+     *          Name of the config file
      * @return ERTParams object
      * @throws IOException
+     *          Throws IOException when failed to parse the config file.
      */
     private static ERTParams readConfigFromGCP(final String bucketName, final String srcFileName) throws IOException {
         final Storage storage = StorageOptions.getDefaultInstance().getService();
@@ -271,6 +280,7 @@ public class ERTParams {
     /**
      * Read the config file from a local path.
      * @param configFilePath
+     *          The config file path
      * @return ERTParams object
      */
     public static ERTParams readConfig(final String configFilePath) {
@@ -296,6 +306,7 @@ public class ERTParams {
      * Converts the ERTParams object into a Json string using OBJECT_MAPPER
      * @return Json String
      * @throws JsonProcessingException
+     *      Throw when failed to parse json as string.
      */
     public String toJson() throws JsonProcessingException {
         return OBJECT_MAPPER.writeValueAsString(this);

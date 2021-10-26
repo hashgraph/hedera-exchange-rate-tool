@@ -57,7 +57,6 @@ import com.hedera.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -174,6 +173,7 @@ public class ERTProcessLogic {
      * Return the list of exchanges that worked in json string format using OBJECT_MAPPER
      * @return Json String
      * @throws JsonProcessingException
+     *          Throws when failed to parse Json as String.
      */
     public String getExchangeJson() throws JsonProcessingException {
         return Exchange.OBJECT_MAPPER.writeValueAsString(exchanges);
