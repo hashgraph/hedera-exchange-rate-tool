@@ -46,22 +46,6 @@
         <junit.vintage.version>5.8.0-RC1</junit.vintage.version>
         <jmockit.version>1.48</jmockit.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <!-- SonarCloud properties -->
-        <jacoco.version>0.8.7</jacoco.version>
-        <sonar.version>3.9.0.2155</sonar.version>
-
-        <sonar.organization>hashgraph</sonar.organization>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.language>java</sonar.language>
-        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-        <sonar.issue.ignore.multicriteria>e1,e2</sonar.issue.ignore.multicriteria>
-        <!-- for license header -->
-        <sonar.issue.ignore.multicriteria.e1.resourceKey>**/*.java</sonar.issue.ignore.multicriteria.e1.resourceKey>
-        <sonar.issue.ignore.multicriteria.e1.ruleKey>java:S125</sonar.issue.ignore.multicriteria.e1.ruleKey>
-        <!-- for deprecated code, mostly protobufs, to support backward compatibility for clients -->
-        <sonar.issue.ignore.multicriteria.e2.resourceKey>**/*.java</sonar.issue.ignore.multicriteria.e2.resourceKey>
-        <sonar.issue.ignore.multicriteria.e2.ruleKey>java:S1874</sonar.issue.ignore.multicriteria.e2.ruleKey>
     </properties>
 
 
