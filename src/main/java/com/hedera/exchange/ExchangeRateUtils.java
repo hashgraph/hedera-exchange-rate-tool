@@ -164,7 +164,7 @@ public class ExchangeRateUtils {
 	 * @param addressBook
 	 * @return Map<String, String> nodeId --> IPaddress
 	 */
-	public static Map<String, String> getNodesFromAddressBook(NodeAddressBook addressBook) {
+	public static Map<String, String> getNodesFromAddressBook(final NodeAddressBook addressBook) {
 		Map<String, String> nodes =  new HashMap<>();
 		for(NodeAddress address : addressBook.getNodeAddressList()){
 			String nodeId = address.getMemo().toStringUtf8();
