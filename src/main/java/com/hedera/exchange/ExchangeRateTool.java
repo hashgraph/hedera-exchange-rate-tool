@@ -52,18 +52,24 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.Client;
-import com.hedera.hashgraph.sdk.account.AccountId;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.exchanges.Exchange;
-import com.hedera.hashgraph.sdk.crypto.ed25519.Ed25519PrivateKey;
+import com.hedera.hashgraph.sdk.Hbar;
+import com.hedera.hashgraph.sdk.PrivateKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.hedera.exchange.ExchangeRateUtils.getNodesForClient;
 
 
 /**
@@ -73,15 +79,15 @@ import java.util.Set;
  */
 public class ExchangeRateTool {
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
-    private static final int DEFAULT_RETRIES = 4;
+    static final int DEFAULT_RETRIES = 4;
 
-    private static ERTParams ertParams;
-    private static ExchangeDB exchangeDB;
-    private static ERTAddressBook ertAddressBookFromPreviousRun;
-    private static Set<String> updatedNetworks = new HashSet<>();
+    private ERTParams ertParams;
+    private ExchangeDB exchangeDB;
+    private ERTAddressBook ertAddressBookFromPreviousRun;
 
     public static void main(final String ... args) {
-        run(args);
+        ExchangeRateTool ert = new ExchangeRateTool();
+        ert.run(args);
     }
 
     /**
@@ -89,26 +95,15 @@ public class ExchangeRateTool {
      * mentioned in DEFAULT_RETRIES.
      * @param args
      */
-    private static void run(final String ... args) {
+    protected void run(final String ... args) {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
-        final int maxRetries = DEFAULT_RETRIES;
-        int currentTries = 0;
-        while (currentTries <  maxRetries) {
-            try {
-                ertParams = ERTParams.readConfig(args);
-                exchangeDB = ertParams.getExchangeDB();
-                execute();
-                return;
-            } catch (final Exception ex) {
-                ex.printStackTrace();
-                currentTries++;
-                LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute at try {}/{} with exception {}. Retrying", currentTries, maxRetries, ex);
-            }
+        try {
+            ertParams = ERTParams.readConfig(args);
+            exchangeDB = ertParams.getExchangeDB();
+            execute();
+        } catch (Exception ex) {
+            LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to execute with exception : {}", ex.getMessage());
         }
-
-        final String errorMessage = String.format("Failed to execute after %d retries", maxRetries);
-        LOGGER.error(Exchange.EXCHANGE_FILTER, errorMessage);
-        throw new RuntimeException(errorMessage);
     }
 
     /**
@@ -120,19 +115,19 @@ public class ExchangeRateTool {
      * - Write the generated exchange rate files into the Database
      * @throws Exception
      */
-    private static void execute() throws Exception {
+    protected void execute() throws Exception {
 
-        final Map<String, Map<AccountId, String>> networks = ertParams.getNetworks();
+        final Map<String, Map<String, AccountId>> networks = ertParams.getNetworks();
 
         final long frequencyInSeconds = ertParams.getFrequencyInSeconds();
         final ExchangeRate midnightExchangeRate = exchangeDB.getLatestMidnightExchangeRate();
         final Rate currentRate = getCurrentRate(exchangeDB, ertParams);
         final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
-        final ExchangeRateUtils exchangeRateUtils = new ExchangeRateUtils();
 
-        final List<Exchange> exchanges = exchangeRateUtils.generateExchanges(ertParams.getExchangeAPIList());
+        final List<Exchange> exchanges = ExchangeRateUtils.generateExchanges(ertParams.getExchangeAPIList());
 
-        final ERTproc proc = new ERTproc(ertParams.getDefaultHbarEquiv(),
+        final ERTProcessLogic proc = new ERTProcessLogic(
+                ertParams.getDefaultHbarEquiv(),
                 exchanges,
                 ertParams.getBound(),
                 ertParams.getFloor(),
@@ -143,15 +138,16 @@ public class ExchangeRateTool {
         final ExchangeRate exchangeRate = proc.call();
 
         for(final String networkName : networks.keySet()) {
-
-            if (updatedNetworks.contains(networkName)) {
-                continue;
-            }
-
-            updateTransactionFileForNetwork(networkName, operatorId, exchangeRate, midnightExchangeRate, networks);
+            fileUpdateTransactionForNetwork(
+                    networkName,
+                    operatorId,
+                    exchangeRate,
+                    midnightExchangeRate,
+                    networks.get(networkName));
         }
 
         exchangeDB.pushExchangeRate(exchangeRate);
+
         if (exchangeRate.isMidnightTime()) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
             exchangeDB.pushMidnightRate(exchangeRate);
@@ -161,51 +157,72 @@ public class ExchangeRateTool {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
-    private static void updateTransactionFileForNetwork(final String networkName,
+    protected void fileUpdateTransactionForNetwork(
+            final String networkName,
             final AccountId operatorId,
             final ExchangeRate exchangeRate,
             final ExchangeRate midnightExchangeRate,
-            final Map<String, Map<AccountId, String>> networks) throws Exception {
+            final Map<String, AccountId> nodesFromConfig) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
                 networkName);
 
-        final Ed25519PrivateKey privateOperatorKey =
-                Ed25519PrivateKey.fromString(ertParams.getOperatorKey(networkName));
+        final HederaNetworkCommunicator hnc = new HederaNetworkCommunicator();
+
+        final PrivateKey privateOperatorKey =
+                PrivateKey.fromString(ertParams.getOperatorKey(networkName));
         ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
 
-        final Map<AccountId, String> nodesForClient = ertAddressBookFromPreviousRun != null &&
-                !ertAddressBookFromPreviousRun.getNodes().isEmpty() ?
-                ertAddressBookFromPreviousRun.getNodes() :
-                networks.get(networkName);
+        final Map<String, AccountId> nodesForClient = ertAddressBookFromPreviousRun != null &&
+                !getNodesForClient(ertAddressBookFromPreviousRun.getNodes()).isEmpty() ?
+                getNodesForClient(ertAddressBookFromPreviousRun.getNodes()) :
+                nodesFromConfig;
 
-        try(final Client hederaClient = HederaNetworkCommunicator.buildClient(
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Building a Hedera Client with nodes {} \n Account {}",
+                nodesForClient,
+                operatorId);
+
+        try(final Client hederaClient = hnc.buildClient(
                 nodesForClient,
                 operatorId,
                 privateOperatorKey,
-                ertParams.getMaxTransactionFee())) {
+                Hbar.from(ertParams.getMaxTransactionFee()))) {
 
             if (hederaClient == null) {
                 LOGGER.error(Exchange.EXCHANGE_FILTER, "Error while building a Hedera Client");
                 throw new Exception("Couldn't Build a Hedera Client");
             }
 
-            final ERTAddressBook newAddressBook = HederaNetworkCommunicator.updateExchangeRateFile(
-                    exchangeRate,
-                    midnightExchangeRate,
-                    hederaClient,
-                    ertParams
-            );
+            final int maxRetries = DEFAULT_RETRIES;
+            int currentTries = 0;
+            while (currentTries <  maxRetries) {
+                try {
 
-            exchangeDB.pushERTAddressBook(
-                    exchangeRate.getNextExpirationTimeInSeconds(),
-                    newAddressBook,
-                    networkName
-            );
-        } catch(Exception ex) {
-            LOGGER.warn(Exchange.EXCHANGE_FILTER, "Error while updating exchange rate file", ex);
+                    final ERTAddressBook newAddressBook = hnc.updateExchangeRateFile(
+                            exchangeRate,
+                            midnightExchangeRate,
+                            hederaClient,
+                            ertParams
+                    );
+
+                    if(!newAddressBook.getNodes().isEmpty()) {
+                        exchangeDB.pushERTAddressBook(
+                                exchangeRate.getNextExpirationTimeInSeconds(),
+                                newAddressBook,
+                                networkName
+                        );
+                    }
+                    return;
+                } catch (Exception ex) {
+                    currentTries++;
+                    LOGGER.error(Exchange.EXCHANGE_FILTER,
+                            "Failed to execute at try {}/{} on network {}. Retrying. {}",
+                            currentTries,
+                            maxRetries,
+                            networkName,
+                            ex);
+                }
+            }
         }
-
-        updatedNetworks.add(networkName);
     }
 
     /**
@@ -216,7 +233,7 @@ public class ExchangeRateTool {
      * @return Rate object
      * @throws Exception
      */
-    private static Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws Exception {
+    private Rate getCurrentRate(final ExchangeDB exchangeDb, final ERTParams params) throws SQLException, IOException {
         final ExchangeRate exchangeRate = exchangeDb.getLatestExchangeRate();
         if (exchangeRate != null) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Using latest exchange rate as current exchange rate");
@@ -225,5 +242,13 @@ public class ExchangeRateTool {
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Using default exchange rate as current exchange rate");
         return params.getDefaultRate();
+    }
+
+    public void setErtParams(final ERTParams ertParams) {
+        this.ertParams = ertParams;
+    }
+
+    public void setExchangeDB(final ExchangeDB exchangeDB) {
+        this.exchangeDB = exchangeDB;
     }
 }

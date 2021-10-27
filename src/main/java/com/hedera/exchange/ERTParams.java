@@ -66,7 +66,7 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.hedera.hashgraph.sdk.account.AccountId;
+import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.exchange.database.AWSDBParams;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.database.ExchangeRateAWSRD;
@@ -334,30 +334,16 @@ public class ERTParams {
     }
 
     /**
-     * Return the network nodes ERT is sending the ERT file update to.
-     * @return Map of Node's AccountID to its IpAddress.
-     */
-    public Map<AccountId, String> getNodes() {
-        final Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
-        for (final Map.Entry<String, String> node : this.nodes.entrySet()) {
-            final AccountId nodeId = AccountId.fromString(node.getKey());
-            accountToNodeAddresses.put(nodeId, node.getValue());
-        }
-
-        return accountToNodeAddresses;
-    }
-
-    /**
      * Return the networks ERT is sending the ERT file update to.
      * @return Map of Network name and its Node's AccountID to its IpAddress.
      */
-    public Map<String, Map<AccountId, String>> getNetworks() {
-        final Map<String, Map<AccountId, String>> networkAddresses = new HashMap<>();
+    public Map<String, Map<String, AccountId>> getNetworks() {
+        final Map<String, Map<String, AccountId>> networkAddresses = new HashMap<>();
         for(final Map.Entry<String, Map<String, String>> network : this.networks.entrySet()) {
-            Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
+            Map<String, AccountId> accountToNodeAddresses = new HashMap<>();
             for( final Map.Entry<String, String> node : network.getValue().entrySet()) {
                 final AccountId nodeId = AccountId.fromString(node.getKey());
-                accountToNodeAddresses.put(nodeId, node.getValue());
+                accountToNodeAddresses.put(node.getValue(), nodeId);
             }
             networkAddresses.put(network.getKey(), accountToNodeAddresses);
         }
@@ -412,7 +398,7 @@ public class ERTParams {
      * @return
      */
     public Rate getDefaultRate() {
-        return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, this.getCurrentExpirationTime());
+        return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, ExchangeRateUtils.getCurrentExpirationTime());
     }
 
     /**
@@ -421,19 +407,6 @@ public class ERTParams {
      */
     public long getValidationDelayInMilliseconds() {
         return this.validationDelayInMilliseconds;
-    }
-
-    /**
-     * Get the EPOC time of the end of the current hour in seconds in UTC.
-     * for example, say the current date and time is October 31st 2019, 10:34 AM
-     * then currentExpirationTime will be 1572537600 in UTC
-     * @return
-     */
-    public static long getCurrentExpirationTime() {
-        final long currentTime = System.currentTimeMillis();
-        final long currentHourOnTheDot = currentTime - (currentTime % 3_600_000);
-        final long currentExpirationTime = currentHourOnTheDot + 3_600_000;
-        return currentExpirationTime / 1000;
     }
 
     /**

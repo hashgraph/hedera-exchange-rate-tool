@@ -76,9 +76,9 @@ import java.util.List;
  *  
  * @author Anirudh, Cesar
  */
-public class ERTproc {
+public class ERTProcessLogic {
 
-    private static final Logger LOGGER = LogManager.getLogger(ERTproc.class);
+    private static final Logger LOGGER = LogManager.getLogger(ERTProcessLogic.class);
 
     private final long bound;
     private final long floor;
@@ -88,7 +88,7 @@ public class ERTproc {
     private final long hbarEquiv;
     private final long frequencyInSeconds;
 
-    public ERTproc(final long hbarEquiv,
+    public ERTProcessLogic(final long hbarEquiv,
             final List<Exchange> exchanges,
             final long bound,
             final long floor,
@@ -115,7 +115,7 @@ public class ERTproc {
 
         try {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
-            currentExchangeRate.setExpirationTime(ERTParams.getCurrentExpirationTime());
+            currentExchangeRate.setExpirationTime(ExchangeRateUtils.getCurrentExpirationTime());
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next hour as current expiration time :{}",
                     currentExchangeRate.getExpirationTimeInSeconds());
             final long nextExpirationTimeInSeconds = currentExchangeRate.getExpirationTimeInSeconds() + frequencyInSeconds;
@@ -184,7 +184,7 @@ public class ERTproc {
      * @param exchanges - list of Exchange objects that have exchange rates of HABR-USD
      * @return median of the exchange rates
      */
-    public Double calculateMedianRate(final List<Exchange> exchanges) throws Exception {
+    private Double calculateMedianRate(final List<Exchange> exchanges) throws Exception {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Computing median");
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "removing all invalid exchanges retrieved");
@@ -212,9 +212,9 @@ public class ERTproc {
         return findVolumeWeightedMedian(exchangeRates, exchangeVolumes);
     }
 
-    public Double findVolumeWeightedMedian(double[] exchangeRates, double[] exchangeVolumes) throws Exception {
+    protected Double findVolumeWeightedMedian(double[] exchangeRates, double[] exchangeVolumes) throws Exception {
         if( areRatesAndVolumesValid(exchangeRates, exchangeVolumes) ) {
-            return findVolumeWeightedMedianAverage(exchangeRates, exchangeVolumes);
+            return ExchangeRateUtils.findVolumeWeightedMedianAverage(exchangeRates, exchangeVolumes);
         } else {
             return null;
         }
@@ -227,65 +227,5 @@ public class ERTproc {
             return false;
         }
         return true;
-    }
-
-
-    /**
-     * Return the weighted median of the given values, using the given weights.
-     *
-     * The algorithm is equivalent to the following. Draw a bar chart, where bar
-     * number i has height value[i] and width weight[i]. At the top edge of each
-     * bar, draw a dot in the middle. Connect the dots with straight lines. Find
-     * the middle of the X axis: the height of the curve above that point is the
-     * weighted median.
-     *
-     * This differs from the algorithm by Edgeworth in 1888. That algorithm simply
-     * returns the height of the bar that is above the midpoint. That is fine if
-     * there are many data points. But it can be bad if there are very few bars,
-     * and they differ greatly in height. The algorithm used here returns a
-     * weighted average of that bar's height and it's neighbor's height, which is
-     * often a better fit to the intuitive notion of a good "representative value".
-     *
-     * @param values
-     *      the values for which the median should be found. These must be sorted ascending.
-     * @param weights
-     *      the positive weight for each value, with higher having more influence
-     * @return the weighted median
-     */
-    private double findVolumeWeightedMedianAverage(double[] values, double[] weights) throws Exception {
-        int numberOfElements = values.length;
-        double weightOfValueJustBelowMiddle;
-        double weightOfValueJustAboveMiddle;
-        double weightedAverage;
-        double totalWeight = 0;
-        double currentWeightSum;
-        double nextWeightSum;
-        double valueJustBelowMiddle;
-        double valueJustAboveMiddle;
-
-        for (int i = 0; i < numberOfElements; i++) {
-            totalWeight += weights[i];
-        }
-        final double targetWeight = totalWeight / 2.0;
-        currentWeightSum = weights[0] / 2;
-
-        for (int index = 0; index < numberOfElements; index++) {
-            nextWeightSum = currentWeightSum + (weights[index] + (index + 1 >= numberOfElements ? 0 : weights[index + 1])) / 2.0;
-            if (nextWeightSum > targetWeight) {
-                valueJustBelowMiddle = values[index];
-                valueJustAboveMiddle = index + 1 >= numberOfElements ? 0 : values[index + 1];
-                weightOfValueJustBelowMiddle = nextWeightSum - targetWeight;
-                weightOfValueJustAboveMiddle = targetWeight - currentWeightSum;
-                weightedAverage = (valueJustBelowMiddle * weightOfValueJustBelowMiddle +
-                        valueJustAboveMiddle * weightOfValueJustAboveMiddle) /
-                        (weightOfValueJustBelowMiddle + weightOfValueJustAboveMiddle);
-                return weightedAverage;
-            }
-            currentWeightSum = nextWeightSum;
-        }
-
-        LOGGER.error(Exchange.EXCHANGE_FILTER, "This should never Happen. Given values are : \n Rates = " +
-                Arrays.toString(values) + "\n Volumes = " + Arrays.toString(weights));
-        throw new Exception("Couldn't find weighted median with the given values");
     }
 }

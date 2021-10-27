@@ -1,4 +1,4 @@
-package com.hedera.exchange;
+package com.hedera.exchange.api;
 
 /*-
  * ‌
@@ -52,51 +52,62 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.junit.jupiter.api.Test;
+import com.hedera.exchange.ExchangeRate;
+import com.hedera.exchange.database.AWSDBParams;
+import com.hedera.exchange.database.ExchangeDB;
+import com.hedera.exchange.database.ExchangeRateAWSRD;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import com.hedera.hashgraph.proto.NodeAddressBook;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+/**
+ * This class implements an API that one can trigger using an AWS lambda for example and get the latest Exchange rate file
+ * from the database.
+ *
+ * @author Anirudh, Cesar
+ */
+public class ExchangeRateAPI {
 
-public class ExchangeRateToolTestCases {
-    private Map<String, String> nodes =  new HashMap<>();
-    private NodeAddressBook addressBook;
+	private static Map<String, String> HEADERS = new HashMap<>();
 
-    @Test
-    public void verifyNodesFromAddressBook() throws IOException {
-        setup();
+	static {
+		HEADERS.put("Access-Control-Allow-Origin", "*");
+	}
 
-        Map<String, String> ERTnodes = ExchangeRateUtils.getNodesFromAddressBook(addressBook);
-        for( String node : ERTnodes.keySet()){
-            assertEquals(ERTnodes.get(node), nodes.get(node));
-        }
-    }
+	public static LambdaResponse getLatest() throws Exception {
+		final ExchangeDB exchangeDb = new ExchangeRateAWSRD(new AWSDBParams());
+		final ExchangeRate latestExchangeRate = exchangeDb.getLatestExchangeRate();
+		if (latestExchangeRate == null) {
+			return new LambdaResponse(200, "No exchange rate available yet");
+		}
 
-    public void setup() throws IOException {
-        File addressBookFile = new File("src/test/resources/addressBook.bin");
-        FileInputStream fis = new FileInputStream(addressBookFile);
-        byte[] content = new byte[(int) addressBookFile.length()];
-        fis.read(content);
-        addressBook = NodeAddressBook.parseFrom(content);
+		return new LambdaResponse(200, latestExchangeRate.toJson());
+	}
 
-        nodes.put("0.0.3", "35.237.182.66:50211");
-        nodes.put("0.0.4", "35.245.226.22:50211");
-        nodes.put("0.0.5", "34.68.9.203:50211");
-        nodes.put("0.0.6", "34.83.131.197:50211");
-        nodes.put("0.0.7", "34.94.236.63:50211");
-        nodes.put("0.0.8", "35.203.26.115:50211");
-        nodes.put("0.0.9", "34.77.3.213:50211");
-        nodes.put("0.0.10", "35.197.237.44:50211");
-        nodes.put("0.0.11", "35.246.250.176:50211");
-        nodes.put("0.0.12", "34.90.117.105:50211");
-        nodes.put("0.0.13", "35.200.57.21:50211");
-        nodes.put("0.0.14", "34.92.120.143:50211");
-        nodes.put("0.0.15", "34.87.47.168:50211");
-    }
+	public static class LambdaResponse {
+		private int statusCode;
 
+		private String body;
+
+		LambdaResponse(final int statusCode, final String body) {
+			this.statusCode = statusCode;
+			this.body = body;
+		}
+
+		public int getStatusCode() {
+			return statusCode;
+		}
+
+		public String getBody() {
+			return body;
+		}
+
+		public boolean isBase64Encoded() {
+			return false;
+		}
+
+		public Map<String, String> getHeaders() {
+			return HEADERS;
+		}
+	}
 }

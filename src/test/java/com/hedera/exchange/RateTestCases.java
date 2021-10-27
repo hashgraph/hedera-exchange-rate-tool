@@ -52,6 +52,7 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -106,7 +107,7 @@ public class RateTestCases {
 	}
 
 	@Test
-	public void isSmallChangeCheck(){
+	public void isSmallChangeCheck() throws JsonProcessingException {
 		int bound = 27;
 		Rate midnightRate = new Rate(30000, 120000, 1568592000);
 

@@ -44,6 +44,7 @@
 		<!-- </File> -->
 	</Appenders>
 	<Loggers>
+		<Logger name="com.hedera.hashgraph.sdk" level="TRACE"/>
 		<Root level="INFO">
 			<AppenderRef ref="fileLog"/>
 			<AppenderRef ref="Lambda" />

@@ -56,7 +56,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hedera.hashgraph.sdk.account.AccountId;
+import com.hedera.hashgraph.sdk.AccountId;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -110,17 +110,7 @@ public class ERTAddressBook {
         this.nodes = nodes;
     }
 
-    /**
-     * Converts the string - string mapping of node id and address in the addressbook to
-     * AccountID - string map so that, it can be used in hedera client directly.
-     * @return
-     */
-    public Map<AccountId, String> getNodes() {
-        final Map<AccountId, String> accountToNodeAddresses = new HashMap<>();
-        for (final Map.Entry<String, String> node : this.nodes.entrySet()) {
-            final AccountId nodeId = AccountId.fromString(node.getKey());
-            accountToNodeAddresses.put(nodeId, node.getValue());
-        }
-        return accountToNodeAddresses;
+    public Map<String, String> getNodes() {
+        return nodes;
     }
 }

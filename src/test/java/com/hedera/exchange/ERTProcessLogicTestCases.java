@@ -59,7 +59,7 @@ import com.hedera.exchange.exchanges.Coinbase;
 import com.hedera.exchange.exchanges.Liquid;
 import com.hedera.exchange.exchanges.OkCoin;
 import com.hedera.exchange.exchanges.PayBito;
-import com.hedera.hashgraph.proto.ExchangeRateSet;
+import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -72,7 +72,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ERTprocTestCases {
+public class ERTProcessLogicTestCases {
 
     @ParameterizedTest
     @CsvSource({"src/test/resources/configs/config.json,360000,288000",
@@ -82,7 +82,7 @@ public class ERTprocTestCases {
         List<Exchange> exchanges = this.setExchanges();
 
         final ERTParams params = ERTParams.readConfig(configPath);
-        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+        final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 exchanges,
                 params.getBound(),
                 params.getFloor(),
@@ -111,7 +111,7 @@ public class ERTprocTestCases {
         List<Exchange> exchanges = this.setExchanges();
 
         final ERTParams params = ERTParams.readConfig(configPath);
-        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+        final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 exchanges,
                 params.getBound(),
                 params.getFloor(),
@@ -148,12 +148,12 @@ public class ERTprocTestCases {
         final String exchangesInJson = bitrexValue == 0.0 ? "[]" : String.format("[{\"volume\":1000.0," +
                 "\"Query\":\"https://api.bittrex.com/api/v1.1/public/getticker?market=USD-HBAR\"," +
                 "\"HBAR\":%.1f}]", bitrexValue);
-        final long currentExpirationInSeconds = ERTParams.getCurrentExpirationTime();
+        final long currentExpirationInSeconds = ExchangeRateUtils.getCurrentExpirationTime();
         final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
         final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
 
         final ERTParams params = ERTParams.readConfig(configPath);
-        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+        final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 justBitrexExchange,
                 params.getBound(),
                 params.getFloor(),
@@ -184,10 +184,10 @@ public class ERTprocTestCases {
     public void testFloor(String configPath, long currentCentEquiv, long expectedCentEquiv) throws IOException, IllegalAccessException, InstantiationException {
         List<Exchange> exchanges = this.setFloorExchanges();
         final ERTParams params = ERTParams.readConfig(configPath);
-        final Rate currentRate = new Rate(30000, currentCentEquiv,ERTParams.getCurrentExpirationTime());
-        final Rate midnightRate = new Rate(30000, currentCentEquiv,ERTParams.getCurrentExpirationTime());
+        final Rate currentRate = new Rate(30000, currentCentEquiv,ExchangeRateUtils.getCurrentExpirationTime());
+        final Rate midnightRate = new Rate(30000, currentCentEquiv,ExchangeRateUtils.getCurrentExpirationTime());
 
-        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+        final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 exchanges,
                 params.getBound(),
                 params.getFloor(),
@@ -212,7 +212,7 @@ public class ERTprocTestCases {
     public void testWeightedMedian() throws Exception {
         final ERTParams params = ERTParams.readConfig("src/test/resources/configs/config.json");
         List<Exchange> emptyList = new ArrayList<>();
-        final ERTproc ertProcess = new ERTproc(params.getDefaultHbarEquiv(),
+        final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 emptyList,
                 params.getBound(),
                 params.getFloor(),

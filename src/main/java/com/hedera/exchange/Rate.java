@@ -121,13 +121,20 @@ public class Rate {
      * @param nextRate :calculated from the median of exchange rates
      * @return true or false weather the next rate is with in the bound.
      */
-    public boolean isSmallChange(final long bound, final Rate nextRate){
+    public boolean isSmallChange(final long bound, final Rate nextRate) throws JsonProcessingException {
 
-        if (this.isSmallChange(bound, this.getCentEquiv(), this.getHBarEquiv(), nextRate.getCentEquiv(), nextRate.getHBarEquiv())){
-            LOGGER.debug("Median ({}, {}) is Valid", nextRate.getHBarEquiv(), nextRate.getCentEquiv());
+        if (isSmallChange(
+                bound,
+                this.getCentEquiv(),
+                this.getHBarEquiv(),
+                nextRate.getCentEquiv(),
+                nextRate.getHBarEquiv())){
+            LOGGER.debug("Calculated median {} is Valid with Midnight Rate as {}",
+                    nextRate.toJson(), this.toJson());
             return true;
         } else {
-            LOGGER.error("Median ({},{}) is Invalid.", nextRate.getHBarEquiv(), nextRate.getCentEquiv());
+            LOGGER.warn("Calculated median {} is Invalid with Midnight Rate as {}",
+                    nextRate.toJson(), this.toJson());
             return false;
         }
     }
