@@ -6,7 +6,7 @@
 
     <groupId>com.hedera</groupId>
     <artifactId>hedera-exchange-rate-tool</artifactId>
-    <version>0.0.1</version>
+    <version>0.1.0</version>
     <name>Hedera Exchange Rate Tool</name>
 
     <description>
@@ -52,6 +52,7 @@
         <amazonaws-sns.version>1.12.73</amazonaws-sns.version>
         <hedera-java-sdk.version>2.2.0</hedera-java-sdk.version>
     </properties>
+
 
     <!-- Dependencies -->
     <dependencies>

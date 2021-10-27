@@ -170,6 +170,9 @@ public class ERTProcessLogicTestCases {
             final long expectedCentEquiv,
             final double bitrexValue) throws Exception {
         List<Exchange> justBitrexExchange = this.setOnlyBitrex(bitrexValue);
+        final String exchangesInJson = bitrexValue == 0.0 ? "[]" : String.format("[{\"volume\":1000.0," +
+                "\"Query\":\"https://api.bittrex.com/api/v1.1/public/getticker?market=USD-HBAR\"," +
+                "\"HBAR\":%.1f}]", bitrexValue);
         final long currentExpirationInSeconds = ExchangeRateUtils.getCurrentExpirationTime();
         final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
         final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
