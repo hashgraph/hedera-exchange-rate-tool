@@ -173,8 +173,8 @@ public final class ExchangeRateUtils {
 	public static Map<String, String> getNodesFromAddressBook(final NodeAddressBook addressBook) {
 		Map<String, String> nodes =  new HashMap<>();
 		for(NodeAddress address : addressBook.getNodeAddressList()){
-			String nodeId = address.getMemo().toStringUtf8();
-			String nodeAddress = address.getIpAddress().toStringUtf8();
+			final String nodeId = address.getMemo().toStringUtf8();
+			final String nodeAddress = address.getIpAddress().toStringUtf8();
 			if(!nodes.containsKey(nodeId)) {
 				nodes.put(nodeId, nodeAddress + ":50211");
 			}
@@ -234,7 +234,7 @@ public final class ExchangeRateUtils {
 	 * @return the weighted median
 	 */
 	public static double findVolumeWeightedMedianAverage(final double[] values, final double[] weights) throws IOException {
-		int numberOfElements = values.length;
+		final int numberOfElements = values.length;
 		double weightOfValueJustBelowMiddle;
 		double weightOfValueJustAboveMiddle;
 		double weightedAverage;

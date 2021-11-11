@@ -76,7 +76,7 @@ public final class ERTNotificationHelper {
 	 * @param message
 	 * 			Content of the Email
 	 */
-	public static void publishMessage(String subject, String message) {
+	public static void publishMessage(final String subject, final String message) {
 		try {
 			final AmazonSNSClient SNS_CLIENT = (AmazonSNSClient) AmazonSNSClientBuilder.standard()
 					.withRegion(Regions.US_EAST_2)

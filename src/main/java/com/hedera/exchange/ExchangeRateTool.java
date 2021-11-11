@@ -104,8 +104,8 @@ public class ExchangeRateTool {
             exchangeDB = ertParams.getExchangeDB();
             execute();
         } catch (Exception ex) {
-            var subject = "ERT Run Failed";
-            var message = ex.getMessage() + "\n";
+            final var subject = "ERT Run Failed";
+            final var message = ex.getMessage() + "\n";
             LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
             ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex));
         }
@@ -201,7 +201,7 @@ public class ExchangeRateTool {
 
             if (hederaClient == null) {
                 LOGGER.error(Exchange.EXCHANGE_FILTER, "Error while building a Hedera Client");
-                var subject = String.format("Couldn't Build a Hedera Client on %s", networkName);
+                final var subject = String.format("Couldn't Build a Hedera Client on %s", networkName);
                 ERTNotificationHelper.publishMessage(subject, "Retrying..");
                 throw new IllegalStateException(subject);
             }
