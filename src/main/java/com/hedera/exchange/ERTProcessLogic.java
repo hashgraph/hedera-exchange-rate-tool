@@ -114,7 +114,7 @@ public class ERTProcessLogic {
 
         try {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
-            currentExchangeRate.setExpirationTime(ExchangeRateUtils.getCurrentExpirationTime());
+            currentExchangeRate.setExpirationTime(ERTUtils.getCurrentExpirationTime());
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next hour as current expiration time :{}",
                     currentExchangeRate.getExpirationTimeInSeconds());
             final long nextExpirationTimeInSeconds = currentExchangeRate.getExpirationTimeInSeconds() + frequencyInSeconds;
@@ -214,7 +214,7 @@ public class ERTProcessLogic {
 
     protected Double findVolumeWeightedMedian(double[] exchangeRates, double[] exchangeVolumes) throws Exception {
         if( areRatesAndVolumesValid(exchangeRates, exchangeVolumes) ) {
-            return ExchangeRateUtils.findVolumeWeightedMedianAverage(exchangeRates, exchangeVolumes);
+            return ERTUtils.findVolumeWeightedMedianAverage(exchangeRates, exchangeVolumes);
         } else {
             return null;
         }

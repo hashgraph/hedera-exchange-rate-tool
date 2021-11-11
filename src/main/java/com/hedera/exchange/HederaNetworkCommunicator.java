@@ -244,7 +244,7 @@ public class HederaNetworkCommunicator {
                             activeRateFromReceipt.expirationTime.getEpochSecond());
 
 
-                    exchangeRate = ExchangeRateUtils.calculateNewExchangeRate(activeRate, exchangeRate);
+                    exchangeRate = ERTUtils.calculateNewExchangeRate(activeRate, exchangeRate);
 
                     if (++retryCount == DEFAULT_RETRIES) {
                         throw ex;
@@ -324,7 +324,7 @@ public class HederaNetworkCommunicator {
 
         Map<String, String> addressBookNodes = new HashMap<>();
         if (addressBook.getNodeAddressCount() > 0) {
-            addressBookNodes = ExchangeRateUtils.getNodesFromAddressBook(addressBook);
+            addressBookNodes = ERTUtils.getNodesFromAddressBook(addressBook);
         } else {
             LOGGER.warn(Exchange.EXCHANGE_FILTER, "didnt find any addresses in the address book.");
         }

@@ -180,7 +180,7 @@ public class ERTParams {
      * @return ERTParams object
      */
     private static ERTParams readDefaultConfig(String awsInstanceAddress) throws IOException {
-        final String defaultConfigUri = ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
+        final String defaultConfigUri = ERTUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
         ERTParams ertParams = readConfigFromAWSS3(defaultConfigUri);
 
         Set<String> nodeNames = ertParams.nodes.keySet();
@@ -196,7 +196,7 @@ public class ERTParams {
      * @throws IOException
      */
     private static ERTParams readDefaultConfig() throws IOException {
-        final String defaultConfigUri = ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
+        final String defaultConfigUri = ERTUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
         return readConfigFromAWSS3(defaultConfigUri);
     }
 
@@ -401,7 +401,7 @@ public class ERTParams {
 
     @JsonIgnore
     public String getOperatorKey(String networkName) {
-        return ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY_" + networkName);
+        return ERTUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY_" + networkName);
     }
 
     /**
@@ -409,7 +409,7 @@ public class ERTParams {
      * @return
      */
     public Rate getDefaultRate() {
-        return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, ExchangeRateUtils.getCurrentExpirationTime());
+        return new Rate(this.defaultHbarEquiv, this.defaultCentEquiv, ERTUtils.getCurrentExpirationTime());
     }
 
     /**

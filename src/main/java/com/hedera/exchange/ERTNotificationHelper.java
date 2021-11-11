@@ -60,7 +60,7 @@ import com.hedera.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static com.hedera.exchange.ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS;
+import static com.hedera.exchange.ERTUtils.getDecryptedEnvironmentVariableFromAWS;
 
 public final class ERTNotificationHelper {
 	public static final Logger LOGGER = LogManager.getLogger(ERTNotificationHelper.class);
@@ -81,7 +81,7 @@ public final class ERTNotificationHelper {
 			final AmazonSNSClient SNS_CLIENT = (AmazonSNSClient) AmazonSNSClientBuilder.standard()
 					.withRegion(Regions.US_EAST_2)
 					.build();
-			final String SNS_ARN = getDecryptedEnvironmentVariableFromAWS("ARN");
+			final String SNS_ARN = getDecryptedEnvironmentVariableFromAWS("SNS_ARN");
 			SNS_CLIENT.publish(SNS_ARN, message, subject);
 			SNS_CLIENT.shutdown();
 		} catch (AmazonSNSException ex) {
