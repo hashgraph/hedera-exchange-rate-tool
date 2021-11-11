@@ -80,16 +80,16 @@ import static org.mockito.Mockito.when;
 public class ERTProcessLogicTestCases {
     private String testARN = "arn:aws:sns:us-east-2:525755363515:ERT-PreProd";
 
-    MockedStatic<ExchangeRateUtils> mockedExchangeRateUtils;
+    MockedStatic<ERTUtils> mockedExchangeRateUtils;
     MockedStatic<ERTNotificationHelper> mockedNotificationHelper;
 
     @BeforeEach
     void setUp() {
-        mockedExchangeRateUtils = Mockito.mockStatic(ExchangeRateUtils.class);
+        mockedExchangeRateUtils = Mockito.mockStatic(ERTUtils.class);
         mockedExchangeRateUtils.when(
-                () -> ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS(any())).thenReturn(testARN);
+                () -> ERTUtils.getDecryptedEnvironmentVariableFromAWS(any())).thenReturn(testARN);
         mockedExchangeRateUtils.when(
-                () -> ExchangeRateUtils.findVolumeWeightedMedianAverage(any(), any())).thenCallRealMethod();
+                () -> ERTUtils.findVolumeWeightedMedianAverage(any(), any())).thenCallRealMethod();
         mockedNotificationHelper = Mockito.mockStatic(ERTNotificationHelper.class);
     }
 
@@ -173,7 +173,7 @@ public class ERTProcessLogicTestCases {
         final String exchangesInJson = bitrexValue == 0.0 ? "[]" : String.format("[{\"volume\":1000.0," +
                 "\"Query\":\"https://api.bittrex.com/api/v1.1/public/getticker?market=USD-HBAR\"," +
                 "\"HBAR\":%.1f}]", bitrexValue);
-        final long currentExpirationInSeconds = ExchangeRateUtils.getCurrentExpirationTime();
+        final long currentExpirationInSeconds = ERTUtils.getCurrentExpirationTime();
         final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
         final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
 
@@ -209,8 +209,8 @@ public class ERTProcessLogicTestCases {
     public void testFloor(String configPath, long currentCentEquiv, long expectedCentEquiv) throws IOException {
         List<Exchange> exchanges = this.setFloorExchanges();
         final ERTParams params = ERTParams.readConfig(configPath);
-        final Rate currentRate = new Rate(30000, currentCentEquiv,ExchangeRateUtils.getCurrentExpirationTime());
-        final Rate midnightRate = new Rate(30000, currentCentEquiv,ExchangeRateUtils.getCurrentExpirationTime());
+        final Rate currentRate = new Rate(30000, currentCentEquiv, ERTUtils.getCurrentExpirationTime());
+        final Rate midnightRate = new Rate(30000, currentCentEquiv, ERTUtils.getCurrentExpirationTime());
 
         final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 exchanges,

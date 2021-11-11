@@ -115,9 +115,9 @@ public class RateTestCases {
 	public void isSmallChangeCheck() throws JsonProcessingException {
 		String testARN = "arn:aws:sns:us-east-2:525755363515:ERT-PreProd";
 
-		MockedStatic<ExchangeRateUtils> mockedExchangeRateUtils = Mockito.mockStatic(ExchangeRateUtils.class);
+		MockedStatic<ERTUtils> mockedExchangeRateUtils = Mockito.mockStatic(ERTUtils.class);
 		mockedExchangeRateUtils.when(
-				() -> ExchangeRateUtils.getDecryptedEnvironmentVariableFromAWS(any())).thenReturn(testARN);
+				() -> ERTUtils.getDecryptedEnvironmentVariableFromAWS(any())).thenReturn(testARN);
 		MockedStatic<ERTNotificationHelper> mockedNotificationHelper = Mockito.mockStatic(ERTNotificationHelper.class);
 
 
