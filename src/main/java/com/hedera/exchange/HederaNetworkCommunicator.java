@@ -68,6 +68,7 @@ import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.ReceiptStatusException;
 import com.hedera.hashgraph.sdk.TransactionReceipt;
 import com.hedera.hashgraph.sdk.TransactionResponse;
+import com.hedera.hashgraph.sdk.proto.FileServiceGrpc;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
@@ -194,11 +195,20 @@ public class HederaNetworkCommunicator {
             final Client client,
             final String memo)
             throws TimeoutException, PrecheckStatusException, IOException, ReceiptStatusException {
-        int retryCount = 0;
+        int retryCount = 1;
         TransactionReceipt transactionReceipt;
         while(true) {
             try {
                 LOGGER.info(Exchange.EXCHANGE_FILTER, "Pushing new ExchangeRate {}", exchangeRate.toJson());
+                try {
+                    ERTUtils.KSMSign(exchangeRateFileId, exchangeRate.toExchangeRateSet().toByteArray());
+                    // sign the FileUpdateTransaction
+                    // use the signed txn bytes to send file update using fileUpdate grpc
+                    
+                } catch (Exception e) {
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "failed to sign : " + ExceptionUtils.getStackTrace(e));
+                    return;
+                }
                 final TransactionResponse response = new FileUpdateTransaction()
                         .setFileId(exchangeRateFileId)
                         .setContents(exchangeRate.toExchangeRateSet().toByteArray())
@@ -246,7 +256,7 @@ public class HederaNetworkCommunicator {
 
                     exchangeRate = ERTUtils.calculateNewExchangeRate(activeRate, exchangeRate);
 
-                    if (++retryCount == DEFAULT_RETRIES) {
+                    if (retryCount++ == DEFAULT_RETRIES) {
                         throw ex;
                     }
                 } else {
@@ -256,7 +266,7 @@ public class HederaNetworkCommunicator {
                 var subject = String.format("%s : PreCheckStatusException : %s", networkName, ex.status);
                 LOGGER.error(Exchange.EXCHANGE_FILTER, subject);
                 ERTNotificationHelper.publishMessage(subject, ExceptionUtils.getStackTrace(ex));
-                if( ++retryCount == DEFAULT_RETRIES ) {
+                if( retryCount++ == DEFAULT_RETRIES ) {
                     throw ex;
                 }
             }
