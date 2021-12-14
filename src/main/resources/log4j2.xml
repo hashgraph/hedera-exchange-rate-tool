@@ -24,7 +24,7 @@
 	</Filters>
 	<Appenders>
 		<Console name="Console" target="SYSTEM_OUT">
-			<PatternLayout pattern="%d{HH:mm:ss.SSS} %6r %t %msg{nolookups}%n"/>
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} %6r %t %msg%n"/>
 		</Console>
 		<RandomAccessFile immediateFlush="true" name="fileLog" fileName="/tmp/exchange.log" append="true">
 			<PatternLayout>
