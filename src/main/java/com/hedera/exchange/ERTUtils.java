@@ -136,30 +136,6 @@ public final class ERTUtils {
 		return getDecryptedValueFromAWS(environmentValue, lambdaFunctionName);
 	}
 
-	public static void KSMSign(final FileId fileId, byte[] data) {
-		final AWSKMS client = AWSKMSClientBuilder.defaultClient();
-		final String OPERATOR_KEY_ARN = ERTUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY_ARN");
-		LOGGER.info(Exchange.EXCHANGE_FILTER,"got the Operator key ARN : " + OPERATOR_KEY_ARN);
-
-		final TransactionBody fileUpdateTxnBody = TransactionBody.newBuilder()
-				.setFileUpdate(
-						FileUpdateTransactionBody.newBuilder()
-								.setContents(ByteString.copyFrom(data))
-								.setFileID(FileID.newBuilder().setFileNum(fileId.num).build())
-								.build()
-				).build();
-
-
-
-		final SignRequest signRequest = new SignRequest()
-				.withKeyId(OPERATOR_KEY_ARN)
-				.withMessage(ByteBuffer.wrap(data))
-				.withSigningAlgorithm(RSASSA_PKCS1_V1_5_SHA_512);
-
-		final SignResult signResult = client.sign(signRequest);
-		LOGGER.info(Exchange.EXCHANGE_FILTER, "successfully signed the exchangeRateFile bytes. " + signResult);
-	}
-
 	static String getDecryptedValueFromAWS(final String value, final String lambdaFunctionName) {
 		Map<String, String> encryptionContext = new HashMap<>();
 		encryptionContext.put("LambdaFunctionName", lambdaFunctionName);

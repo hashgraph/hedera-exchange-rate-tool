@@ -200,15 +200,7 @@ public class HederaNetworkCommunicator {
         while(true) {
             try {
                 LOGGER.info(Exchange.EXCHANGE_FILTER, "Pushing new ExchangeRate {}", exchangeRate.toJson());
-                try {
-                    ERTUtils.KSMSign(exchangeRateFileId, exchangeRate.toExchangeRateSet().toByteArray());
-                    // sign the FileUpdateTransaction
-                    // use the signed txn bytes to send file update using fileUpdate grpc
-                    
-                } catch (Exception e) {
-                    LOGGER.info(Exchange.EXCHANGE_FILTER, "failed to sign : " + ExceptionUtils.getStackTrace(e));
-                    return;
-                }
+
                 final TransactionResponse response = new FileUpdateTransaction()
                         .setFileId(exchangeRateFileId)
                         .setContents(exchangeRate.toExchangeRateSet().toByteArray())
