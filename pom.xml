@@ -46,7 +46,7 @@
         <junit.vintage.version>5.8.0-RC1</junit.vintage.version>
         <jmockit.version>1.48</jmockit.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <log4j.version>2.16.0</log4j.version>
+        <log4j.version>2.17.0</log4j.version>
     </properties>
 
 
