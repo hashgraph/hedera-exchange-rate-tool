@@ -110,10 +110,10 @@ public class ERTProcessLogic {
      * @return ExchangeRate object
      */
     public ExchangeRate call() {
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Start of ERT Logic");
+        LOGGER.debug(Exchange.EXCHANGE_FILTER, "Start of ERT Logic");
 
         try {
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
+            LOGGER.debug(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
             currentExchangeRate.setExpirationTime(ERTUtils.getCurrentExpirationTime());
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next hour as current expiration time :{}",
                     currentExchangeRate.getExpirationTimeInSeconds());
@@ -185,9 +185,9 @@ public class ERTProcessLogic {
      * @return median of the exchange rates
      */
     private Double calculateMedianRate(final List<Exchange> exchanges) throws Exception {
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Computing median");
+        LOGGER.debug(Exchange.EXCHANGE_FILTER, "Computing median");
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "removing all invalid exchanges retrieved");
+        LOGGER.debug(Exchange.EXCHANGE_FILTER, "removing all invalid exchanges retrieved");
         exchanges.removeIf(x -> x == null || x.getHBarValue() == null || x.getHBarValue() == 0.0);
 
         if(exchanges.size() == 0){
@@ -197,7 +197,7 @@ public class ERTProcessLogic {
 
         exchanges.sort(Comparator.comparingDouble(Exchange::getHBarValue));
         LOGGER.info(Exchange.EXCHANGE_FILTER,"exchanges worked {} ", getExchangeJson());
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "sorted the exchange rates... calculate the weighted median now");
+        LOGGER.debug(Exchange.EXCHANGE_FILTER, "sorted the exchange rates... calculate the weighted median now");
 
         double[] exchangeRates = new double[exchanges.size()];
         double[] exchangeVolumes = new double[exchanges.size()];

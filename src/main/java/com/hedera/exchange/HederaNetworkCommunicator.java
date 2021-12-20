@@ -207,7 +207,7 @@ public class HederaNetworkCommunicator {
                         .setTransactionMemo(memo)
                         .execute(client);
 
-                LOGGER.info(Exchange.EXCHANGE_FILTER, "Exchange rate file hash {} bytes and hash code {}",
+                LOGGER.debug(Exchange.EXCHANGE_FILTER, "Exchange rate file hash {} bytes and hash code {}",
                         exchangeRateAsBytes.length,
                         Arrays.hashCode(exchangeRateAsBytes));
 
@@ -225,11 +225,11 @@ public class HederaNetworkCommunicator {
                             "to rate in receipt.", retryCount, DEFAULT_RETRIES);
                     String proposedRate = exchangeRate.toJson();
                     LOGGER.error(Exchange.EXCHANGE_FILTER, subject);
-                    LOGGER.info(Exchange.EXCHANGE_FILTER, retryMessage);
+                    LOGGER.debug(Exchange.EXCHANGE_FILTER, retryMessage);
 
                     transactionReceipt = ex.receipt;
 
-                    LOGGER.info(Exchange.EXCHANGE_FILTER, "{} update has status {}", retryCount,
+                    LOGGER.debug(Exchange.EXCHANGE_FILTER, "{} update has status {}", retryCount,
                             transactionReceipt.status);
 
                     com.hedera.hashgraph.sdk.ExchangeRate activeRateFromReceipt = transactionReceipt.exchangeRate;
@@ -286,7 +286,7 @@ public class HederaNetworkCommunicator {
             throws TimeoutException, PrecheckStatusException {
         final byte[] contentsRetrieved =  getFileContentsQuery(client, exchangeRateFileId);
 
-        LOGGER.info("The contents retrieved has {} bytes and hash code {}",
+        LOGGER.debug("The contents retrieved has {} bytes and hash code {}",
                 contentsRetrieved.length,
                 Arrays.hashCode(contentsRetrieved));
         if (!Arrays.equals(exchangeRateAsBytes, contentsRetrieved)) {
@@ -317,7 +317,7 @@ public class HederaNetworkCommunicator {
      *          Invalid Downloaded contents exception
      */
     private ERTAddressBook fetchAddressBook(final Client client) throws TimeoutException, PrecheckStatusException, InvalidProtocolBufferException {
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "fetching the addressBook");
+        LOGGER.debug(Exchange.EXCHANGE_FILTER, "fetching the addressBook");
 
         final FileId addressBookFileId = FileId.fromString(ADDRESS_BOOK_FILE_ID);
         final NodeAddressBook addressBook = NodeAddressBook.parseFrom(

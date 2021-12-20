@@ -61,7 +61,12 @@ import com.amazonaws.services.kms.model.SignResult;
 import com.amazonaws.util.Base64;
 import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Binance;
+import com.hedera.exchange.exchanges.BitMart;
+import com.hedera.exchange.exchanges.BitTrue;
 import com.hedera.exchange.exchanges.Bitrex;
+import com.hedera.exchange.exchanges.Gate;
+import com.hedera.exchange.exchanges.HitBit;
+import com.hedera.exchange.exchanges.Huobi;
 import com.hedera.exchange.exchanges.PayBito;
 import com.hedera.exchange.exchanges.UpBit;
 import com.hedera.exchange.exchanges.Liquid;
@@ -118,6 +123,11 @@ public final class ERTUtils {
 		EXCHANGES.put("okcoin", OkCoin.class);
 		EXCHANGES.put("binance", Binance.class);
 		EXCHANGES.put("paybito", PayBito.class);
+		EXCHANGES.put("bitmart", BitMart.class);
+		EXCHANGES.put("gate", Gate.class);
+		EXCHANGES.put("hitbit", HitBit.class);
+		EXCHANGES.put("bittrue", BitTrue.class);
+		EXCHANGES.put("huobi", Huobi.class);
 	}
 
 	private ERTUtils() {

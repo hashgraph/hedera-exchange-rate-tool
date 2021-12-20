@@ -99,5 +99,6 @@ public class BitrexTestCases {
 
 		assertFalse(bitrex.isSuccess());
 		assertNull(bitrex.getHBarValue());
+		assertEquals(0.0, bitrex.getVolume());
 	}
 }

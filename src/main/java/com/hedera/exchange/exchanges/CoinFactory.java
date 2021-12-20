@@ -24,10 +24,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.stream.Collectors;
 
 import static com.hedera.exchange.exchanges.Exchange.OBJECT_MAPPER;
 
@@ -64,14 +67,29 @@ public final class CoinFactory {
 			con.addRequestProperty("User-Agent",
 					"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36");
 			final InputStream inputStream = con.getInputStream();
-			final T exchange =  OBJECT_MAPPER.readValue(inputStream, type);
+			var jsonData = new BufferedReader(new InputStreamReader(inputStream))
+					.lines().collect(Collectors.joining("\n"));
+			jsonData = normalizeJsonData(jsonData);
+			LOGGER.debug(Exchange.EXCHANGE_FILTER, "Json data for " + type.getSimpleName() + " after normalization : " + jsonData);
+			final T exchange = OBJECT_MAPPER.readValue(jsonData, type);
 			exchange.setEndPoint(endpoint);
 			con.disconnect();
 			return exchange;
 		} catch (final Exception exception) {
-			LOGGER.debug(Exchange.EXCHANGE_FILTER, "exchange loading failed : {}", exception.getMessage());
+			LOGGER.warn(Exchange.EXCHANGE_FILTER, "exchange loading failed : {}", exception.getMessage());
 			return null;
 		}
+	}
+
+	/**
+	 * Some exchanges return a json array object as root. We should ignore this.
+	 * @param jsonData json string to normalize
+	 */
+	private String normalizeJsonData(String jsonData) {
+		if (jsonData.charAt(0) == '[') {
+			jsonData = jsonData.substring(1, jsonData.length()-1);
+		}
+		return jsonData;
 	}
 
 	/**

@@ -27,10 +27,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Binance extends ExchangeCoin {
 
-    @JsonProperty(value="lastPrice",access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(value="lastPrice", access = JsonProperty.Access.WRITE_ONLY)
     private Double price;
 
-    @JsonProperty(value="quoteVolume",access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(value="quoteVolume", access = JsonProperty.Access.WRITE_ONLY)
     private Double volume;
 
     @Override

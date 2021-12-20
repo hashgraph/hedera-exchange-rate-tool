@@ -38,7 +38,7 @@ public class Liquid extends ExchangeCoin {
 	@JsonProperty(value="code", access = JsonProperty.Access.WRITE_ONLY)
 	private String code;
 
-	@JsonProperty(value="volume_24h",access = JsonProperty.Access.WRITE_ONLY)
+	@JsonProperty(value="volume_24h", access = JsonProperty.Access.WRITE_ONLY)
 	private Double volume;
 
 	@Override
