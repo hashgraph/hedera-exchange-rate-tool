@@ -168,12 +168,6 @@
             <version>1.11.615</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-log4j2</artifactId>
-            <version>1.2.0</version>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-dynamodb -->
         <dependency>
             <groupId>com.amazonaws</groupId>
