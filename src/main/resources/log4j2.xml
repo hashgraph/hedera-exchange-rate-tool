@@ -33,7 +33,7 @@
 		</RandomAccessFile>
 		<Lambda name="Lambda">
 			<PatternLayout>
-				<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %X{AWSRequestId} %-5p %c{1}:%L - %m%n</pattern>
+				<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %c{1}:%L - %m%n</pattern>
 			</PatternLayout>
 		</Lambda>
 		<!-- uncomment the following to write to a log with no buffer, but writing everything immediately -->
