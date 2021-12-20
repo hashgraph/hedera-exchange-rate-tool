@@ -46,10 +46,9 @@
         <junit.vintage.version>5.8.0-RC1</junit.vintage.version>
         <jmockit.version>1.48</jmockit.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <log4j.version>2.16.0</log4j.version>
+        <log4j.version>2.17.0</log4j.version>
         <amazonaws-s3.version>1.12.73</amazonaws-s3.version>
         <amazonaws-lambda.version>1.2.1</amazonaws-lambda.version>
-        <amazonaws-log4j.version>1.2.0</amazonaws-log4j.version>
         <amazonaws-sns.version>1.12.73</amazonaws-sns.version>
         <hedera-java-sdk.version>2.2.0</hedera-java-sdk.version>
     </properties>
@@ -169,11 +168,6 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>${amazonaws-s3.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-log4j2</artifactId>
-            <version>${amazonaws-log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
