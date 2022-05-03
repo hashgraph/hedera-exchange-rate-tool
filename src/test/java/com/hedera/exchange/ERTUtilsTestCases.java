@@ -94,14 +94,14 @@ class ERTUtilsTestCases {
 		final Map<String, AccountId> nodesForClient = ERTUtils.getNodesForClient(nodes);
 
 		//then
-		assertEquals(13, nodesForClient.size(), "Not all Clients nodes are extracted");
-		assertEquals(3, nodesForClient.get("35.237.182.66:50211").num,
+		assertEquals(26, nodesForClient.size(), "Not all Clients nodes are extracted");
+		assertEquals(3, nodesForClient.get("35.237.200.180:50211").num,
 				"Not the Ip address for node 3");
-		assertEquals(7, nodesForClient.get("34.94.236.63:50211").num,
+		assertEquals(7, nodesForClient.get("35.203.82.240:50211").num,
 				"Not the Ip address for node 7");
-		assertEquals(11, nodesForClient.get("35.246.250.176:50211").num,
+		assertEquals(11, nodesForClient.get("35.240.118.96:50211").num,
 				"Not the Ip address for node 11");
-		assertEquals(15, nodesForClient.get("34.87.47.168:50211").num,
+		assertEquals(15, nodesForClient.get("35.228.11.53:50211").num,
 				"Not the Ip address for node 15");
 	}
 
@@ -175,18 +175,31 @@ class ERTUtilsTestCases {
 		fis.read(content);
 		addressBook = NodeAddressBook.parseFrom(content);
 
-		nodes.put("0.0.3", "35.237.182.66:50211");
-		nodes.put("0.0.4", "35.245.226.22:50211");
-		nodes.put("0.0.5", "34.68.9.203:50211");
-		nodes.put("0.0.6", "34.83.131.197:50211");
-		nodes.put("0.0.7", "34.94.236.63:50211");
-		nodes.put("0.0.8", "35.203.26.115:50211");
-		nodes.put("0.0.9", "34.77.3.213:50211");
-		nodes.put("0.0.10", "35.197.237.44:50211");
-		nodes.put("0.0.11", "35.246.250.176:50211");
-		nodes.put("0.0.12", "34.90.117.105:50211");
-		nodes.put("0.0.13", "35.200.57.21:50211");
-		nodes.put("0.0.14", "34.92.120.143:50211");
-		nodes.put("0.0.15", "34.87.47.168:50211");
+		nodes.put("0.0.3", "35.237.200.180:50211");
+		nodes.put("0.0.4", "35.186.191.247:50211");
+		nodes.put("0.0.5", "35.192.2.25:50211");
+		nodes.put("0.0.6", "35.199.161.108:50211");
+		nodes.put("0.0.7", "35.203.82.240:50211");
+		nodes.put("0.0.8", "35.236.5.219:50211");
+		nodes.put("0.0.9", "35.197.192.225:50211");
+		nodes.put("0.0.10", "35.242.233.154:50211");
+		nodes.put("0.0.11", "35.240.118.96:50211");
+		nodes.put("0.0.12", "35.204.86.32:50211");
+		nodes.put("0.0.13", "35.234.132.107:50211");
+		nodes.put("0.0.14", "35.236.2.27:50211");
+		nodes.put("0.0.15", "35.228.11.53:50211");
+		nodes.put("0.0.16", "34.91.181.183:50211");
+		nodes.put("0.0.17", "34.86.212.247:50211");
+		nodes.put("0.0.18", "172.105.247.67:50211");
+		nodes.put("0.0.19", "34.89.87.138:50211");
+		nodes.put("0.0.20", "34.82.78.255:50211");
+		nodes.put("0.0.21", "34.76.140.109:50211");
+		nodes.put("0.0.22", "34.64.141.166:50211");
+		nodes.put("0.0.23", "35.232.244.145:50211");
+		nodes.put("0.0.24", "34.89.103.38:50211");
+		nodes.put("0.0.25", "34.93.112.7:50211");
+		nodes.put("0.0.26", "34.87.150.174:50211");
+		nodes.put("0.0.27", "34.125.200.96:50211");
+		nodes.put("0.0.28", "35.198.220.75:50211");
 	}
 }

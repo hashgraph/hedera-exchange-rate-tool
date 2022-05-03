@@ -51,7 +51,7 @@
         <amazonaws-lambda.version>1.2.1</amazonaws-lambda.version>
         <amazonaws-log4j.version>1.2.0</amazonaws-log4j.version>
         <amazonaws-sns.version>1.12.73</amazonaws-sns.version>
-        <hedera-java-sdk.version>2.2.0</hedera-java-sdk.version>
+        <hedera-java-sdk.version>2.14.0-beta.1</hedera-java-sdk.version>
     </properties>
 
 

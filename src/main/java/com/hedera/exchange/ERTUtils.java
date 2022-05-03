@@ -73,6 +73,7 @@ import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.FileId;
 import com.hedera.hashgraph.sdk.FileUpdateTransaction;
+import com.hedera.hashgraph.sdk.proto.AccountID;
 import com.hedera.hashgraph.sdk.proto.FileID;
 import com.hedera.hashgraph.sdk.proto.FileServiceGrpc;
 import com.hedera.hashgraph.sdk.proto.FileUpdateTransactionBody;
@@ -85,6 +86,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -185,10 +187,11 @@ public final class ERTUtils {
 	public static Map<String, String> getNodesFromAddressBook(final NodeAddressBook addressBook) {
 		Map<String, String> nodes =  new HashMap<>();
 		for(NodeAddress address : addressBook.getNodeAddressList()){
-			final String nodeId = address.getMemo().toStringUtf8();
-			final String nodeAddress = address.getIpAddress().toStringUtf8();
+			final String nodeId = accountIdAsString(address.getNodeAccountId());
+			final String nodeAddress = asReadableIp(address.getServiceEndpoint(0).getIpAddressV4());
+			final String port = String.format("%d", address.getServiceEndpoint(0).getPort());
 			if(!nodes.containsKey(nodeId)) {
-				nodes.put(nodeId, nodeAddress + ":50211");
+				nodes.put(nodeId, nodeAddress + ":" + port);
 			}
 			LOGGER.debug(Exchange.EXCHANGE_FILTER, "found node {} and its address {}:50211 in addressBook",
 					nodeId, nodeAddress);
@@ -322,5 +325,21 @@ public final class ERTUtils {
 				goalRate.getCurrentRate().getExpirationTimeInSeconds());
 
 		return new ExchangeRate(newCurrRate, newNextRate);
+	}
+
+	private static String accountIdAsString(AccountID id) {
+		return String.format("%d.%d.%d", id.getShardNum(), id.getRealmNum(), id.getAccountNum());
+	}
+
+	private static String asReadableIp(ByteString octets) {
+		byte[] raw = octets.toByteArray();
+		var sb = new StringBuilder();
+		for (int i = 0; i < 4; i++) {
+			sb.append("" + (0xff & raw[i]));
+			if (i != 3) {
+				sb.append(".");
+			}
+		}
+		return sb.toString();
 	}
 }
