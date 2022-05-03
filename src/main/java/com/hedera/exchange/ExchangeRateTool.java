@@ -65,6 +65,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -79,6 +80,7 @@ import static com.hedera.exchange.ERTUtils.getNodesForClient;
  */
 public class ExchangeRateTool {
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
+    private static final Map<String, AccountId> emptyMap = Collections.emptyMap();
 
     static final int DEFAULT_RETRIES = 4;
 
@@ -181,11 +183,10 @@ public class ExchangeRateTool {
         final PrivateKey privateOperatorKey =
                 PrivateKey.fromString(ertParams.getOperatorKey(networkName));
         final ERTAddressBook ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
+        final var nodesFromPrevRun = ertAddressBookFromPreviousRun != null ?
+                getNodesForClient(ertAddressBookFromPreviousRun.getNodes()) : emptyMap;
 
-        final Map<String, AccountId> nodesForClient = ertAddressBookFromPreviousRun != null &&
-                !getNodesForClient(ertAddressBookFromPreviousRun.getNodes()).isEmpty() ?
-                getNodesForClient(ertAddressBookFromPreviousRun.getNodes()) :
-                nodesFromConfig;
+        final Map<String, AccountId> nodesForClient = nodesFromPrevRun.isEmpty() ? nodesFromPrevRun : nodesFromConfig;
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Building a Hedera Client with nodes {} \n Account {}",
                 nodesForClient,
