@@ -69,7 +69,6 @@ import java.util.Map;
  * to the database.
  */
 public class ERTAddressBook {
-    private static final Logger LOGGER = LogManager.getLogger(ERTAddressBook.class);
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

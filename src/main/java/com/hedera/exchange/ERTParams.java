@@ -156,7 +156,7 @@ public class ERTParams {
             return readDefaultConfig();
         }
 
-        LOGGER.info("Using configuration file: {}", configurationPath);
+        LOGGER.debug("Using configuration file: {}", configurationPath);
 
         if (configurationPath.contains("s3.amazonaws.com/")) {
             return readConfigFromAWSS3(configurationPath);
@@ -211,7 +211,7 @@ public class ERTParams {
      *          Throws IOException failed to read the config file.
      */
     private static ERTParams readConfigFromAWSS3(final String endpoint) throws IllegalArgumentException, IOException{
-        LOGGER.info("Reading configuration file from AWS S3: {}", endpoint);
+        LOGGER.debug("Reading configuration file from AWS S3: {}", endpoint);
         final String[] s3Params = endpoint.split("/");
         if (s3Params.length < 3) {
             throw new IllegalArgumentException("Not enough parameters to read from S3: " + endpoint);
@@ -233,7 +233,7 @@ public class ERTParams {
      *          Throws IOException when failed to parse the config file.
      */
     private static ERTParams readConfigFromAWSS3(final String bucketName, final String key) throws IOException {
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Reading configuration from S3 bucket: {} and key {}", bucketName, key);
+        LOGGER.debug(Exchange.EXCHANGE_FILTER, "Reading configuration from S3 bucket: {} and key {}", bucketName, key);
         final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
 
         try (final S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key))) {
@@ -285,7 +285,7 @@ public class ERTParams {
      */
     public static ERTParams readConfig(final String configFilePath) {
 
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Reading config from {}", configFilePath);
+        LOGGER.debug(Exchange.EXCHANGE_FILTER, "Reading config from {}", configFilePath);
 
         try (final FileReader configFile = new FileReader(configFilePath)){
             final ERTParams ertParams = OBJECT_MAPPER.readValue(configFile, ERTParams.class);

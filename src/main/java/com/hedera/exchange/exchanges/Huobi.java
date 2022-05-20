@@ -9,9 +9,9 @@ package com.hedera.exchange.exchanges;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,40 +22,34 @@ package com.hedera.exchange.exchanges;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * Represents a Liquid Exchange response.
- *
- * @author Anirudh, Cesar
- */
-public class Liquid extends ExchangeCoin {
+public class Huobi extends ExchangeCoin{
 
-	@JsonProperty(value="last_traded_price",access = JsonProperty.Access.WRITE_ONLY)
-	private Double exchangeRate;
+	@JsonProperty(value="status", access = JsonProperty.Access.WRITE_ONLY)
+	private String status;
 
-	@JsonProperty(value="product_type",access = JsonProperty.Access.WRITE_ONLY)
-	private String productType;
-
-	@JsonProperty(value="code", access = JsonProperty.Access.WRITE_ONLY)
-	private String code;
-
-	@JsonProperty(value="volume_24h", access = JsonProperty.Access.WRITE_ONLY)
-	private Double volume;
+	@JsonProperty(value="tick", access = JsonProperty.Access.WRITE_ONLY)
+	private TickerData tickerData;
 
 	@Override
 	public Double getHBarValue() {
-		return this.exchangeRate;
+		return tickerData == null ? null : tickerData.price;
 	}
 
 	@Override
 	public Double getVolume() {
-		return volume == null || volume <= 1.0 ? 0.0 : this.volume;
+		return tickerData == null || tickerData.volume == null || tickerData.volume <= 1.0 ?
+				0.0 : tickerData.volume;
 	}
 
-	public String getProductType() {
-		return this.productType;
+	public String getStatus() {
+		return status;
 	}
 
-	public String getCode() {
-		return this.code;
+	private static class TickerData {
+		@JsonProperty(value="close")
+		private Double price;
+
+		@JsonProperty(value="vol")
+		private Double volume;
 	}
 }

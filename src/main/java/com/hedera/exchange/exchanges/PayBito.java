@@ -27,10 +27,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class PayBito extends ExchangeCoin {
 
-	@JsonProperty(value="price",access = JsonProperty.Access.WRITE_ONLY)
+	@JsonProperty(value="closePrice", access = JsonProperty.Access.WRITE_ONLY)
 	private Double price;
 
-	@JsonProperty(value="quoteVolume",access = JsonProperty.Access.WRITE_ONLY)
+	@JsonProperty(value="volume", access = JsonProperty.Access.WRITE_ONLY)
 	private Double volume;
 
 	@Override

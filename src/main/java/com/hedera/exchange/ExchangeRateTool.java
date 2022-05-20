@@ -98,7 +98,7 @@ public class ExchangeRateTool {
      * @param args
      */
     protected void run(final String ... args) {
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
+        LOGGER.debug(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
         try {
             ertParams = ERTParams.readConfig(args);
             exchangeDB = ertParams.getExchangeDB();
@@ -159,7 +159,7 @@ public class ExchangeRateTool {
         exchangeDB.pushExchangeRate(exchangeRate);
 
         if (exchangeRate.isMidnightTime()) {
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
+            LOGGER.debug(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
             exchangeDB.pushMidnightRate(exchangeRate);
         }
 

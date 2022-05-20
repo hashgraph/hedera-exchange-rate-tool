@@ -55,13 +55,15 @@ package com.hedera.exchange;
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
 import com.amazonaws.services.kms.model.DecryptRequest;
-import com.amazonaws.services.kms.model.MessageType;
-import com.amazonaws.services.kms.model.SignRequest;
-import com.amazonaws.services.kms.model.SignResult;
 import com.amazonaws.util.Base64;
 import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Binance;
+import com.hedera.exchange.exchanges.BitMart;
+import com.hedera.exchange.exchanges.BitTrue;
 import com.hedera.exchange.exchanges.Bitrex;
+import com.hedera.exchange.exchanges.Gate;
+import com.hedera.exchange.exchanges.HitBit;
+import com.hedera.exchange.exchanges.Huobi;
 import com.hedera.exchange.exchanges.PayBito;
 import com.hedera.exchange.exchanges.UpBit;
 import com.hedera.exchange.exchanges.Liquid;
@@ -71,31 +73,20 @@ import com.hedera.exchange.exchanges.CoinFactory;
 import com.hedera.exchange.exchanges.ExchangeCoin;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.AccountId;
-import com.hedera.hashgraph.sdk.FileId;
-import com.hedera.hashgraph.sdk.FileUpdateTransaction;
 import com.hedera.hashgraph.sdk.proto.AccountID;
-import com.hedera.hashgraph.sdk.proto.FileID;
-import com.hedera.hashgraph.sdk.proto.FileServiceGrpc;
-import com.hedera.hashgraph.sdk.proto.FileUpdateTransactionBody;
 import com.hedera.hashgraph.sdk.proto.NodeAddress;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
-import com.hedera.hashgraph.sdk.proto.Transaction;
-import com.hedera.hashgraph.sdk.proto.TransactionBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.amazonaws.services.kms.model.SigningAlgorithmSpec.RSASSA_PKCS1_V1_5_SHA_512;
 
 /**
  * This class implements helper functions of ERT
@@ -120,6 +111,11 @@ public final class ERTUtils {
 		EXCHANGES.put("okcoin", OkCoin.class);
 		EXCHANGES.put("binance", Binance.class);
 		EXCHANGES.put("paybito", PayBito.class);
+		EXCHANGES.put("bitmart", BitMart.class);
+		EXCHANGES.put("gate", Gate.class);
+		EXCHANGES.put("hitbit", HitBit.class);
+		EXCHANGES.put("bittrue", BitTrue.class);
+		EXCHANGES.put("huobi", Huobi.class);
 	}
 
 	private ERTUtils() {

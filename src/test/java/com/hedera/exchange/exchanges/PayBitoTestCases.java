@@ -60,14 +60,20 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class PayBitoTestCases {
 	@Test
 	public void retrievePayBitoDataTest() throws Exception {
-		final String urlString = "https://trade.paybito.com/api/trades/HBAR_USD";
-		final String result = "{\"quoteVolume\":\"1572416.65\", \"price\":\"0.0580663\"}";
+		final String urlString = "https://stream.paybito.com:8443/SocketStream/api/get24hTicker?counter=HBAR&base=USD";
+		final String result = "[{\"lastBidQty\":null,\"lastBidPrice\":null,\"lastAskQty\":null,\"lastAskPrice\":null," +
+				"\"yearHighPrice\":null,\"yearLowPrice\":null,\"highLowFlag\":null,\"buySellOfferFlag\":null," +
+				"\"buySellOfferAction\":null,\"openPrice\":\"0.32405273\",\"baseCurrency\":\"USD\"," +
+				"\"lastTradeTime\":null,\"ltp\":\"0.3155486\",\"closePrice\":\"0.3155486\",\"highPrice\":\"0" +
+				".33185076\",\"lowPrice\":\"0.3139456\",\"volume\":\"2723791.57\",\"roc\":\"-2.6950301792\",\"ctp\":\"0" +
+				".3155486\",\"currency\":\"HBAR\",\"action\":\"buy\"}]";
 
 		final InputStream json = new ByteArrayInputStream(result.getBytes());
 		final HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -75,7 +81,9 @@ public class PayBitoTestCases {
 
 		final CoinFactory factory = new CoinFactory(connection);
 		final PayBito payBito = factory.load(urlString, PayBito.class);
-		assertEquals(0.0580663, payBito.getHBarValue());
-		assertEquals(1572416.65, payBito.getVolume());
+
+		assertNotNull(payBito);
+		assertEquals(0.3155486, payBito.getHBarValue());
+		assertEquals(2723791.57, payBito.getVolume());
 	}
 }

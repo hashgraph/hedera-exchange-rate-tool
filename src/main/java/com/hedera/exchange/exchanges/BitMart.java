@@ -9,9 +9,9 @@ package com.hedera.exchange.exchanges;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,39 +23,51 @@ package com.hedera.exchange.exchanges;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Represents a Liquid Exchange response.
+ * Represents a BitMart Exchange response.
  *
  * @author Anirudh, Cesar
  */
-public class Liquid extends ExchangeCoin {
+public class BitMart extends ExchangeCoin {
 
-	@JsonProperty(value="last_traded_price",access = JsonProperty.Access.WRITE_ONLY)
-	private Double exchangeRate;
+	@JsonProperty(value="message", access = JsonProperty.Access.WRITE_ONLY)
+	private String message;
 
-	@JsonProperty(value="product_type",access = JsonProperty.Access.WRITE_ONLY)
-	private String productType;
+	@JsonProperty(value="data", access = JsonProperty.Access.WRITE_ONLY)
+	private BitMartTickerData tickerData;
 
-	@JsonProperty(value="code", access = JsonProperty.Access.WRITE_ONLY)
-	private String code;
-
-	@JsonProperty(value="volume_24h", access = JsonProperty.Access.WRITE_ONLY)
-	private Double volume;
 
 	@Override
 	public Double getHBarValue() {
-		return this.exchangeRate;
+		if (tickerData == null || tickerData.data[0].last == null) {
+			return null;
+		}
+
+		return this.tickerData.data[0].last;
 	}
 
 	@Override
 	public Double getVolume() {
-		return volume == null || volume <= 1.0 ? 0.0 : this.volume;
+		if (tickerData == null || tickerData.data[0].volume == null || tickerData.data[0].volume <= 1.0) {
+			return 0.0;
+		}
+
+		return this.tickerData.data[0].volume;
 	}
 
-	public String getProductType() {
-		return this.productType;
+	public String getMessage() {
+		return message;
 	}
 
-	public String getCode() {
-		return this.code;
+	private static class BitMartTickerData{
+		@JsonProperty("tickers")
+		private TickerData[] data;
+	}
+
+	private static class TickerData {
+		@JsonProperty("last_price")
+		private Double last;
+
+		@JsonProperty("volume_24h")
+		private Double volume;
 	}
 }
