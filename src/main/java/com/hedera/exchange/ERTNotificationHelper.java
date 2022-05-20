@@ -1,4 +1,4 @@
-package com.hedera.exchange.database;
+package com.hedera.exchange;
 
 /*-
  * ‌
@@ -52,22 +52,42 @@ package com.hedera.exchange.database;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.hedera.exchange.ERTUtils;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.AmazonSNSException;
+import com.hedera.exchange.exchanges.Exchange;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class AWSDBParams {
-	public String getEndpoint() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("ENDPOINT") + getDatabaseName();
+import static com.hedera.exchange.ERTUtils.getDecryptedEnvironmentVariableFromAWS;
+
+public final class ERTNotificationHelper {
+	public static final Logger LOGGER = LogManager.getLogger(ERTNotificationHelper.class);
+
+	private ERTNotificationHelper() {
+		throw new UnsupportedOperationException("Utility class");
 	}
 
-	public String getUsername() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("USERNAME");
-	}
-
-	public String getPassword() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("PASSWORD");
-	}
-
-	public String getDatabaseName() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("DATABASE");
+	/**
+	 * Send an email to the SNS topic
+	 * @param subject
+	 * 			Subject of the Email
+	 * @param message
+	 * 			Content of the Email
+	 */
+	public static void publishMessage(final String subject, final String message) {
+		try {
+			final AmazonSNSClient SNS_CLIENT = (AmazonSNSClient) AmazonSNSClientBuilder.standard()
+					.withRegion(Regions.US_EAST_2)
+					.build();
+			final String SNS_ARN = getDecryptedEnvironmentVariableFromAWS("SNS_ARN");
+			SNS_CLIENT.publish(SNS_ARN, message, subject);
+			SNS_CLIENT.shutdown();
+		} catch (AmazonSNSException ex) {
+			LOGGER.error(Exchange.EXCHANGE_FILTER, "subject length : {} \n message length : {}",
+					subject.length(), message.length());
+			LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to submit  {} : {} \n {}", subject, message, ex);
+		}
 	}
 }

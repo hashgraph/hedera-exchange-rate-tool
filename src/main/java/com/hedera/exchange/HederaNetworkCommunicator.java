@@ -52,8 +52,6 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.exchange.exchanges.Exchange;
@@ -70,7 +68,9 @@ import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.ReceiptStatusException;
 import com.hedera.hashgraph.sdk.TransactionReceipt;
 import com.hedera.hashgraph.sdk.TransactionResponse;
+import com.hedera.hashgraph.sdk.proto.FileServiceGrpc;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -95,6 +95,12 @@ public class HederaNetworkCommunicator {
     private static final Logger LOGGER = LogManager.getLogger(HederaNetworkCommunicator.class);
     private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates were not updated successfully";
     private static final String ADDRESS_BOOK_FILE_ID = "0.0.101";
+
+    private final String networkName;
+
+    public HederaNetworkCommunicator(final String networkName) {
+        this.networkName = networkName;
+    }
 
     /**
      * Method to send a File update transaction to hedera network and fetch the latest addressBook from the network.
@@ -189,11 +195,12 @@ public class HederaNetworkCommunicator {
             final Client client,
             final String memo)
             throws TimeoutException, PrecheckStatusException, IOException, ReceiptStatusException {
-        int retryCount = 0;
+        int retryCount = 1;
         TransactionReceipt transactionReceipt;
         while(true) {
             try {
                 LOGGER.info(Exchange.EXCHANGE_FILTER, "Pushing new ExchangeRate {}", exchangeRate.toJson());
+
                 final TransactionResponse response = new FileUpdateTransaction()
                         .setFileId(exchangeRateFileId)
                         .setContents(exchangeRate.toExchangeRateSet().toByteArray())
@@ -211,9 +218,14 @@ public class HederaNetworkCommunicator {
                     return;
                 }
             } catch (ReceiptStatusException ex) {
-                if(ex.receipt.status == EXCHANGE_RATE_CHANGE_LIMIT_EXCEEDED) {
-                    LOGGER.error(Exchange.EXCHANGE_FILTER, "ReceiptStatusException : {}", ex.getMessage());
-                    LOGGER.info(Exchange.EXCHANGE_FILTER, "Retrying with a new rate that is closer to rate in receipt.");
+                var status = ex.receipt.status;
+                if(status == EXCHANGE_RATE_CHANGE_LIMIT_EXCEEDED) {
+                    String subject = String.format("%s : ReceiptStatusException : %s", networkName, status);
+                    String retryMessage = String.format("Run %d/%d Failed. Retrying with a new rate that is closer " +
+                            "to rate in receipt.", retryCount, DEFAULT_RETRIES);
+                    String proposedRate = exchangeRate.toJson();
+                    LOGGER.error(Exchange.EXCHANGE_FILTER, subject);
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, retryMessage);
 
                     transactionReceipt = ex.receipt;
 
@@ -222,24 +234,31 @@ public class HederaNetworkCommunicator {
 
                     com.hedera.hashgraph.sdk.ExchangeRate activeRateFromReceipt = transactionReceipt.exchangeRate;
 
-                    LOGGER.info(Exchange.EXCHANGE_FILTER, "Exchange Rates from receipt {}",
-                            activeRateFromReceipt.toString());
+                    String rateInNetwork = activeRateFromReceipt.toString();
+
+                    LOGGER.info(Exchange.EXCHANGE_FILTER, "Exchange Rates from receipt {}", rateInNetwork);
+                    retryMessage = String.format("%s \n proposed rate : %s \n Rates on Network %s",
+                            retryMessage, proposedRate, rateInNetwork);
+                    ERTNotificationHelper.publishMessage(subject, retryMessage);
 
                     Rate activeRate = new Rate(activeRateFromReceipt.hbars,
                             activeRateFromReceipt.cents,
                             activeRateFromReceipt.expirationTime.getEpochSecond());
 
-                    exchangeRate = ExchangeRateUtils.calculateNewExchangeRate(activeRate, exchangeRate);
 
-                    if (++retryCount == DEFAULT_RETRIES) {
+                    exchangeRate = ERTUtils.calculateNewExchangeRate(activeRate, exchangeRate);
+
+                    if (retryCount++ == DEFAULT_RETRIES) {
                         throw ex;
                     }
                 } else {
                     throw ex;
                 }
             } catch (PrecheckStatusException ex) {
-                LOGGER.error(Exchange.EXCHANGE_FILTER, "PrecheckStatusException : {}", ex.getMessage());
-                if( ++retryCount == DEFAULT_RETRIES ) {
+                var subject = String.format("%s : PreCheckStatusException : %s", networkName, ex.status);
+                LOGGER.error(Exchange.EXCHANGE_FILTER, subject);
+                ERTNotificationHelper.publishMessage(subject, ExceptionUtils.getStackTrace(ex));
+                if( retryCount++ == DEFAULT_RETRIES ) {
                     throw ex;
                 }
             }
@@ -307,7 +326,7 @@ public class HederaNetworkCommunicator {
 
         Map<String, String> addressBookNodes = new HashMap<>();
         if (addressBook.getNodeAddressCount() > 0) {
-            addressBookNodes = ExchangeRateUtils.getNodesFromAddressBook(addressBook);
+            addressBookNodes = ERTUtils.getNodesFromAddressBook(addressBook);
         } else {
             LOGGER.warn(Exchange.EXCHANGE_FILTER, "didnt find any addresses in the address book.");
         }

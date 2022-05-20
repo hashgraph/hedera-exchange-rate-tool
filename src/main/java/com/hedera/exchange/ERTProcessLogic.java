@@ -57,7 +57,6 @@ import com.hedera.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -115,7 +114,7 @@ public class ERTProcessLogic {
 
         try {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Generating exchange objects");
-            currentExchangeRate.setExpirationTime(ExchangeRateUtils.getCurrentExpirationTime());
+            currentExchangeRate.setExpirationTime(ERTUtils.getCurrentExpirationTime());
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Setting next hour as current expiration time :{}",
                     currentExchangeRate.getExpirationTimeInSeconds());
             final long nextExpirationTimeInSeconds = currentExchangeRate.getExpirationTimeInSeconds() + frequencyInSeconds;
@@ -174,6 +173,7 @@ public class ERTProcessLogic {
      * Return the list of exchanges that worked in json string format using OBJECT_MAPPER
      * @return Json String
      * @throws JsonProcessingException
+     *          Throws when failed to parse Json as String.
      */
     public String getExchangeJson() throws JsonProcessingException {
         return Exchange.OBJECT_MAPPER.writeValueAsString(exchanges);
@@ -214,7 +214,7 @@ public class ERTProcessLogic {
 
     protected Double findVolumeWeightedMedian(double[] exchangeRates, double[] exchangeVolumes) throws Exception {
         if( areRatesAndVolumesValid(exchangeRates, exchangeVolumes) ) {
-            return ExchangeRateUtils.findVolumeWeightedMedianAverage(exchangeRates, exchangeVolumes);
+            return ERTUtils.findVolumeWeightedMedianAverage(exchangeRates, exchangeVolumes);
         } else {
             return null;
         }

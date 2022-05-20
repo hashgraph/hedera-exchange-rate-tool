@@ -60,19 +60,44 @@ import com.hedera.exchange.exchanges.Liquid;
 import com.hedera.exchange.exchanges.OkCoin;
 import com.hedera.exchange.exchanges.PayBito;
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ERTProcessLogicTestCases {
+    private String testARN = "arn:aws:sns:us-east-2:525755363515:ERT-PreProd";
+
+    MockedStatic<ERTUtils> mockedExchangeRateUtils;
+    MockedStatic<ERTNotificationHelper> mockedNotificationHelper;
+
+    @BeforeEach
+    void setUp() {
+        mockedExchangeRateUtils = Mockito.mockStatic(ERTUtils.class);
+        mockedExchangeRateUtils.when(
+                () -> ERTUtils.getDecryptedEnvironmentVariableFromAWS(any())).thenReturn(testARN);
+        mockedExchangeRateUtils.when(
+                () -> ERTUtils.findVolumeWeightedMedianAverage(any(), any())).thenCallRealMethod();
+        mockedNotificationHelper = Mockito.mockStatic(ERTNotificationHelper.class);
+    }
+
+    @AfterEach
+    void cleanUp() {
+        mockedExchangeRateUtils.close();
+        mockedNotificationHelper.close();
+    }
 
     @ParameterizedTest
     @CsvSource({"src/test/resources/configs/config.json,360000,288000",
@@ -148,7 +173,7 @@ public class ERTProcessLogicTestCases {
         final String exchangesInJson = bitrexValue == 0.0 ? "[]" : String.format("[{\"volume\":1000.0," +
                 "\"Query\":\"https://api.bittrex.com/api/v1.1/public/getticker?market=USD-HBAR\"," +
                 "\"HBAR\":%.1f}]", bitrexValue);
-        final long currentExpirationInSeconds = ExchangeRateUtils.getCurrentExpirationTime();
+        final long currentExpirationInSeconds = ERTUtils.getCurrentExpirationTime();
         final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
         final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
 
@@ -181,11 +206,11 @@ public class ERTProcessLogicTestCases {
     @ParameterizedTest
     @CsvSource({"src/test/resources/configs/config.json,126000,120000",
                 "src/test/resources/configs/config.json,150000,120000"})
-    public void testFloor(String configPath, long currentCentEquiv, long expectedCentEquiv) throws IOException, IllegalAccessException, InstantiationException {
+    public void testFloor(String configPath, long currentCentEquiv, long expectedCentEquiv) throws IOException {
         List<Exchange> exchanges = this.setFloorExchanges();
         final ERTParams params = ERTParams.readConfig(configPath);
-        final Rate currentRate = new Rate(30000, currentCentEquiv,ExchangeRateUtils.getCurrentExpirationTime());
-        final Rate midnightRate = new Rate(30000, currentCentEquiv,ExchangeRateUtils.getCurrentExpirationTime());
+        final Rate currentRate = new Rate(30000, currentCentEquiv, ERTUtils.getCurrentExpirationTime());
+        final Rate midnightRate = new Rate(30000, currentCentEquiv, ERTUtils.getCurrentExpirationTime());
 
         final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
                 exchanges,

@@ -55,7 +55,11 @@ package com.hedera.exchange;
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
 import com.amazonaws.services.kms.model.DecryptRequest;
+import com.amazonaws.services.kms.model.MessageType;
+import com.amazonaws.services.kms.model.SignRequest;
+import com.amazonaws.services.kms.model.SignResult;
 import com.amazonaws.util.Base64;
+import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Binance;
 import com.hedera.exchange.exchanges.Bitrex;
 import com.hedera.exchange.exchanges.PayBito;
@@ -67,19 +71,31 @@ import com.hedera.exchange.exchanges.CoinFactory;
 import com.hedera.exchange.exchanges.ExchangeCoin;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.AccountId;
+import com.hedera.hashgraph.sdk.FileId;
+import com.hedera.hashgraph.sdk.FileUpdateTransaction;
+import com.hedera.hashgraph.sdk.proto.AccountID;
+import com.hedera.hashgraph.sdk.proto.FileID;
+import com.hedera.hashgraph.sdk.proto.FileServiceGrpc;
+import com.hedera.hashgraph.sdk.proto.FileUpdateTransactionBody;
 import com.hedera.hashgraph.sdk.proto.NodeAddress;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
+import com.hedera.hashgraph.sdk.proto.Transaction;
+import com.hedera.hashgraph.sdk.proto.TransactionBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.amazonaws.services.kms.model.SigningAlgorithmSpec.RSASSA_PKCS1_V1_5_SHA_512;
 
 /**
  * This class implements helper functions of ERT
@@ -89,9 +105,9 @@ import java.util.Map;
  *
  * @author Anirudh, Cesar
  */
-public class ExchangeRateUtils {
+public final class ERTUtils {
 
-	private static final Logger LOGGER = LogManager.getLogger(ExchangeRateUtils.class);
+	private static final Logger LOGGER = LogManager.getLogger(ERTUtils.class);
 	private static final Map<String, Class<? extends ExchangeCoin>> EXCHANGES = new HashMap<>();
 	private static final int MILLI_SECS_IN_ONE_HOUR = 3_600_000;
 	private static final int MILLI_SECS_IN_ONE_SEC = 1_000;
@@ -106,6 +122,10 @@ public class ExchangeRateUtils {
 		EXCHANGES.put("paybito", PayBito.class);
 	}
 
+	private ERTUtils() {
+		throw new UnsupportedOperationException("Utility class");
+	}
+
 	/**
 	 * Get the decrypted Environment variable set in AWS
 	 * for example: the DB endpoint, username, password to access the Database, config file path etc..
@@ -118,7 +138,7 @@ public class ExchangeRateUtils {
 		return getDecryptedValueFromAWS(environmentValue, lambdaFunctionName);
 	}
 
-	public static String getDecryptedValueFromAWS(final String value, final String lambdaFunctionName) {
+	static String getDecryptedValueFromAWS(final String value, final String lambdaFunctionName) {
 		Map<String, String> encryptionContext = new HashMap<>();
 		encryptionContext.put("LambdaFunctionName", lambdaFunctionName);
 		final byte[] encryptedKey = Base64.decode(value);
@@ -167,10 +187,11 @@ public class ExchangeRateUtils {
 	public static Map<String, String> getNodesFromAddressBook(final NodeAddressBook addressBook) {
 		Map<String, String> nodes =  new HashMap<>();
 		for(NodeAddress address : addressBook.getNodeAddressList()){
-			String nodeId = address.getMemo().toStringUtf8();
-			String nodeAddress = address.getIpAddress().toStringUtf8();
+			final String nodeId = accountIdAsString(address.getNodeAccountId());
+			final String nodeAddress = asReadableIp(address.getServiceEndpoint(0).getIpAddressV4());
+			final String port = String.format("%d", address.getServiceEndpoint(0).getPort());
 			if(!nodes.containsKey(nodeId)) {
-				nodes.put(nodeId, nodeAddress + ":50211");
+				nodes.put(nodeId, nodeAddress + ":" + port);
 			}
 			LOGGER.debug(Exchange.EXCHANGE_FILTER, "found node {} and its address {}:50211 in addressBook",
 					nodeId, nodeAddress);
@@ -227,8 +248,8 @@ public class ExchangeRateUtils {
 	 *      the positive weight for each value, with higher having more influence
 	 * @return the weighted median
 	 */
-	public static double findVolumeWeightedMedianAverage(double[] values, double[] weights) throws IOException {
-		int numberOfElements = values.length;
+	public static double findVolumeWeightedMedianAverage(final double[] values, final double[] weights) throws IOException {
+		final int numberOfElements = values.length;
 		double weightOfValueJustBelowMiddle;
 		double weightOfValueJustAboveMiddle;
 		double weightedAverage;
@@ -304,5 +325,21 @@ public class ExchangeRateUtils {
 				goalRate.getCurrentRate().getExpirationTimeInSeconds());
 
 		return new ExchangeRate(newCurrRate, newNextRate);
+	}
+
+	private static String accountIdAsString(AccountID id) {
+		return String.format("%d.%d.%d", id.getShardNum(), id.getRealmNum(), id.getAccountNum());
+	}
+
+	private static String asReadableIp(ByteString octets) {
+		byte[] raw = octets.toByteArray();
+		var sb = new StringBuilder();
+		for (int i = 0; i < 4; i++) {
+			sb.append("" + (0xff & raw[i]));
+			if (i != 3) {
+				sb.append(".");
+			}
+		}
+		return sb.toString();
 	}
 }
