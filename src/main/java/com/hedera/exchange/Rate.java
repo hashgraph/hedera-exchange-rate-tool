@@ -128,17 +128,12 @@ public class Rate {
                 this.getCentEquiv(),
                 this.getHBarEquiv(),
                 nextRate.getCentEquiv(),
-                nextRate.getHBarEquiv())){
+                nextRate.getHBarEquiv())) {
             LOGGER.debug("Calculated median {} is Valid with Midnight Rate as {}",
                     nextRate.toJson(), this.toJson());
             return true;
-        } else {
-            String message = String.format("WARNING : Calculated median %s is Invalid with Midnight Rate as %s",
-                    nextRate.toJson(), this.toJson());
-            LOGGER.warn(message);
-            ERTNotificationHelper.publishMessage("WARNING : Calculated Median is Invalid", message);
-            return false;
         }
+        return false;
     }
 
     /**

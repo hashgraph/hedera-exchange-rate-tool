@@ -64,6 +64,7 @@ import static com.hedera.exchange.ERTUtils.getDecryptedEnvironmentVariableFromAW
 
 public final class ERTNotificationHelper {
 	public static final Logger LOGGER = LogManager.getLogger(ERTNotificationHelper.class);
+	public static AmazonSNSClient SNS_CLIENT;
 
 	private ERTNotificationHelper() {
 		throw new UnsupportedOperationException("Utility class");
@@ -76,11 +77,21 @@ public final class ERTNotificationHelper {
 	 * @param message
 	 * 			Content of the Email
 	 */
-	public static void publishMessage(final String subject, final String message) {
+	public static void publishMessage(final String subject, final String message, final String region) {
 		try {
-			final AmazonSNSClient SNS_CLIENT = (AmazonSNSClient) AmazonSNSClientBuilder.standard()
-					.withRegion(Regions.US_EAST_2)
-					.build();
+			if (SNS_CLIENT == null) {
+				try {
+					SNS_CLIENT = (AmazonSNSClient) AmazonSNSClientBuilder.standard()
+							.withRegion(Regions.fromName(region))
+							.build();
+				} catch (IllegalArgumentException e) {
+					LOGGER.warn(Exchange.EXCHANGE_FILTER, "Invalid region provided : {}, deafulting ot us-east-1",
+							region);
+					SNS_CLIENT = (AmazonSNSClient) AmazonSNSClientBuilder.standard()
+							.withRegion(Regions.US_EAST_1)
+							.build();
+				}
+			}
 			final String SNS_ARN = getDecryptedEnvironmentVariableFromAWS("SNS_ARN");
 			SNS_CLIENT.publish(SNS_ARN, message, subject);
 			SNS_CLIENT.shutdown();

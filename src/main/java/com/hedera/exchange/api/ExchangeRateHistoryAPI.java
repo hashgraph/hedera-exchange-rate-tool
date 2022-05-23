@@ -173,7 +173,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
                 double currentMedian = findMedian(currentQueriedRate);
                 results.add(new ExchangeRateHistory(toDate(expirationTime),
                         currentQueriedRate,
-                        calulateMedian(currentExchangeRate),
+                        calculateMedian(currentExchangeRate),
                         isSmoothed(midnightRate.getNextRate(), currentMedian),
                         midnightRate,
                         currentExchangeRate.getCurrentRate(),
@@ -202,7 +202,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
         responseWriter.close();
     }
 
-    private static double calulateMedian(ExchangeRate exchangeRate){
+    private static double calculateMedian(ExchangeRate exchangeRate){
         LOGGER.info(Exchange.EXCHANGE_FILTER, "calculating median");
         double median = ((double) exchangeRate.getNextRate().getCentEquiv() / exchangeRate.getNextRate().getHBarEquiv()) / 100 ;
 

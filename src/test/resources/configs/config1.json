@@ -16,5 +16,6 @@
     "0.0.5": "1.testnet.hedera.com:71322"
   },
   "payerAccount": "0.0.57",
-  "validationDelayInMilliseconds": 15000
+  "validationDelayInMilliseconds": 15000,
+  "region": "us-east-2"
 }

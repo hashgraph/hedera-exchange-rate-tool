@@ -109,7 +109,7 @@ public class ExchangeRateTool {
             final var subject = "FAILED : ERT Run Failed";
             final var message = ex.getMessage() + "\n";
             LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
-            ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex));
+            ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex), ertParams.getRegion());
         }
     }
 
@@ -128,7 +128,6 @@ public class ExchangeRateTool {
      *          Throws Timeout Exception when unable to complete a Hedera Transaction with in the timeout.
      */
     protected void execute() throws IOException, SQLException, TimeoutException {
-
         final Map<String, Map<String, AccountId>> networks = ertParams.getNetworks();
 
         final long frequencyInSeconds = ertParams.getFrequencyInSeconds();
@@ -145,7 +144,8 @@ public class ExchangeRateTool {
                 ertParams.getFloor(),
                 midnightExchangeRate,
                 currentRate,
-                frequencyInSeconds);
+                frequencyInSeconds,
+                ertParams.getRegion());
 
         final ExchangeRate exchangeRate = proc.call();
 
@@ -169,7 +169,7 @@ public class ExchangeRateTool {
             } else {
                 final var errMessage = String.format("FAILED : The Exchange Rates were not successfully updated on %s",
                         networkName);
-                ERTNotificationHelper.publishMessage(errMessage, errMessage);
+                ERTNotificationHelper.publishMessage(errMessage, errMessage, ertParams.getRegion());
                 LOGGER.error(Exchange.EXCHANGE_FILTER, errMessage);
             }
         }
@@ -207,7 +207,7 @@ public class ExchangeRateTool {
             if (hederaClient == null) {
                 LOGGER.error(Exchange.EXCHANGE_FILTER, "Error while building a Hedera Client");
                 final var subject = String.format("ERROR : Couldn't Build a Hedera Client on %s", networkName);
-                ERTNotificationHelper.publishMessage(subject, "Retrying..");
+                ERTNotificationHelper.publishMessage(subject, "Retrying..", ertParams.getRegion());
                 throw new IllegalStateException(subject);
             }
 

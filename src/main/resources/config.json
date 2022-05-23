@@ -33,6 +33,7 @@
 			"0.0.3": "35.196.144.134:50211"
 		}
 	},
-	"payerAccount": "0.0.57"
+	"payerAccount": "0.0.57",
+  	"region": "us-east-1"
 }
 
