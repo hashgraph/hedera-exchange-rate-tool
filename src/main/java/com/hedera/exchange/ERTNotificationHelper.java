@@ -52,6 +52,7 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
@@ -64,7 +65,6 @@ import static com.hedera.exchange.ERTUtils.getDecryptedEnvironmentVariableFromAW
 
 public final class ERTNotificationHelper {
 	public static final Logger LOGGER = LogManager.getLogger(ERTNotificationHelper.class);
-	public static AmazonSNSClient SNS_CLIENT;
 
 	private ERTNotificationHelper() {
 		throw new UnsupportedOperationException("Utility class");
@@ -79,19 +79,9 @@ public final class ERTNotificationHelper {
 	 */
 	public static void publishMessage(final String subject, final String message, final String region) {
 		try {
-			if (SNS_CLIENT == null) {
-				try {
-					SNS_CLIENT = (AmazonSNSClient) AmazonSNSClientBuilder.standard()
-							.withRegion(Regions.fromName(region))
-							.build();
-				} catch (IllegalArgumentException e) {
-					LOGGER.warn(Exchange.EXCHANGE_FILTER, "Invalid region provided : {}, deafulting ot us-east-1",
-							region);
-					SNS_CLIENT = (AmazonSNSClient) AmazonSNSClientBuilder.standard()
-							.withRegion(Regions.US_EAST_1)
-							.build();
-				}
-			}
+			AmazonSNSClient SNS_CLIENT = (AmazonSNSClient) AmazonSNSClientBuilder.standard()
+					.withRegion(getValidRegion(region))
+					.build();
 			final String SNS_ARN = getDecryptedEnvironmentVariableFromAWS("SNS_ARN");
 			SNS_CLIENT.publish(SNS_ARN, message, subject);
 			SNS_CLIENT.shutdown();
@@ -99,6 +89,16 @@ public final class ERTNotificationHelper {
 			LOGGER.error(Exchange.EXCHANGE_FILTER, "subject length : {} \n message length : {}",
 					subject.length(), message.length());
 			LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to submit  {} : {} \n {}", subject, message, ex);
+		}
+	}
+
+	private static Regions getValidRegion(final String region) {
+		try {
+			return Regions.fromName(region);
+		} catch (IllegalArgumentException ex) {
+			LOGGER.warn(Exchange.EXCHANGE_FILTER, "Invalid region provided : {}, deafulting ot us-east-1",
+					region);
+			return Regions.US_EAST_1;
 		}
 	}
 }
