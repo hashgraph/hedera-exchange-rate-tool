@@ -143,14 +143,14 @@ public class ERTProcessLogic {
 
             if(midnightExchangeRate != null) {
                 if(!midnightExchangeRate.getNextRate().isSmallChange(this.bound, nextRate)) {
-                    LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the nextRate with {}",
-                            midnightExchangeRate.getNextRate().toJson());
-                    nextRate = midnightExchangeRate.getNextRate().clipRate(nextRate, this.bound);
-                } else {
                     String message = String.format("WARNING : Calculated median %s is Invalid with Midnight Rate as %s",
                             nextRate.toJson(), midnightExchangeRate.getNextRate().toJson());
                     LOGGER.warn(message);
                     ERTNotificationHelper.publishMessage("WARNING : Calculated Median is Invalid", message, region);
+
+                    LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the nextRate with {}",
+                            midnightExchangeRate.getNextRate().toJson());
+                    nextRate = midnightExchangeRate.getNextRate().clipRate(nextRate, this.bound);
                 }
                 if(!midnightExchangeRate.getCurrentRate().isSmallChange(this.bound, currentExchangeRate)) {
                     LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the currentRate with {}",
