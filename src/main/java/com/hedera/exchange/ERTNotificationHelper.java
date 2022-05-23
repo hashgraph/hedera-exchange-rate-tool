@@ -79,7 +79,7 @@ public final class ERTNotificationHelper {
 	 */
 	public static void publishMessage(final String subject, final String message, final String region) {
 		try {
-			AmazonSNSClient SNS_CLIENT = (AmazonSNSClient) AmazonSNSClientBuilder.standard()
+			final AmazonSNSClient SNS_CLIENT = (AmazonSNSClient) AmazonSNSClientBuilder.standard()
 					.withRegion(getValidRegion(region))
 					.build();
 			final String SNS_ARN = getDecryptedEnvironmentVariableFromAWS("SNS_ARN");
