@@ -71,6 +71,8 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import static com.hedera.exchange.ERTUtils.getNodesForClient;
+import static com.hedera.exchange.Status.FAILED;
+import static com.hedera.exchange.Status.SUCCESS;
 
 
 /**
@@ -148,26 +150,32 @@ public class ExchangeRateTool {
         final ExchangeRate exchangeRate = proc.call();
 
         for(final String networkName : networks.keySet()) {
-            fileUpdateTransactionForNetwork(
+            final var status = fileUpdateTransactionForNetwork(
                     networkName,
                     operatorId,
                     exchangeRate,
                     midnightExchangeRate,
                     networks.get(networkName));
+            if (status == SUCCESS) {
+                exchangeDB.pushExchangeRate(exchangeRate);
+
+                if (exchangeRate.isMidnightTime()) {
+                    LOGGER.debug(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
+                    exchangeDB.pushMidnightRate(exchangeRate);
+                }
+
+                exchangeDB.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
+                LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
+            } else {
+                final var errMessage = String.format("The Exchange Rates were not successfully updated on %s",
+                        networkName);
+                ERTNotificationHelper.publishMessage(errMessage, errMessage);
+                LOGGER.error(Exchange.EXCHANGE_FILTER, errMessage);
+            }
         }
-
-        exchangeDB.pushExchangeRate(exchangeRate);
-
-        if (exchangeRate.isMidnightTime()) {
-            LOGGER.debug(Exchange.EXCHANGE_FILTER, "This rate expires at midnight. Pushing it to the DB");
-            exchangeDB.pushMidnightRate(exchangeRate);
-        }
-
-        exchangeDB.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
     }
 
-    protected void fileUpdateTransactionForNetwork(
+    protected Status fileUpdateTransactionForNetwork(
             final String networkName,
             final AccountId operatorId,
             final ExchangeRate exchangeRate,
@@ -222,14 +230,14 @@ public class ExchangeRateTool {
                                 networkName
                         );
                     }
-                    return;
+                    return SUCCESS;
                 }
                 catch (ReceiptStatusException rex) {
                     // Only retry if its not ReceiptStatusException as it is already handled in
                     // HederaNetworkCommunicator.updateExchangeRateFileTxn
                     LOGGER.error(Exchange.EXCHANGE_FILTER,
                             "Failed to update the network withe calculated rates with 4 retries.");
-                    return;
+                    return FAILED;
                 }
                 catch (Exception ex) {
                     currentTries++;
@@ -242,6 +250,7 @@ public class ExchangeRateTool {
                 }
             }
         }
+        return FAILED;
     }
 
     /**
