@@ -237,7 +237,7 @@ public class HederaNetworkCommunicator {
                     String rateInNetwork = activeRateFromReceipt.toString();
 
                     LOGGER.info(Exchange.EXCHANGE_FILTER, "Exchange Rates from receipt {}", rateInNetwork);
-                    retryMessage = String.format("%s \n proposed rate : %s \n Rates on Network %s",
+                    retryMessage = String.format("ERROR : %s \n proposed rate : %s \n Rates on Network %s",
                             retryMessage, proposedRate, rateInNetwork);
                     ERTNotificationHelper.publishMessage(subject, retryMessage);
 
@@ -255,7 +255,7 @@ public class HederaNetworkCommunicator {
                     throw ex;
                 }
             } catch (PrecheckStatusException ex) {
-                var subject = String.format("%s : PreCheckStatusException : %s", networkName, ex.status);
+                var subject = String.format("ERROR : %s : PreCheckStatusException : %s", networkName, ex.status);
                 LOGGER.error(Exchange.EXCHANGE_FILTER, subject);
                 ERTNotificationHelper.publishMessage(subject, ExceptionUtils.getStackTrace(ex));
                 if( retryCount++ == DEFAULT_RETRIES ) {

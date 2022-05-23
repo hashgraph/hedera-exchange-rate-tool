@@ -133,10 +133,10 @@ public class Rate {
                     nextRate.toJson(), this.toJson());
             return true;
         } else {
-            String message = String.format("Calculated median %s is Invalid with Midnight Rate as %s",
+            String message = String.format("WARNING : Calculated median %s is Invalid with Midnight Rate as %s",
                     nextRate.toJson(), this.toJson());
             LOGGER.warn(message);
-            ERTNotificationHelper.publishMessage("Calculated Median is Invalid", message);
+            ERTNotificationHelper.publishMessage("WARNING : Calculated Median is Invalid", message);
             return false;
         }
     }
