@@ -106,7 +106,7 @@ public class ExchangeRateTool {
             exchangeDB = ertParams.getExchangeDB();
             execute();
         } catch (Exception ex) {
-            final var subject = "ERT Run Failed";
+            final var subject = "FAILED : ERT Run Failed";
             final var message = ex.getMessage() + "\n";
             LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
             ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex));
@@ -167,7 +167,7 @@ public class ExchangeRateTool {
                 exchangeDB.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
                 LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
             } else {
-                final var errMessage = String.format("The Exchange Rates were not successfully updated on %s",
+                final var errMessage = String.format("FAILED : The Exchange Rates were not successfully updated on %s",
                         networkName);
                 ERTNotificationHelper.publishMessage(errMessage, errMessage);
                 LOGGER.error(Exchange.EXCHANGE_FILTER, errMessage);
@@ -206,7 +206,7 @@ public class ExchangeRateTool {
 
             if (hederaClient == null) {
                 LOGGER.error(Exchange.EXCHANGE_FILTER, "Error while building a Hedera Client");
-                final var subject = String.format("Couldn't Build a Hedera Client on %s", networkName);
+                final var subject = String.format("ERROR : Couldn't Build a Hedera Client on %s", networkName);
                 ERTNotificationHelper.publishMessage(subject, "Retrying..");
                 throw new IllegalStateException(subject);
             }
