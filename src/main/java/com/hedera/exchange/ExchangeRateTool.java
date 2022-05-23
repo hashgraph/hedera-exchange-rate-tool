@@ -175,8 +175,6 @@ public class ExchangeRateTool {
             final Map<String, AccountId> nodesFromConfig) throws IOException, SQLException, TimeoutException {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Performing File update transaction on network {}",
                 networkName);
-        ERTNotificationHelper.publishMessage(
-                "TestMessage : Running ERT on " + networkName, "Test");
 
         final HederaNetworkCommunicator hnc = new HederaNetworkCommunicator(networkName);
 
