@@ -113,7 +113,8 @@ public class ERTProcessLogicTestCases {
                 params.getFloor(),
                 new ExchangeRate(params.getDefaultRate(), params.getDefaultRate()),
                 params.getDefaultRate(),
-                params.getFrequencyInSeconds());
+                params.getFrequencyInSeconds(),
+                params.getRegion());
         final ExchangeRate exchangeRate = ertProcess.call();
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
         assertEquals(expectedCentEquiv, exchangeRateSet.getNextRate().getCentEquiv());
@@ -142,7 +143,8 @@ public class ERTProcessLogicTestCases {
                 params.getFloor(),
                 null,
                 params.getDefaultRate(),
-                params.getFrequencyInSeconds());
+                params.getFrequencyInSeconds(),
+                params.getRegion());
         final ExchangeRate exchangeRate = ertProcess.call();
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
         assertEquals(expectedCentEquiv, exchangeRateSet.getNextRate().getCentEquiv());
@@ -184,7 +186,8 @@ public class ERTProcessLogicTestCases {
                 params.getFloor(),
                 new ExchangeRate(currentRate, currentRate),
                 currentRate,
-                params.getFrequencyInSeconds());
+                params.getFrequencyInSeconds(),
+                params.getRegion());
 
         final ExchangeRate exchangeRate = ertProcess.call();
 
@@ -218,7 +221,8 @@ public class ERTProcessLogicTestCases {
                 params.getFloor(),
                 new ExchangeRate(midnightRate,midnightRate),
                 currentRate,
-                params.getFrequencyInSeconds());
+                params.getFrequencyInSeconds(),
+                params.getRegion());
         final ExchangeRate exchangeRate = ertProcess.call();
         final ExchangeRateSet exchangeRateSet = exchangeRate.toExchangeRateSet();
         assertEquals(expectedCentEquiv, exchangeRateSet.getNextRate().getCentEquiv());
@@ -243,7 +247,8 @@ public class ERTProcessLogicTestCases {
                 params.getFloor(),
                 null,
                 null,
-                params.getFrequencyInSeconds()
+                params.getFrequencyInSeconds(),
+                params.getRegion()
         );
 
         assertEquals(1.0, ertProcess.findVolumeWeightedMedian(

@@ -133,6 +133,9 @@ public class ERTParams {
     @JsonProperty("validationDelayInMilliseconds")
     private int validationDelayInMilliseconds;
 
+    @JsonProperty("region")
+    private String region;
+
     /**
      * Return a ERTParams class populated with the configuration parameters read from the config file.
      * The reading method depends on the argument/config file path passed in the call.
@@ -426,5 +429,13 @@ public class ERTParams {
      */
     public ExchangeDB getExchangeDB() {
         return new ExchangeRateAWSRD(new AWSDBParams());
+    }
+
+    /**
+     * Get the region in which this lambda is configured to be deployed in
+     * @return
+     */
+    public String getRegion() {
+        return this.region;
     }
 }

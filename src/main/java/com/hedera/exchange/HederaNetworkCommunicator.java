@@ -151,7 +151,7 @@ public class HederaNetworkCommunicator {
 
         ERTAddressBook newAddressBook = fetchAddressBook(client);
 
-        updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo);
+        updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo, ertParams.getRegion());
 
         waitForChangesToTakeEffect(ertParams.getValidationDelayInMilliseconds());
 
@@ -193,7 +193,8 @@ public class HederaNetworkCommunicator {
             final FileId exchangeRateFileId,
             final byte[] exchangeRateAsBytes,
             final Client client,
-            final String memo)
+            final String memo,
+            final String region)
             throws TimeoutException, PrecheckStatusException, IOException, ReceiptStatusException {
         int retryCount = 1;
         TransactionReceipt transactionReceipt;
@@ -239,7 +240,7 @@ public class HederaNetworkCommunicator {
                     LOGGER.info(Exchange.EXCHANGE_FILTER, "Exchange Rates from receipt {}", rateInNetwork);
                     retryMessage = String.format("ERROR : %s \n proposed rate : %s \n Rates on Network %s",
                             retryMessage, proposedRate, rateInNetwork);
-                    ERTNotificationHelper.publishMessage(subject, retryMessage);
+                    ERTNotificationHelper.publishMessage(subject, retryMessage, region);
 
                     Rate activeRate = new Rate(activeRateFromReceipt.hbars,
                             activeRateFromReceipt.cents,
@@ -257,7 +258,7 @@ public class HederaNetworkCommunicator {
             } catch (PrecheckStatusException ex) {
                 var subject = String.format("ERROR : %s : PreCheckStatusException : %s", networkName, ex.status);
                 LOGGER.error(Exchange.EXCHANGE_FILTER, subject);
-                ERTNotificationHelper.publishMessage(subject, ExceptionUtils.getStackTrace(ex));
+                ERTNotificationHelper.publishMessage(subject, ExceptionUtils.getStackTrace(ex), region);
                 if( retryCount++ == DEFAULT_RETRIES ) {
                     throw ex;
                 }
