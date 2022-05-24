@@ -96,7 +96,7 @@ public final class ERTNotificationHelper {
 		try {
 			return Regions.fromName(region);
 		} catch (IllegalArgumentException ex) {
-			LOGGER.warn(Exchange.EXCHANGE_FILTER, "Invalid region provided : {}, deafulting ot us-east-1",
+			LOGGER.warn(Exchange.EXCHANGE_FILTER, "Invalid region provided : {}, defaulting to us-east-1",
 					region);
 			return Regions.US_EAST_1;
 		}

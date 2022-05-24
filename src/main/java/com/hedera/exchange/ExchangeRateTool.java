@@ -57,6 +57,7 @@ import com.hedera.hashgraph.sdk.Client;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.Hbar;
+import com.hedera.hashgraph.sdk.PrecheckStatusException;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.ReceiptStatusException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -232,21 +233,26 @@ public class ExchangeRateTool {
                     }
                     return SUCCESS;
                 }
-                catch (ReceiptStatusException rex) {
+                catch (ReceiptStatusException|PrecheckStatusException rex) {
                     // Only retry if its not ReceiptStatusException as it is already handled in
                     // HederaNetworkCommunicator.updateExchangeRateFileTxn
+                    final String subject = String.format("FAILED : The Exchange Rates were not successfully updated on %s", networkName);
+                    final String message = String.format("Failed on network %s. with error : %s", networkName, rex);
                     LOGGER.error(Exchange.EXCHANGE_FILTER,
-                            "Failed to update the network withe calculated rates with 4 retries.");
+                            "Failed to update the network with the calculated rates within 4 retries.");
+                    ERTNotificationHelper.publishMessage(subject, message, ertParams.getRegion());
                     return FAILED;
                 }
                 catch (Exception ex) {
                     currentTries++;
-                    LOGGER.error(Exchange.EXCHANGE_FILTER,
-                            "Failed to execute at try {}/{} on network {}. Retrying. {}",
+                    final String subject = String.format("ERROR : On network %s", networkName);
+                    final String message = String.format("Failed to execute at try %d/%d on network %s. Retrying. %s",
                             currentTries,
                             maxRetries,
                             networkName,
                             ex);
+                    LOGGER.error(subject);
+                    ERTNotificationHelper.publishMessage(subject, message, ertParams.getRegion());
                 }
             }
         }
