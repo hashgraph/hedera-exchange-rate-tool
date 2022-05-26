@@ -61,7 +61,6 @@ import org.flywaydb.core.Flyway;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -86,9 +85,9 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 
 	private static final String LATEST_QUERIED_QUERY = "SELECT e1.expirationTime, e1.queriedrates FROM queried_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM queried_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
-	private final AWSDBParams params;
+	private final DBParams params;
 
-	public ExchangeRateAWSRD(final AWSDBParams params) {
+	public ExchangeRateAWSRD(final DBParams params) {
 		this.params = params;
 		this.migrate();
 	}
@@ -107,7 +106,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	public ExchangeRate getMidnightExchangeRate(long expirationTime) throws SQLException, IOException {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get the midnight exchange rate from midnight rate table " +
 				"with nextExpiration time :{}", expirationTime);
-		try (final Connection conn = getConnection();
+		try (final Connection conn = params.getConnection();
 			 final PreparedStatement prepStatement = conn.prepareStatement(
 					 "SELECT expirationTime, exchangeRateFile FROM midnight_rate where expirationTime = ?")){
 			prepStatement.setLong(1, expirationTime);
@@ -125,7 +124,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	@Override
 	public ERTAddressBook getLatestERTAddressBook(String networkName) throws SQLException, IOException {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get latest ERTAddressBook from address_book table");
-		try (final Connection conn = getConnection();
+		try (final Connection conn = params.getConnection();
 			 final PreparedStatement statement = conn.prepareStatement(LATEST_ADDRESSBOOK_QUERY)) {
 			statement.setString(1, networkName);
 			LOGGER.info(Exchange.EXCHANGE_FILTER,"final query for addressbook : {}",
@@ -147,7 +146,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 		String addressBook = ertAddressBook.toJson();
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "push latest addressBook to  address_book table : {}",
 				addressBook);
-		try (final Connection conn = getConnection();
+		try (final Connection conn = params.getConnection();
 			 final PreparedStatement statement = conn.prepareStatement(
 					 "INSERT INTO address_book (expirationTime,addressBook,networkName) VALUES(?,?::JSON,?)")) {
 			statement.setLong(1, expirationTime);
@@ -160,7 +159,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	@Override
 	public ExchangeRate getLatestExchangeRate() throws SQLException, IOException {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get latest exchange rate from exchange rate table");
-		try (final Connection conn = getConnection();
+		try (final Connection conn = params.getConnection();
 			 final Statement statement = conn.createStatement();
 			 final ResultSet result = statement.executeQuery(LATEST_EXCHANGE_QUERY)) {
 				if (result.next()) {
@@ -176,7 +175,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	public ExchangeRate getExchangeRate(long expirationTime) throws SQLException, IOException {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get the exchange rate from exchange rate table " +
 				"with nextExpiration time :{}", expirationTime);
-		try (final Connection conn = getConnection();
+		try (final Connection conn = params.getConnection();
 			 final PreparedStatement prepStatement = conn.prepareStatement(
 			 "SELECT expirationTime, exchangeRateFile FROM exchange_rate where expirationTime = ?")){
 			prepStatement.setLong(1, expirationTime);
@@ -195,7 +194,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	public String getQueriedRate(long expirationTime) throws SQLException {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get the queried rate from queried rate table " +
 				"with nextExpiration time :{}", expirationTime);
-		try (final Connection conn = getConnection();
+		try (final Connection conn = params.getConnection();
 			 final PreparedStatement prepStatement = conn.prepareStatement(
 					 "SELECT expirationTime, queriedrates FROM queried_rate where expirationTime = ?")){
 			prepStatement.setLong(1, expirationTime);
@@ -213,7 +212,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	@Override
 	public ExchangeRate getLatestMidnightExchangeRate() throws SQLException, IOException {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get midnight exchange rate from midnight rate table");
-		try (final Connection conn = getConnection();
+		try (final Connection conn = params.getConnection();
 			 final Statement statement = conn.createStatement();
 			 final ResultSet result = statement.executeQuery(MIDNIGHT_EXCHANGE_QUERY)) {
 			if (result.next()) {
@@ -228,7 +227,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	@Override
 	public String getLatestQueriedRate() throws SQLException {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "query to get the latest queried rate");
-		try (final Connection conn = getConnection();
+		try (final Connection conn = params.getConnection();
 			 final Statement statement = conn.createStatement();
 			 final ResultSet result = statement.executeQuery(LATEST_QUERIED_QUERY)) {
 			if (result.next()) {
@@ -244,7 +243,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	public void pushExchangeRate(ExchangeRate exchangeRate) throws SQLException, IOException {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "push latest exchange rate to exchange rate table : {}",
 				exchangeRate.toJson());
-		try (final Connection conn = getConnection();
+		try (final Connection conn = params.getConnection();
 			 final PreparedStatement statement = conn.prepareStatement(
 					 "INSERT INTO exchange_rate (expirationTime,exchangeRateFile) VALUES(?,?::JSON)")) {
 			statement.setLong(1, exchangeRate.getNextExpirationTimeInSeconds());
@@ -257,7 +256,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	public void pushMidnightRate(ExchangeRate exchangeRate) throws SQLException, IOException {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "push the midnight exchange rate to midnight rate table : {}",
 				exchangeRate.toJson());
-		try (final Connection conn = getConnection();
+		try (final Connection conn = params.getConnection();
 			 final PreparedStatement statement = conn.prepareStatement(
 					 "INSERT INTO midnight_rate (expirationTime,exchangeRateFile) VALUES(?,?::JSON)")) {
 			statement.setLong(1, exchangeRate.getNextExpirationTimeInSeconds());
@@ -270,21 +269,13 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 	public void pushQueriedRate(long expirationTime, String queriedRate) throws SQLException {
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "push the queried exchanges to queried rate table : {}:{}",
 				expirationTime, queriedRate);
-		try (final Connection conn = getConnection();
+		try (final Connection conn = params.getConnection();
 			 final PreparedStatement statement = conn.prepareStatement(
 					 "INSERT INTO queried_rate (expirationTime,queriedrates) VALUES(?,?::JSON)")) {
 			statement.setLong(1, expirationTime);
 			statement.setObject(2, queriedRate);
 			statement.executeUpdate();
 		}
-	}
-
-	private Connection getConnection() throws SQLException {
-		final String endpoint = this.params.getEndpoint();
-		LOGGER.info(Exchange.EXCHANGE_FILTER, "Connecting to endpoint: {}", endpoint);
-		return DriverManager.getConnection(endpoint,
-				this.params.getUsername(),
-				this.params.getPassword());
 	}
 
 }

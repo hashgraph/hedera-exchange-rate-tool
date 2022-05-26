@@ -53,21 +53,66 @@ package com.hedera.exchange.database;
  */
 
 import com.hedera.exchange.ERTUtils;
+import com.hedera.exchange.Environment;
+import com.hedera.exchange.exchanges.Exchange;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class AWSDBParams {
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class DBParams {
+	private static final Logger LOGGER = LogManager.getLogger(DBParams.class);
+
+	private final Environment env;
+	public DBParams(Environment env) {
+		this.env = env;
+	}
+
 	public String getEndpoint() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("ENDPOINT") + getDatabaseName();
+		if (env == Environment.AWS) {
+			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("ENDPOINT") + getDatabaseName();
+		}
+		else {
+			// TODO
+			return null;
+		}
 	}
 
 	public String getUsername() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("USERNAME");
+		if (env == Environment.AWS) {
+			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("USERNAME");
+		}
+		else {
+			// TODO
+			return null;
+		}
 	}
 
 	public String getPassword() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("PASSWORD");
+		if (env == Environment.AWS) {
+			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("PASSWORD");
+		}
+		else {
+			// TODO
+			return null;
+		}
 	}
 
 	public String getDatabaseName() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("DATABASE");
+		if (env == Environment.AWS) {
+			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("DATABASE");
+		}
+		else {
+			// TODO
+			return null;
+		}
+	}
+
+	public Connection getConnection() throws SQLException {
+		final String endpoint = getEndpoint();
+		LOGGER.info(Exchange.EXCHANGE_FILTER, "Connecting to endpoint: {}", endpoint);
+		return DriverManager.getConnection(endpoint, getUsername(), getPassword());
 	}
 }

@@ -66,8 +66,9 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import com.hedera.exchange.database.GCPExchangeRateDB;
 import com.hedera.hashgraph.sdk.AccountId;
-import com.hedera.exchange.database.AWSDBParams;
+import com.hedera.exchange.database.DBParams;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.database.ExchangeRateAWSRD;
 import com.hedera.exchange.exchanges.Exchange;
@@ -151,12 +152,12 @@ public class ERTParams {
      */
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
-            return readDefaultConfig();
+            return readDefaultConfigFromAWS();
         }
 
         final String configurationPath = args[0];
         if (configurationPath == null || configurationPath.trim().length() < 1) {
-            return readDefaultConfig();
+            return readDefaultConfigFromAWS();
         }
 
         LOGGER.debug("Using configuration file: {}", configurationPath);
@@ -170,10 +171,19 @@ public class ERTParams {
         }
 
         if (configurationPath.contains("TO_DECIDE:AWS_NodeAddressFormat")){
-            return readDefaultConfig(configurationPath);
+            return readDefaultConfigFromAWS(configurationPath);
         }
 
         return readConfig(configurationPath);
+    }
+
+
+    public static ERTParams readConfig(Environment env) throws IOException {
+        if (env == Environment.AWS) {
+            return readDefaultConfigFromAWS();
+        } else {
+            return readDefaultConfigFromGCP();
+        }
     }
 
     /**
@@ -182,7 +192,7 @@ public class ERTParams {
      * @param awsInstanceAddress
      * @return ERTParams object
      */
-    private static ERTParams readDefaultConfig(String awsInstanceAddress) throws IOException {
+    private static ERTParams readDefaultConfigFromAWS(String awsInstanceAddress) throws IOException {
         final String defaultConfigUri = ERTUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
         ERTParams ertParams = readConfigFromAWSS3(defaultConfigUri);
 
@@ -198,9 +208,14 @@ public class ERTParams {
      * @return ERTParams object
      * @throws IOException
      */
-    private static ERTParams readDefaultConfig() throws IOException {
+    private static ERTParams readDefaultConfigFromAWS() throws IOException {
         final String defaultConfigUri = ERTUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
         return readConfigFromAWSS3(defaultConfigUri);
+    }
+
+    private static ERTParams readDefaultConfigFromGCP() throws IOException {
+        // TODO
+        return null;
     }
 
     /**
@@ -427,8 +442,13 @@ public class ERTParams {
      * Get the Database class to read and write the Exchange Rate Files.
      * @return ExchangeRateDb object as we are configured with AWS POSTGRESQL for now.
      */
-    public ExchangeDB getExchangeDB() {
-        return new ExchangeRateAWSRD(new AWSDBParams());
+    public ExchangeDB getExchangeDB(Environment env) {
+        final var dbParams = new DBParams(env);
+        if (env == Environment.AWS)
+            return new ExchangeRateAWSRD(dbParams);
+        else {
+            return new GCPExchangeRateDB(dbParams);
+        }
     }
 
     /**

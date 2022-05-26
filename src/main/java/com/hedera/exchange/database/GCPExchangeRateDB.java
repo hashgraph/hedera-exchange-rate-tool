@@ -54,16 +54,51 @@ package com.hedera.exchange.database;
 
 
 import com.google.cloud.spanner.*;
+import com.hedera.exchange.ERTAddressBook;
 import com.hedera.exchange.ExchangeRate;
 
-public class GCPExchangeRateDB {
+import java.io.IOException;
+import java.sql.SQLException;
+
+public class GCPExchangeRateDB implements ExchangeDB{
 
     // copy instance and db id from spanner website
     private static final String projectId = "ert-public-test-1";
     private static final String instanceId = "ert-spanner-instance";
     private static final String databaseId = "ert_data";
 
-    public static void pushExchangeRate(ExchangeRate exchangeRate){
+    private final DBParams params;
+
+    public GCPExchangeRateDB(DBParams params) {
+        this.params = params;
+    }
+
+    @Override
+    public ExchangeRate getLatestExchangeRate() throws SQLException, IOException {
+        return null;
+    }
+
+    @Override
+    public ExchangeRate getExchangeRate(final long expirationTime) throws SQLException, IOException {
+        return null;
+    }
+
+    @Override
+    public ExchangeRate getLatestMidnightExchangeRate() throws SQLException, IOException {
+        return null;
+    }
+
+    @Override
+    public String getQueriedRate(final long expirationTime) throws SQLException {
+        return null;
+    }
+
+    @Override
+    public String getLatestQueriedRate() throws SQLException {
+        return null;
+    }
+
+    public void pushExchangeRate(ExchangeRate exchangeRate){
         // Instantiates a client
         SpannerOptions options = SpannerOptions.newBuilder().setProjectId(projectId).build();
         Spanner spanner = options.getService();
@@ -94,7 +129,33 @@ public class GCPExchangeRateDB {
         }
     }
 
-    public static void pushMidnightExchangeRate(ExchangeRate exchangeRate){
+    @Override
+    public void pushMidnightRate(final ExchangeRate exchangeRate) throws SQLException, IOException {
+
+    }
+
+    @Override
+    public void pushQueriedRate(final long expirationTime, final String queriedRate) throws SQLException {
+
+    }
+
+    @Override
+    public ExchangeRate getMidnightExchangeRate(final long expirationTime) throws SQLException, IOException {
+        return null;
+    }
+
+    @Override
+    public ERTAddressBook getLatestERTAddressBook(final String networkName) throws SQLException, IOException {
+        return null;
+    }
+
+    @Override
+    public void pushERTAddressBook(final long expirationTime, final ERTAddressBook ertAddressBook,
+            final String networkName) throws SQLException, IOException {
+
+    }
+
+    public void pushMidnightExchangeRate(ExchangeRate exchangeRate){
         // Instantiates a client
         SpannerOptions options = SpannerOptions.newBuilder().setProjectId(projectId).build();
         Spanner spanner = options.getService();
@@ -126,7 +187,7 @@ public class GCPExchangeRateDB {
     }
 
     // TODO build a DS to hold all the queries to exchanges and data they sent back
-    public static void pushQueriedExchangesData(){
+    public void pushQueriedExchangesData(){
         // Instantiates a client
         SpannerOptions options = SpannerOptions.newBuilder().setProjectId(projectId).build();
         Spanner spanner = options.getService();
@@ -157,7 +218,7 @@ public class GCPExchangeRateDB {
         }
     }
 
-    public static void getMidnightExchange(long expirationTime){
+    public void getMidnightExchange(long expirationTime){
         // Instantiates a client
         SpannerOptions options = SpannerOptions.newBuilder().setProjectId(projectId).build();
         Spanner spanner = options.getService();

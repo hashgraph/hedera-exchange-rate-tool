@@ -61,7 +61,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hedera.exchange.ExchangeRate;
 import com.hedera.exchange.Rate;
-import com.hedera.exchange.database.AWSDBParams;
+import com.hedera.exchange.database.DBParams;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.database.ExchangeRateAWSRD;
 import com.hedera.exchange.exchanges.Exchange;
@@ -129,7 +129,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
                 }
             }
 
-            final ExchangeDB exchangeDb = new ExchangeRateAWSRD(new AWSDBParams());
+            final ExchangeDB exchangeDb = new ExchangeRateAWSRD(new DBParams());
             LOGGER.info(Exchange.EXCHANGE_FILTER, "params received : {}", no_of_records);
             NO_OF_RECORDS = no_of_records;
             ExchangeRate midnightRate = exchangeDb.getLatestMidnightExchangeRate();

@@ -52,6 +52,9 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.google.cloud.functions.HttpFunction;
+import com.google.cloud.functions.HttpRequest;
+import com.google.cloud.functions.HttpResponse;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.Client;
 import com.hedera.exchange.database.ExchangeDB;
@@ -81,12 +84,15 @@ import static com.hedera.exchange.Status.SUCCESS;
  *
  * @author Anirudh, Cesar
  */
-public class ExchangeRateTool {
+public class ExchangeRateTool implements HttpFunction{
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
+    private static final String AWS_TAG = "aws";
+    private static final String GCP_TAG = "gcp";
     private static final Map<String, AccountId> emptyMap = Collections.emptyMap();
 
     static final int DEFAULT_RETRIES = 4;
 
+    private Environment env;
     private ERTParams ertParams;
     private ExchangeDB exchangeDB;
 
@@ -103,14 +109,30 @@ public class ExchangeRateTool {
     protected void run(final String ... args) {
         LOGGER.debug(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
         try {
-            ertParams = ERTParams.readConfig(args);
-            exchangeDB = ertParams.getExchangeDB();
+            env = validateTag(args);
+            ertParams = ERTParams.readConfig(env);
+            exchangeDB = ertParams.getExchangeDB(env);
             execute();
         } catch (Exception ex) {
             final var subject = "FAILED : ERT Run Failed";
             final var message = ex.getMessage() + "\n";
             LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
             ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex), ertParams.getRegion());
+        }
+    }
+
+    private Environment validateTag(final String[] args) {
+        if (args == null || args.length != 1 || !(args[0].matches(AWS_TAG) && args[0].matches(GCP_TAG))) {
+            LOGGER.error(Exchange.EXCHANGE_FILTER, "invalid tag provided. Has to be one of {}, {}", GCP_TAG, AWS_TAG);
+            throw new IllegalArgumentException("Invalid tag provided. Has to be one of " + GCP_TAG + ", " + AWS_TAG);
+        }
+
+        if (args[0].matches(AWS_TAG)) {
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Running on AWS Lambda");
+            return Environment.AWS;
+        } else {
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Running on GCP Cloud Functions");
+            return Environment.GCP;
         }
     }
 
@@ -281,5 +303,11 @@ public class ExchangeRateTool {
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Using default exchange rate as current exchange rate");
         return params.getDefaultRate();
+    }
+
+    @Override
+    public void service(final HttpRequest httpRequest, final HttpResponse httpResponse) throws Exception {
+        // this will be called from GCP cloud function.
+        // just call main with GCP tag
     }
 }
