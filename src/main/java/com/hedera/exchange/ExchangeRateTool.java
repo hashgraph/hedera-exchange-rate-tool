@@ -88,9 +88,10 @@ public class ExchangeRateTool implements HttpFunction{
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
     private static final String AWS_TAG = "aws";
     private static final String GCP_TAG = "gcp";
-    private static final Map<String, AccountId> emptyMap = Collections.emptyMap();
+    private static final Map<String, AccountId> EMPTY_MAP = Collections.emptyMap();
 
     static final int DEFAULT_RETRIES = 4;
+    static final String LAMBDA_FUNCTION_NAME = System.getenv("AWS_LAMBDA_FUNCTION_NAME");
 
     private Environment env;
     private ERTParams ertParams;
@@ -114,7 +115,7 @@ public class ExchangeRateTool implements HttpFunction{
             exchangeDB = ertParams.getExchangeDB(env);
             execute();
         } catch (Exception ex) {
-            final var subject = "FAILED : ERT Run Failed";
+            final var subject = "FAILED : ERT Run Failed on " + LAMBDA_FUNCTION_NAME;
             final var message = ex.getMessage() + "\n";
             LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
             ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex), ertParams.getRegion());
@@ -213,7 +214,7 @@ public class ExchangeRateTool implements HttpFunction{
                 PrivateKey.fromString(ertParams.getOperatorKey(networkName));
         final ERTAddressBook ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
         final var nodesFromPrevRun = ertAddressBookFromPreviousRun != null ?
-                getNodesForClient(ertAddressBookFromPreviousRun.getNodes()) : emptyMap;
+                getNodesForClient(ertAddressBookFromPreviousRun.getNodes()) : EMPTY_MAP;
 
         final Map<String, AccountId> nodesForClient = nodesFromPrevRun.isEmpty() ? nodesFromPrevRun : nodesFromConfig;
 

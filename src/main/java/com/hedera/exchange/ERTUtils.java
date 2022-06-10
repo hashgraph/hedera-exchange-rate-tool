@@ -88,6 +88,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.hedera.exchange.ExchangeRateTool.LAMBDA_FUNCTION_NAME;
+
 /**
  * This class implements helper functions of ERT
  *  1. To get the decrypted environment variables set in AWS
@@ -130,8 +132,7 @@ public final class ERTUtils {
 	 */
 	public static String getDecryptedEnvironmentVariableFromAWS(final String environmentVariable) {
 		final String environmentValue = System.getenv(environmentVariable);
-		final String lambdaFunctionName = System.getenv("AWS_LAMBDA_FUNCTION_NAME");
-		return getDecryptedValueFromAWS(environmentValue, lambdaFunctionName);
+		return getDecryptedValueFromAWS(environmentValue, LAMBDA_FUNCTION_NAME);
 	}
 
 	static String getDecryptedValueFromAWS(final String value, final String lambdaFunctionName) {
