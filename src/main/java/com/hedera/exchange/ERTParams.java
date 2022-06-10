@@ -70,7 +70,7 @@ import com.hedera.exchange.database.GCPExchangeRateDB;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.exchange.database.DBParams;
 import com.hedera.exchange.database.ExchangeDB;
-import com.hedera.exchange.database.ExchangeRateAWSRD;
+import com.hedera.exchange.database.QueryHelper;
 import com.hedera.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -445,7 +445,7 @@ public class ERTParams {
     public ExchangeDB getExchangeDB(Environment env) {
         final var dbParams = new DBParams(env);
         if (env == Environment.AWS)
-            return new ExchangeRateAWSRD(dbParams);
+            return new QueryHelper(dbParams);
         else {
             return new GCPExchangeRateDB(dbParams);
         }

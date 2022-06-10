@@ -76,7 +76,8 @@ public class DBParams {
 		}
 		else {
 			// TODO
-			return null;
+			// jdbc:mysql://35.225.57.43:3306/
+			return "jdbc:mysql://35.225.57.43:3306/";
 		}
 	}
 
@@ -86,7 +87,8 @@ public class DBParams {
 		}
 		else {
 			// TODO
-			return null;
+			// exchange
+			return "exchange";
 		}
 	}
 
@@ -96,7 +98,8 @@ public class DBParams {
 		}
 		else {
 			// TODO
-			return null;
+			// hedera
+			return "hedera";
 		}
 	}
 
@@ -106,7 +109,8 @@ public class DBParams {
 		}
 		else {
 			// TODO
-			return null;
+			// exchangeRate
+			return "exchangeRate";
 		}
 	}
 

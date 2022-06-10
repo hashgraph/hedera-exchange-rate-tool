@@ -73,9 +73,9 @@ import java.sql.Statement;
  * If you foresee doing more of this mapping, I would recommend moving to JPA/Hibernate.
  *
  */
-public class ExchangeRateAWSRD implements ExchangeDB {
+public class QueryHelper implements ExchangeDB {
 
-	private static final Logger LOGGER = LogManager.getLogger(ExchangeRateAWSRD.class);
+	private static final Logger LOGGER = LogManager.getLogger(QueryHelper.class);
 
 	private static final String LATEST_EXCHANGE_QUERY = "SELECT e1.expirationTime, e1.exchangeRateFile FROM exchange_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM exchange_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
@@ -87,7 +87,7 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 
 	private final DBParams params;
 
-	public ExchangeRateAWSRD(final DBParams params) {
+	public QueryHelper(final DBParams params) {
 		this.params = params;
 		this.migrate();
 	}

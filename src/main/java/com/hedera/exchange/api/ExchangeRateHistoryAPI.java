@@ -63,7 +63,7 @@ import com.hedera.exchange.ExchangeRate;
 import com.hedera.exchange.Rate;
 import com.hedera.exchange.database.DBParams;
 import com.hedera.exchange.database.ExchangeDB;
-import com.hedera.exchange.database.ExchangeRateAWSRD;
+import com.hedera.exchange.database.QueryHelper;
 import com.hedera.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -129,7 +129,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
                 }
             }
 
-            final ExchangeDB exchangeDb = new ExchangeRateAWSRD(new DBParams());
+            final ExchangeDB exchangeDb = new QueryHelper(new DBParams());
             LOGGER.info(Exchange.EXCHANGE_FILTER, "params received : {}", no_of_records);
             NO_OF_RECORDS = no_of_records;
             ExchangeRate midnightRate = exchangeDb.getLatestMidnightExchangeRate();

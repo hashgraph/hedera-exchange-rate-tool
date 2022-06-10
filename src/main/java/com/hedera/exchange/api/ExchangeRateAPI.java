@@ -55,7 +55,7 @@ package com.hedera.exchange.api;
 import com.hedera.exchange.ExchangeRate;
 import com.hedera.exchange.database.DBParams;
 import com.hedera.exchange.database.ExchangeDB;
-import com.hedera.exchange.database.ExchangeRateAWSRD;
+import com.hedera.exchange.database.QueryHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,7 +75,7 @@ public class ExchangeRateAPI {
 	}
 
 	public static LambdaResponse getLatest() throws Exception {
-		final ExchangeDB exchangeDb = new ExchangeRateAWSRD(new DBParams());
+		final ExchangeDB exchangeDb = new QueryHelper(new DBParams());
 		final ExchangeRate latestExchangeRate = exchangeDb.getLatestExchangeRate();
 		if (latestExchangeRate == null) {
 			return new LambdaResponse(200, "No exchange rate available yet");
