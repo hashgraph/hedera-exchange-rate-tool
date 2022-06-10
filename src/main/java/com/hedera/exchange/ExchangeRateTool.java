@@ -83,9 +83,11 @@ import static com.hedera.exchange.Status.SUCCESS;
  */
 public class ExchangeRateTool {
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
-    private static final Map<String, AccountId> emptyMap = Collections.emptyMap();
+    private static final Map<String, AccountId> EMPTY_MAP = Collections.emptyMap();
 
     static final int DEFAULT_RETRIES = 4;
+
+    static final String LAMBDA_FUNCTION_NAME = System.getenv("AWS_LAMBDA_FUNCTION_NAME");
 
     private ERTParams ertParams;
     private ExchangeDB exchangeDB;
@@ -107,7 +109,7 @@ public class ExchangeRateTool {
             exchangeDB = ertParams.getExchangeDB();
             execute();
         } catch (Exception ex) {
-            final var subject = "FAILED : ERT Run Failed";
+            final var subject = "FAILED : ERT Run Failed on " + LAMBDA_FUNCTION_NAME;
             final var message = ex.getMessage() + "\n";
             LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
             ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex), ertParams.getRegion());
@@ -191,7 +193,7 @@ public class ExchangeRateTool {
                 PrivateKey.fromString(ertParams.getOperatorKey(networkName));
         final ERTAddressBook ertAddressBookFromPreviousRun = exchangeDB.getLatestERTAddressBook(networkName);
         final var nodesFromPrevRun = ertAddressBookFromPreviousRun != null ?
-                getNodesForClient(ertAddressBookFromPreviousRun.getNodes()) : emptyMap;
+                getNodesForClient(ertAddressBookFromPreviousRun.getNodes()) : EMPTY_MAP;
 
         final Map<String, AccountId> nodesForClient = nodesFromPrevRun.isEmpty() ? nodesFromPrevRun : nodesFromConfig;
 
