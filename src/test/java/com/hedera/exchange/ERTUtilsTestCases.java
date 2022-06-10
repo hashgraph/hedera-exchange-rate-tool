@@ -113,7 +113,7 @@ class ERTUtilsTestCases {
 		final String encryptedValue = "AQICAHi3BYYdRzjj1ZR5ij/3mN6+GWqEbw7NTAG0fm7nzYo3MwHyBlKsmA+1lepLUe" +
 				"+0rgeFAAAApzCBpAYJKoZIhvcNAQcGoIGWMIGTAgEAMIGNBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDLHJjkIANloMVIhCdgIBEIBg9HnXBKnxE3c4H5/17ilQR0G6DqZKH6dzBnhkUAjYbg1sBuStjVA8rQwBUtiSKO7b5ehQh+OxnrJxVbHAZNylSH71fr7OICMI3iA2qkIM8gtWNG1htphGhkDLCRcaw5Xh";
 		final String lambdaFunctionName = "exchange-rate-tool-lambda-integration";
-		assertEquals(expectedValue, ERTUtils.getDecryptedValueFromAWS(encryptedValue),
+		assertEquals(expectedValue, ERTUtils.getDecryptedValueFromAWS(encryptedValue, lambdaFunctionName),
 				"AWS lambda Decryption not working as expected.");
 	}
 
@@ -121,7 +121,7 @@ class ERTUtilsTestCases {
 	void generateExchangesTest() {
 		//setup
 		final Map<String, String> exchangeAPIs = new HashMap<>() {{
-			put("bitrex", "https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=USD-HBAR");
+			put("bitmart", "https://api-cloud.bitmart.com/contract/v1/tickers?contract_symbol=HBARUSDT");
 			put("okcoin", "https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker");
 		}};
 

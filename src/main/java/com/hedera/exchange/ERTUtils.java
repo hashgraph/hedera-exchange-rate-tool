@@ -132,12 +132,12 @@ public final class ERTUtils {
 	 */
 	public static String getDecryptedEnvironmentVariableFromAWS(final String environmentVariable) {
 		final String environmentValue = System.getenv(environmentVariable);
-		return getDecryptedValueFromAWS(environmentValue);
+		return getDecryptedValueFromAWS(environmentValue, LAMBDA_FUNCTION_NAME);
 	}
 
-	static String getDecryptedValueFromAWS(final String value) {
+	static String getDecryptedValueFromAWS(final String value, final String lambdaFunctionName) {
 		Map<String, String> encryptionContext = new HashMap<>();
-		encryptionContext.put("LambdaFunctionName", LAMBDA_FUNCTION_NAME);
+		encryptionContext.put("LambdaFunctionName", lambdaFunctionName);
 		final byte[] encryptedKey = Base64.decode(value);
 
 		final AWSKMS client = AWSKMSClientBuilder.defaultClient();
