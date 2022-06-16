@@ -19,6 +19,7 @@
 	"floorCentsPerHbar": 4,
     "fileId": "0.0.112",
     "maxTransactionFee": 10000000,
+  	"validationDelayInMilliseconds": 10000,
 	"exchangeRateAllowedPercentage": "25",
     "operatorId": "0.0.57",
 	"Nodes": {

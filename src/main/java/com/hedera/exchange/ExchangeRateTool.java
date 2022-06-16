@@ -266,7 +266,7 @@ public class ExchangeRateTool implements HttpFunction{
                     final String subject = String.format("FAILED : The Exchange Rates were not successfully updated on %s", networkName);
                     final String message = String.format("Failed on network %s. with error : %s", networkName, rex);
                     LOGGER.error(Exchange.EXCHANGE_FILTER,
-                            "Failed to update the network with the calculated rates within 4 retries.");
+                            "Failed to update the network with the calculated rates within 4 retries.", rex);
                     ERTNotificationHelper.publishMessage(subject, message, ertParams.getRegion());
                     return FAILED;
                 }
@@ -278,7 +278,7 @@ public class ExchangeRateTool implements HttpFunction{
                             maxRetries,
                             networkName,
                             ex);
-                    LOGGER.error(subject);
+                    LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
                     ERTNotificationHelper.publishMessage(subject, message, ertParams.getRegion());
                 }
             }
