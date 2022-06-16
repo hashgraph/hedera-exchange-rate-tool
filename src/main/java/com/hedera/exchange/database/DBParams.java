@@ -62,61 +62,54 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class DBParams {
+import static com.hedera.exchange.ExchangeRateTool.env;
+
+public final class DBParams {
 	private static final Logger LOGGER = LogManager.getLogger(DBParams.class);
 
-	private final Environment env;
-	public DBParams(Environment env) {
-		this.env = env;
+	public DBParams() {
+		throw new UnsupportedOperationException("Utility Class");
 	}
 
-	public String getEndpoint() {
+	public static String getEndpoint() {
 		if (env == Environment.AWS) {
 			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("ENDPOINT") + getDatabaseName();
 		}
 		else {
-			// TODO
-			// jdbc:mysql://35.225.57.43:3306/
-			return "jdbc:mysql://35.225.57.43:3306/";
+			LOGGER.info(Exchange.EXCHANGE_FILTER, "endpoint: {}", System.getenv("ENDPOINT") + System.getenv("DATABASE"));
+			return System.getenv("ENDPOINT") + System.getenv("DATABASE");
 		}
 	}
 
-	public String getUsername() {
+	public static String getUsername() {
 		if (env == Environment.AWS) {
 			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("USERNAME");
 		}
 		else {
-			// TODO
-			// exchange
-			return "exchange";
+			return System.getenv("USERNAME");
 		}
 	}
 
-	public String getPassword() {
+	public static String getPassword() {
 		if (env == Environment.AWS) {
 			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("PASSWORD");
 		}
 		else {
-			// TODO
-			// hedera
-			return "hedera";
+			return System.getenv("PASSWORD");
 		}
 	}
 
-	public String getDatabaseName() {
+	public static String getDatabaseName() {
 		if (env == Environment.AWS) {
 			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("DATABASE");
 		}
 		else {
-			// TODO
-			// exchangeRate
-			return "exchangeRate";
+			return System.getenv("DATABASE");
 		}
 	}
 
-	public Connection getConnection() throws SQLException {
+	public static Connection getConnection() throws SQLException {
 		final String endpoint = getEndpoint();
-		LOGGER.info(Exchange.EXCHANGE_FILTER, "Connecting to endpoint: {}", endpoint);
 		return DriverManager.getConnection(endpoint, getUsername(), getPassword());
 	}
 }

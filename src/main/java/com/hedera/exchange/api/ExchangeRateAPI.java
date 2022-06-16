@@ -52,13 +52,17 @@ package com.hedera.exchange.api;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.hedera.exchange.Environment;
 import com.hedera.exchange.ExchangeRate;
+import com.hedera.exchange.ExchangeRateTool;
 import com.hedera.exchange.database.DBParams;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.database.QueryHelper;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.hedera.exchange.Environment.AWS;
 
 /**
  * This class implements an API that one can trigger using an AWS lambda for example and get the latest Exchange rate file
@@ -75,7 +79,9 @@ public class ExchangeRateAPI {
 	}
 
 	public static LambdaResponse getLatest() throws Exception {
-		final ExchangeDB exchangeDb = new QueryHelper(new DBParams());
+		// currently only supported on AWS
+		ExchangeRateTool.env = AWS;
+		final ExchangeDB exchangeDb = new QueryHelper();
 		final ExchangeRate latestExchangeRate = exchangeDb.getLatestExchangeRate();
 		if (latestExchangeRate == null) {
 			return new LambdaResponse(200, "No exchange rate available yet");

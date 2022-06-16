@@ -68,9 +68,7 @@ import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.ReceiptStatusException;
 import com.hedera.hashgraph.sdk.TransactionReceipt;
 import com.hedera.hashgraph.sdk.TransactionResponse;
-import com.hedera.hashgraph.sdk.proto.FileServiceGrpc;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -257,8 +255,8 @@ public class HederaNetworkCommunicator {
                 }
             } catch (PrecheckStatusException ex) {
                 var subject = String.format("ERROR : %s : PreCheckStatusException : %s", networkName, ex.status);
-                LOGGER.error(Exchange.EXCHANGE_FILTER, subject);
-                ERTNotificationHelper.publishMessage(subject, ExceptionUtils.getStackTrace(ex), region);
+                LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
+                ERTNotificationHelper.publishMessage(subject, ex.getMessage(), region);
                 if( retryCount++ == DEFAULT_RETRIES ) {
                     throw ex;
                 }

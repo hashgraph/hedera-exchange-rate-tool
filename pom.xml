@@ -217,6 +217,11 @@
             <artifactId>functions-framework-api</artifactId>
             <version>1.0.4</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-pubsub</artifactId>
+            <version>1.119.1</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -243,7 +248,23 @@
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
+            <plugin>
+                <!--
+				  Google Cloud Functions Framework Maven plugin
 
+				  This plugin allows you to run Cloud Functions Java code
+				  locally. Use the following terminal command to run a
+				  given function locally:
+
+				  mvn function:run -Drun.functionTarget=your.package.yourFunction
+				-->
+                <groupId>com.google.cloud.functions</groupId>
+                <artifactId>function-maven-plugin</artifactId>
+                <version>0.10.0</version>
+                <configuration>
+                    <functionTarget>com.hedera.exchange.ExchangeRateTool</functionTarget>
+                </configuration>
+            </plugin>
             <plugin>
                 <!-- To re-generate the LICENSE.txt and copyright headers, execute the Maven goals
                 "license:update-project-license" and "license:update-file-header". -->
@@ -302,7 +323,30 @@
                     </argLine>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <outputFile>${project.build.directory}/deployment/${build.finalName}.jar</outputFile>
+                            <transformers>
+                                <!-- This may be needed if you need to shade a signed JAR -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <resource>.SF</resource>
+                                    <resource>.DSA</resource>
+                                    <resource>.RSA</resource>
+                                </transformer>
+                                <!-- This is needed if you have dependencies that use Service Loader. Most Google Cloud client libraries does. -->
+                                <transformer implementation=
+                                                     "org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

@@ -63,10 +63,10 @@ import com.hedera.hashgraph.sdk.Hbar;
 import com.hedera.hashgraph.sdk.PrecheckStatusException;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.ReceiptStatusException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -91,9 +91,10 @@ public class ExchangeRateTool implements HttpFunction{
     private static final Map<String, AccountId> EMPTY_MAP = Collections.emptyMap();
 
     static final int DEFAULT_RETRIES = 4;
-    static final String LAMBDA_FUNCTION_NAME = System.getenv("AWS_LAMBDA_FUNCTION_NAME");
 
-    private Environment env;
+    public static Environment env;
+    static String FUNCTION_NAME;
+
     private ERTParams ertParams;
     private ExchangeDB exchangeDB;
 
@@ -111,19 +112,22 @@ public class ExchangeRateTool implements HttpFunction{
         LOGGER.debug(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
         try {
             env = validateTag(args);
-            ertParams = ERTParams.readConfig(env);
-            exchangeDB = ertParams.getExchangeDB(env);
+            FUNCTION_NAME = env == Environment.AWS ?
+                    System.getenv("AWS_LAMBDA_FUNCTION_NAME") :
+                    System.getenv("K_SERVICE");
+            ertParams = ERTParams.readConfig();
+            exchangeDB = ertParams.getExchangeDB();
             execute();
         } catch (Exception ex) {
-            final var subject = "FAILED : ERT Run Failed on " + LAMBDA_FUNCTION_NAME;
+            final var subject = "FAILED : ERT Run Failed on " + FUNCTION_NAME;
             final var message = ex.getMessage() + "\n";
             LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
-            ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex), ertParams.getRegion());
+            ERTNotificationHelper.publishMessage(subject, message + ex.getMessage(), ertParams.getRegion());
         }
     }
 
     private Environment validateTag(final String[] args) {
-        if (args == null || args.length != 1 || !(args[0].matches(AWS_TAG) && args[0].matches(GCP_TAG))) {
+        if (args == null || args.length != 1 || !(args[0].matches(AWS_TAG) || args[0].matches(GCP_TAG))) {
             LOGGER.error(Exchange.EXCHANGE_FILTER, "invalid tag provided. Has to be one of {}, {}", GCP_TAG, AWS_TAG);
             throw new IllegalArgumentException("Invalid tag provided. Has to be one of " + GCP_TAG + ", " + AWS_TAG);
         }
@@ -310,5 +314,8 @@ public class ExchangeRateTool implements HttpFunction{
     public void service(final HttpRequest httpRequest, final HttpResponse httpResponse) throws Exception {
         // this will be called from GCP cloud function.
         // just call main with GCP tag
+        BufferedWriter writer = httpResponse.getWriter();
+        writer.write("Hello World!");
+        main("gcp");
     }
 }

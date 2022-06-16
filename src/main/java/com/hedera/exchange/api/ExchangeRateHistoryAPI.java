@@ -59,7 +59,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.hedera.exchange.Environment;
 import com.hedera.exchange.ExchangeRate;
+import com.hedera.exchange.ExchangeRateTool;
 import com.hedera.exchange.Rate;
 import com.hedera.exchange.database.DBParams;
 import com.hedera.exchange.database.ExchangeDB;
@@ -87,6 +89,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+
+import static com.hedera.exchange.Environment.AWS;
 
 /**
  * This class implements an API which returns the data from the last 'n'[defaulted to 5] successful runs of ERT
@@ -128,8 +132,9 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
                     no_of_records = Integer.parseInt((String) queryStringParameters.get("no_of_records"));
                 }
             }
-
-            final ExchangeDB exchangeDb = new QueryHelper(new DBParams());
+            // currently only supported on AWS
+            ExchangeRateTool.env = AWS;
+            final ExchangeDB exchangeDb = new QueryHelper();
             LOGGER.info(Exchange.EXCHANGE_FILTER, "params received : {}", no_of_records);
             NO_OF_RECORDS = no_of_records;
             ExchangeRate midnightRate = exchangeDb.getLatestMidnightExchangeRate();

@@ -83,6 +83,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static com.hedera.exchange.ExchangeRateTool.env;
+
 /**
  * This class reads the parameters from the config file and provides get methods to fetch the configuration parameters.
  *
@@ -178,7 +180,7 @@ public class ERTParams {
     }
 
 
-    public static ERTParams readConfig(Environment env) throws IOException {
+    public static ERTParams readConfig() throws IOException {
         if (env == Environment.AWS) {
             return readDefaultConfigFromAWS();
         } else {
@@ -215,7 +217,7 @@ public class ERTParams {
 
     private static ERTParams readDefaultConfigFromGCP() throws IOException {
         // TODO
-        return null;
+        return readConfig("src/main/resources/config.json");
     }
 
     /**
@@ -419,7 +421,11 @@ public class ERTParams {
 
     @JsonIgnore
     public String getOperatorKey(String networkName) {
-        return ERTUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY_" + networkName);
+        if (env == Environment.AWS) {
+            return ERTUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY_" + networkName);
+        } else {
+            return System.getenv("OPERATOR_KEY_" + networkName);
+        }
     }
 
     /**
@@ -442,13 +448,8 @@ public class ERTParams {
      * Get the Database class to read and write the Exchange Rate Files.
      * @return ExchangeRateDb object as we are configured with AWS POSTGRESQL for now.
      */
-    public ExchangeDB getExchangeDB(Environment env) {
-        final var dbParams = new DBParams(env);
-        if (env == Environment.AWS)
-            return new QueryHelper(dbParams);
-        else {
-            return new GCPExchangeRateDB(dbParams);
-        }
+    public ExchangeDB getExchangeDB() {
+        return new QueryHelper();
     }
 
     /**
