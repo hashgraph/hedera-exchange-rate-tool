@@ -68,7 +68,6 @@ import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.ReceiptStatusException;
 import com.hedera.hashgraph.sdk.TransactionReceipt;
 import com.hedera.hashgraph.sdk.TransactionResponse;
-import com.hedera.hashgraph.sdk.proto.FileServiceGrpc;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
@@ -93,7 +92,8 @@ import static com.hedera.hashgraph.sdk.Status.SUCCESS;
 public class HederaNetworkCommunicator {
 
     private static final Logger LOGGER = LogManager.getLogger(HederaNetworkCommunicator.class);
-    private static final String UPDATE_ERROR_MESSAGE = "The Exchange Rates were not updated successfully";
+    private static final String UPDATE_ERROR_MESSAGE =
+            "The Exchange Rate file contents defer from what we pushed.";
     private static final String ADDRESS_BOOK_FILE_ID = "0.0.101";
 
     private final String networkName;
@@ -292,7 +292,7 @@ public class HederaNetworkCommunicator {
                 Arrays.hashCode(contentsRetrieved));
         if (!Arrays.equals(exchangeRateAsBytes, contentsRetrieved)) {
             LOGGER.error(Exchange.EXCHANGE_FILTER, UPDATE_ERROR_MESSAGE);
-            throw new RuntimeException(UPDATE_ERROR_MESSAGE);
+            throw new IllegalStateException(UPDATE_ERROR_MESSAGE);
         }
     }
 
@@ -323,7 +323,7 @@ public class HederaNetworkCommunicator {
         final FileId addressBookFileId = FileId.fromString(ADDRESS_BOOK_FILE_ID);
         final NodeAddressBook addressBook = NodeAddressBook.parseFrom(
                 getFileContentsQuery(client, addressBookFileId));
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "addressBook file contents {}", addressBook);
+        LOGGER.debug(Exchange.EXCHANGE_FILTER, "addressBook file contents {}", addressBook);
 
         Map<String, String> addressBookNodes = new HashMap<>();
         if (addressBook.getNodeAddressCount() > 0) {
@@ -354,7 +354,7 @@ public class HederaNetworkCommunicator {
                 .setFileId(fileId)
                 .getCost(client);
         LOGGER.debug(Exchange.EXCHANGE_FILTER, "Cost to get file {} contents is : {}", fileId, getContentsQueryFee);
-        client.setMaxQueryPayment(getContentsQueryFee);
+        client.setDefaultMaxQueryPayment(getContentsQueryFee);
 
         final ByteString contentsResponse = new FileContentsQuery()
                 .setFileId(fileId)
