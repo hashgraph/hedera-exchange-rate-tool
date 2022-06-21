@@ -80,7 +80,7 @@ public final class DBParams {
 		}
 		else {
 			LOGGER.error(Exchange.EXCHANGE_FILTER, "should not be possible");
-			return "";
+			return System.getenv("ENDPOINT") + getDatabaseName();
 		}
 	}
 

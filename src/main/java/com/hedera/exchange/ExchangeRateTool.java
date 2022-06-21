@@ -84,11 +84,12 @@ import static com.hedera.exchange.Status.SUCCESS;
  *
  * @author Anirudh, Cesar
  */
-public class ExchangeRateTool implements HttpFunction{
+public class ExchangeRateTool{
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
-    private static final String AWS_TAG = "aws";
-    private static final String GCP_TAG = "gcp";
     private static final Map<String, AccountId> EMPTY_MAP = Collections.emptyMap();
+
+    protected static final String AWS_TAG = "aws";
+    protected static final String GCP_TAG = "gcp";
 
     static final int DEFAULT_RETRIES = 4;
 
@@ -97,11 +98,6 @@ public class ExchangeRateTool implements HttpFunction{
 
     private ERTParams ertParams;
     private ExchangeDB exchangeDB;
-
-    public static void main(final String ... args) {
-        ExchangeRateTool ert = new ExchangeRateTool();
-        ert.run("gcp");
-    }
 
     /**
      * This method executes the ERT logic and if an execution fails, it retries for the a fixed number of times
@@ -310,12 +306,8 @@ public class ExchangeRateTool implements HttpFunction{
         return params.getDefaultRate();
     }
 
-    @Override
-    public void service(final HttpRequest httpRequest, final HttpResponse httpResponse) throws Exception {
-        // this will be called from GCP cloud function.
-        // just call main with GCP tag
-        BufferedWriter writer = httpResponse.getWriter();
-        writer.write("Hello World!");
-        main("gcp");
+    public static void main(final String ... args) {
+        ExchangeRateTool ert = new ExchangeRateTool();
+        ert.run("gcp");
     }
 }

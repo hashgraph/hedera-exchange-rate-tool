@@ -51,7 +51,7 @@
         <amazonaws-lambda.version>1.2.1</amazonaws-lambda.version>
         <amazonaws-log4j.version>1.5.1</amazonaws-log4j.version>
         <amazonaws-sns.version>1.12.237</amazonaws-sns.version>
-        <hedera-java-sdk.version>2.15.0</hedera-java-sdk.version>
+        <hedera-java-sdk.version>2.16.0-beta.1</hedera-java-sdk.version>
     </properties>
 
 
@@ -159,112 +159,12 @@
             <groupId>com.hedera.hashgraph</groupId>
             <artifactId>sdk-jdk7</artifactId>
             <version>${hedera-java-sdk.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- netty transport (for server or desktop applications) -->
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
-            <version>1.40.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-protobuf-lite</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-        <groupId>io.grpc</groupId>
-        <artifactId>grpc-api</artifactId>
-        <version>1.40.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-protobuf</artifactId>
-            <version>1.40.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-alts</artifactId>
-            <version>1.40.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-grpclb</artifactId>
-            <version>1.40.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-auth</artifactId>
-            <version>1.40.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-googleapis</artifactId>
             <version>1.46.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-netty-shaded</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-alts</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-xds</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-context</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-xds</artifactId>
-            <version>1.40.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-services</artifactId>
-            <version>1.40.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -316,20 +216,6 @@
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-pubsub</artifactId>
             <version>1.119.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-netty-shaded</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.grpc</groupId>
-                    <artifactId>grpc-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.google.cloud.functions</groupId>
@@ -386,7 +272,7 @@
                 <artifactId>function-maven-plugin</artifactId>
                 <version>0.10.0</version>
                 <configuration>
-                    <functionTarget>com.hedera.exchange.ExchangeRateTool</functionTarget>
+                    <functionTarget>com.hedera.exchange.ERTGcp</functionTarget>
                 </configuration>
             </plugin>
             <plugin>

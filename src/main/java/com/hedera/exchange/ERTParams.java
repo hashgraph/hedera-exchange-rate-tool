@@ -223,7 +223,7 @@ public class ERTParams {
         var blob = storage.get(bucket, config);
 
         return OBJECT_MAPPER.readValue(blob.getContent(), ERTParams.class);
-//        return readConfig("src/main/resources/config.json");
+//        return readConfig("src/main/resources/configIntegration.json");
     }
 
     /**
