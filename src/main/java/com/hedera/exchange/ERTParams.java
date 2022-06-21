@@ -66,9 +66,7 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.hedera.exchange.database.GCPExchangeRateDB;
 import com.hedera.hashgraph.sdk.AccountId;
-import com.hedera.exchange.database.DBParams;
 import com.hedera.exchange.database.ExchangeDB;
 import com.hedera.exchange.database.QueryHelper;
 import com.hedera.exchange.exchanges.Exchange;
@@ -216,8 +214,16 @@ public class ERTParams {
     }
 
     private static ERTParams readDefaultConfigFromGCP() throws IOException {
-        // TODO
-        return readConfig("src/main/resources/config.json");
+        final var projectId = System.getenv("PROJECT_ID");
+        final var bucket = System.getenv("BUCKET_NAME");
+        final var config = System.getenv("CONFIG_PATH");
+        LOGGER.info("Reading configuration file from GCP: {}, {}, {}", projectId, bucket, config);
+        var options = StorageOptions.newBuilder().setProjectId(projectId).build();
+        var storage = options.getService();
+        var blob = storage.get(bucket, config);
+
+        return OBJECT_MAPPER.readValue(blob.getContent(), ERTParams.class);
+//        return readConfig("src/main/resources/config.json");
     }
 
     /**

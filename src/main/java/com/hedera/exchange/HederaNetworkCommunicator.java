@@ -148,6 +148,7 @@ public class HederaNetworkCommunicator {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before updating the Exchange Rate file: {}",
                 currentBalance.hbars.toString());
 
+//        ERTAddressBook newAddressBook = new ERTAddressBook();
         ERTAddressBook newAddressBook = fetchAddressBook(client);
 
         updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo, ertParams.getRegion());
@@ -352,8 +353,8 @@ public class HederaNetworkCommunicator {
         final Hbar getContentsQueryFee = new FileContentsQuery()
                 .setFileId(fileId)
                 .getCost(client);
-        LOGGER.debug(Exchange.EXCHANGE_FILTER, "Cost to get file {} contents is : {}", fileId, getContentsQueryFee);
-        client.setDefaultMaxQueryPayment(getContentsQueryFee);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Cost to get file {} contents is : {}", fileId, getContentsQueryFee);
+        client.setDefaultMaxQueryPayment(Hbar.from(1L));
 
         final ByteString contentsResponse = new FileContentsQuery()
                 .setFileId(fileId)

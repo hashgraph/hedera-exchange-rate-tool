@@ -55,9 +55,12 @@ package com.hedera.exchange.database;
 import com.hedera.exchange.ERTUtils;
 import com.hedera.exchange.Environment;
 import com.hedera.exchange.exchanges.Exchange;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -76,8 +79,8 @@ public final class DBParams {
 			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("ENDPOINT") + getDatabaseName();
 		}
 		else {
-			LOGGER.info(Exchange.EXCHANGE_FILTER, "endpoint: {}", System.getenv("ENDPOINT") + System.getenv("DATABASE"));
-			return System.getenv("ENDPOINT") + System.getenv("DATABASE");
+			LOGGER.error(Exchange.EXCHANGE_FILTER, "should not be possible");
+			return "";
 		}
 	}
 
@@ -109,7 +112,22 @@ public final class DBParams {
 	}
 
 	public static Connection getConnection() throws SQLException {
-		final String endpoint = getEndpoint();
-		return DriverManager.getConnection(endpoint, getUsername(), getPassword());
+		if (env == Environment.AWS) {
+			return DriverManager.getConnection(getEndpoint(), getUsername(), getPassword());
+		} else {
+			DataSource pool = getGcpDataSource();
+			return pool.getConnection();
+		}
+	}
+
+	public static DataSource getGcpDataSource() {
+		HikariConfig config = new HikariConfig();
+		config.setJdbcUrl(String.format("jdbc:postgresql:///%s", getDatabaseName()));
+		config.setUsername(getUsername());
+		config.setPassword(getPassword());
+		config.addDataSourceProperty("socketFactory", "com.google.cloud.sql.postgres.SocketFactory");
+		config.addDataSourceProperty("cloudSqlInstance", System.getenv("INSTANCE_CONNECTION_NAME"));
+		config.addDataSourceProperty("ipTypes", "PUBLIC,PRIVATE");
+		return new HikariDataSource(config);
 	}
 }

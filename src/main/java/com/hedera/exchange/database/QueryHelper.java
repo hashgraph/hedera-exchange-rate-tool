@@ -53,6 +53,7 @@ package com.hedera.exchange.database;
  */
 
 import com.hedera.exchange.ERTAddressBook;
+import com.hedera.exchange.Environment;
 import com.hedera.exchange.ExchangeRate;
 import com.hedera.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
@@ -65,6 +66,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import static com.hedera.exchange.ExchangeRateTool.env;
+import static com.hedera.exchange.database.DBParams.getEndpoint;
+import static com.hedera.exchange.database.DBParams.getGcpDataSource;
+import static com.hedera.exchange.database.DBParams.getPassword;
+import static com.hedera.exchange.database.DBParams.getUsername;
 
 /**
  * This class implements the ExchangeDB interface
@@ -90,10 +97,18 @@ public class QueryHelper implements ExchangeDB {
 	}
 
 	private void migrate() {
-		final Flyway flyway = Flyway.configure()
-				.dataSource(DBParams.getEndpoint(), DBParams.getUsername(), DBParams.getPassword())
-				.baselineOnMigrate(true)
-				.load();
+		final Flyway flyway;
+		if (env == Environment.AWS) {
+			flyway = Flyway.configure()
+					.dataSource(getEndpoint(), getUsername(), getPassword())
+					.baselineOnMigrate(true)
+					.load();
+		} else {
+			flyway = Flyway.configure()
+					.dataSource(getGcpDataSource())
+					.baselineOnMigrate(true)
+					.load();
+		}
 		flyway.migrate();
 	}
 

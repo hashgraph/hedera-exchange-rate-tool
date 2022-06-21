@@ -100,7 +100,7 @@ public class ExchangeRateTool implements HttpFunction{
 
     public static void main(final String ... args) {
         ExchangeRateTool ert = new ExchangeRateTool();
-        ert.run(args);
+        ert.run("gcp");
     }
 
     /**
@@ -127,17 +127,17 @@ public class ExchangeRateTool implements HttpFunction{
     }
 
     private Environment validateTag(final String[] args) {
-        if (args == null || args.length != 1 || !(args[0].matches(AWS_TAG) || args[0].matches(GCP_TAG))) {
+        if (args == null) {
             LOGGER.error(Exchange.EXCHANGE_FILTER, "invalid tag provided. Has to be one of {}, {}", GCP_TAG, AWS_TAG);
             throw new IllegalArgumentException("Invalid tag provided. Has to be one of " + GCP_TAG + ", " + AWS_TAG);
         }
 
-        if (args[0].matches(AWS_TAG)) {
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "Running on AWS Lambda");
-            return Environment.AWS;
-        } else {
+        if (args[0].matches(GCP_TAG)) {
             LOGGER.info(Exchange.EXCHANGE_FILTER, "Running on GCP Cloud Functions");
             return Environment.GCP;
+        } else {
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Running on AWS Lambda");
+            return Environment.AWS;
         }
     }
 
@@ -220,7 +220,7 @@ public class ExchangeRateTool implements HttpFunction{
         final var nodesFromPrevRun = ertAddressBookFromPreviousRun != null ?
                 getNodesForClient(ertAddressBookFromPreviousRun.getNodes()) : EMPTY_MAP;
 
-        final Map<String, AccountId> nodesForClient = nodesFromPrevRun.isEmpty() ? nodesFromPrevRun : nodesFromConfig;
+        final Map<String, AccountId> nodesForClient = !nodesFromPrevRun.isEmpty() ? nodesFromPrevRun : nodesFromConfig;
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Building a Hedera Client with nodes {} \n Account {}",
                 nodesForClient,
