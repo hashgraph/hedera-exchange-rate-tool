@@ -195,7 +195,7 @@ public class ExchangeRateTool {
         final var nodesFromPrevRun = ertAddressBookFromPreviousRun != null ?
                 getNodesForClient(ertAddressBookFromPreviousRun.getNodes()) : EMPTY_MAP;
 
-        final Map<String, AccountId> nodesForClient = nodesFromPrevRun.isEmpty() ? nodesFromPrevRun : nodesFromConfig;
+        final Map<String, AccountId> nodesForClient = !nodesFromPrevRun.isEmpty() ? nodesFromPrevRun : nodesFromConfig;
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Building a Hedera Client with nodes {} \n Account {}",
                 nodesForClient,
