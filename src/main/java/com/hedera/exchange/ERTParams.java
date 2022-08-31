@@ -67,9 +67,8 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.hedera.hashgraph.sdk.AccountId;
-import com.hedera.exchange.database.AWSDBParams;
 import com.hedera.exchange.database.ExchangeDB;
-import com.hedera.exchange.database.ExchangeRateAWSRD;
+import com.hedera.exchange.database.QueryHelper;
 import com.hedera.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -81,6 +80,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import static com.hedera.exchange.ExchangeRateTool.env;
 
 /**
  * This class reads the parameters from the config file and provides get methods to fetch the configuration parameters.
@@ -151,12 +152,12 @@ public class ERTParams {
      */
     public static ERTParams readConfig(final String[]  args) throws IOException {
         if (args == null || args.length == 0) {
-            return readDefaultConfig();
+            return readDefaultConfigFromAWS();
         }
 
         final String configurationPath = args[0];
         if (configurationPath == null || configurationPath.trim().length() < 1) {
-            return readDefaultConfig();
+            return readDefaultConfigFromAWS();
         }
 
         LOGGER.debug("Using configuration file: {}", configurationPath);
@@ -170,10 +171,19 @@ public class ERTParams {
         }
 
         if (configurationPath.contains("TO_DECIDE:AWS_NodeAddressFormat")){
-            return readDefaultConfig(configurationPath);
+            return readDefaultConfigFromAWS(configurationPath);
         }
 
         return readConfig(configurationPath);
+    }
+
+
+    public static ERTParams readConfig() throws IOException {
+        if (env == Environment.AWS) {
+            return readDefaultConfigFromAWS();
+        } else {
+            return readDefaultConfigFromGCP();
+        }
     }
 
     /**
@@ -182,7 +192,7 @@ public class ERTParams {
      * @param awsInstanceAddress
      * @return ERTParams object
      */
-    private static ERTParams readDefaultConfig(String awsInstanceAddress) throws IOException {
+    private static ERTParams readDefaultConfigFromAWS(String awsInstanceAddress) throws IOException {
         final String defaultConfigUri = ERTUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
         ERTParams ertParams = readConfigFromAWSS3(defaultConfigUri);
 
@@ -198,9 +208,22 @@ public class ERTParams {
      * @return ERTParams object
      * @throws IOException
      */
-    private static ERTParams readDefaultConfig() throws IOException {
+    private static ERTParams readDefaultConfigFromAWS() throws IOException {
         final String defaultConfigUri = ERTUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
         return readConfigFromAWSS3(defaultConfigUri);
+    }
+
+    private static ERTParams readDefaultConfigFromGCP() throws IOException {
+        final var projectId = System.getenv("PROJECT_ID");
+        final var bucket = System.getenv("BUCKET_NAME");
+        final var config = System.getenv("CONFIG_PATH");
+        LOGGER.info("Reading configuration file from GCP: {}, {}, {}", projectId, bucket, config);
+        var options = StorageOptions.newBuilder().setProjectId(projectId).build();
+        var storage = options.getService();
+        var blob = storage.get(bucket, config);
+
+        return OBJECT_MAPPER.readValue(blob.getContent(), ERTParams.class);
+//        return readConfig("src/main/resources/configIntegration.json");
     }
 
     /**
@@ -404,7 +427,11 @@ public class ERTParams {
 
     @JsonIgnore
     public String getOperatorKey(String networkName) {
-        return ERTUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY_" + networkName);
+        if (env == Environment.AWS) {
+            return ERTUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY_" + networkName);
+        } else {
+            return System.getenv("OPERATOR_KEY_" + networkName);
+        }
     }
 
     /**
@@ -428,7 +455,7 @@ public class ERTParams {
      * @return ExchangeRateDb object as we are configured with AWS POSTGRESQL for now.
      */
     public ExchangeDB getExchangeDB() {
-        return new ExchangeRateAWSRD(new AWSDBParams());
+        return new QueryHelper();
     }
 
     /**

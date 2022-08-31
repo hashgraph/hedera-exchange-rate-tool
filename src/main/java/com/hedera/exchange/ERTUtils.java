@@ -88,7 +88,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.hedera.exchange.ExchangeRateTool.LAMBDA_FUNCTION_NAME;
+import static com.hedera.exchange.ExchangeRateTool.FUNCTION_NAME;
 
 /**
  * This class implements helper functions of ERT
@@ -132,7 +132,7 @@ public final class ERTUtils {
 	 */
 	public static String getDecryptedEnvironmentVariableFromAWS(final String environmentVariable) {
 		final String environmentValue = System.getenv(environmentVariable);
-		return getDecryptedValueFromAWS(environmentValue, LAMBDA_FUNCTION_NAME);
+		return getDecryptedValueFromAWS(environmentValue, FUNCTION_NAME);
 	}
 
 	static String getDecryptedValueFromAWS(final String value, final String lambdaFunctionName) {

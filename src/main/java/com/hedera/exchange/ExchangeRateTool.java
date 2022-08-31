@@ -60,7 +60,6 @@ import com.hedera.hashgraph.sdk.Hbar;
 import com.hedera.hashgraph.sdk.PrecheckStatusException;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.ReceiptStatusException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -81,21 +80,20 @@ import static com.hedera.exchange.Status.SUCCESS;
  *
  * @author Anirudh, Cesar
  */
-public class ExchangeRateTool {
+public class ExchangeRateTool{
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateTool.class);
     private static final Map<String, AccountId> EMPTY_MAP = Collections.emptyMap();
 
+    protected static final String AWS_TAG = "aws";
+    protected static final String GCP_TAG = "gcp";
+
     static final int DEFAULT_RETRIES = 4;
 
-    static final String LAMBDA_FUNCTION_NAME = System.getenv("AWS_LAMBDA_FUNCTION_NAME");
+    public static Environment env;
+    static String FUNCTION_NAME;
 
     private ERTParams ertParams;
     private ExchangeDB exchangeDB;
-
-    public static void main(final String ... args) {
-        ExchangeRateTool ert = new ExchangeRateTool();
-        ert.run(args);
-    }
 
     /**
      * This method executes the ERT logic and if an execution fails, it retries for the a fixed number of times
@@ -105,14 +103,33 @@ public class ExchangeRateTool {
     protected void run(final String ... args) {
         LOGGER.debug(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
         try {
-            ertParams = ERTParams.readConfig(args);
+            env = validateTag(args);
+            FUNCTION_NAME = env == Environment.AWS ?
+                    System.getenv("AWS_LAMBDA_FUNCTION_NAME") :
+                    System.getenv("K_SERVICE");
+            ertParams = ERTParams.readConfig();
             exchangeDB = ertParams.getExchangeDB();
             execute();
         } catch (Exception ex) {
-            final var subject = "FAILED : ERT Run Failed on " + LAMBDA_FUNCTION_NAME;
+            final var subject = "FAILED : ERT Run Failed on " + FUNCTION_NAME;
             final var message = ex.getMessage() + "\n";
             LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
-            ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex), ertParams.getRegion());
+            ERTNotificationHelper.publishMessage(subject, message + ex.getMessage(), ertParams.getRegion());
+        }
+    }
+
+    private Environment validateTag(final String[] args) {
+        if (args == null) {
+            LOGGER.error(Exchange.EXCHANGE_FILTER, "invalid tag provided. Has to be one of {}, {}", GCP_TAG, AWS_TAG);
+            throw new IllegalArgumentException("Invalid tag provided. Has to be one of " + GCP_TAG + ", " + AWS_TAG);
+        }
+
+        if (args[0].matches(GCP_TAG)) {
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Running on GCP Cloud Functions");
+            return Environment.GCP;
+        } else {
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Running on AWS Lambda");
+            return Environment.AWS;
         }
     }
 
@@ -195,7 +212,7 @@ public class ExchangeRateTool {
         final var nodesFromPrevRun = ertAddressBookFromPreviousRun != null ?
                 getNodesForClient(ertAddressBookFromPreviousRun.getNodes()) : EMPTY_MAP;
 
-        final Map<String, AccountId> nodesForClient = nodesFromPrevRun.isEmpty() ? nodesFromPrevRun : nodesFromConfig;
+        final Map<String, AccountId> nodesForClient = !nodesFromPrevRun.isEmpty() ? nodesFromPrevRun : nodesFromConfig;
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Building a Hedera Client with nodes {} \n Account {}",
                 nodesForClient,
@@ -283,5 +300,10 @@ public class ExchangeRateTool {
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Using default exchange rate as current exchange rate");
         return params.getDefaultRate();
+    }
+
+    public static void main(final String ... args) {
+        ExchangeRateTool ert = new ExchangeRateTool();
+        ert.run("gcp");
     }
 }

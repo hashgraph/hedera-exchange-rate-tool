@@ -69,7 +69,6 @@ import com.hedera.hashgraph.sdk.ReceiptStatusException;
 import com.hedera.hashgraph.sdk.TransactionReceipt;
 import com.hedera.hashgraph.sdk.TransactionResponse;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -149,6 +148,7 @@ public class HederaNetworkCommunicator {
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before updating the Exchange Rate file: {}",
                 currentBalance.hbars.toString());
 
+//        ERTAddressBook newAddressBook = new ERTAddressBook();
         ERTAddressBook newAddressBook = fetchAddressBook(client);
 
         updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo, ertParams.getRegion());
@@ -257,8 +257,8 @@ public class HederaNetworkCommunicator {
                 }
             } catch (PrecheckStatusException ex) {
                 var subject = String.format("ERROR : %s : PreCheckStatusException : %s", networkName, ex.status);
-                LOGGER.error(Exchange.EXCHANGE_FILTER, subject);
-                ERTNotificationHelper.publishMessage(subject, ExceptionUtils.getStackTrace(ex), region);
+                LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
+                ERTNotificationHelper.publishMessage(subject, ex.getMessage(), region);
                 if( retryCount++ == DEFAULT_RETRIES ) {
                     throw ex;
                 }
@@ -353,8 +353,8 @@ public class HederaNetworkCommunicator {
         final Hbar getContentsQueryFee = new FileContentsQuery()
                 .setFileId(fileId)
                 .getCost(client);
-        LOGGER.debug(Exchange.EXCHANGE_FILTER, "Cost to get file {} contents is : {}", fileId, getContentsQueryFee);
-        client.setDefaultMaxQueryPayment(getContentsQueryFee);
+        LOGGER.info(Exchange.EXCHANGE_FILTER, "Cost to get file {} contents is : {}", fileId, getContentsQueryFee);
+        client.setDefaultMaxQueryPayment(Hbar.from(1L));
 
         final ByteString contentsResponse = new FileContentsQuery()
                 .setFileId(fileId)

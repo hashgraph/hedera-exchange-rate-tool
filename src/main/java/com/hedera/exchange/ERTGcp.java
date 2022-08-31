@@ -1,4 +1,4 @@
-package com.hedera.exchange.api;
+package com.hedera.exchange;
 
 /*-
  * ‌
@@ -52,68 +52,16 @@ package com.hedera.exchange.api;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.hedera.exchange.Environment;
-import com.hedera.exchange.ExchangeRate;
-import com.hedera.exchange.ExchangeRateTool;
-import com.hedera.exchange.database.DBParams;
-import com.hedera.exchange.database.ExchangeDB;
-import com.hedera.exchange.database.QueryHelper;
+import com.google.cloud.functions.HttpFunction;
+import com.google.cloud.functions.HttpRequest;
+import com.google.cloud.functions.HttpResponse;
 
-import java.util.HashMap;
-import java.util.Map;
+import static com.hedera.exchange.ExchangeRateTool.GCP_TAG;
 
-import static com.hedera.exchange.Environment.AWS;
-
-/**
- * This class implements an API that one can trigger using an AWS lambda for example and get the latest Exchange rate file
- * from the database.
- *
- * @author Anirudh, Cesar
- */
-public class ExchangeRateAPI {
-
-	private static Map<String, String> HEADERS = new HashMap<>();
-
-	static {
-		HEADERS.put("Access-Control-Allow-Origin", "*");
-	}
-
-	public static LambdaResponse getLatest() throws Exception {
-		// currently only supported on AWS
-		ExchangeRateTool.env = AWS;
-		final ExchangeDB exchangeDb = new QueryHelper();
-		final ExchangeRate latestExchangeRate = exchangeDb.getLatestExchangeRate();
-		if (latestExchangeRate == null) {
-			return new LambdaResponse(200, "No exchange rate available yet");
-		}
-
-		return new LambdaResponse(200, latestExchangeRate.toJson());
-	}
-
-	public static class LambdaResponse {
-		private int statusCode;
-
-		private String body;
-
-		LambdaResponse(final int statusCode, final String body) {
-			this.statusCode = statusCode;
-			this.body = body;
-		}
-
-		public int getStatusCode() {
-			return statusCode;
-		}
-
-		public String getBody() {
-			return body;
-		}
-
-		public boolean isBase64Encoded() {
-			return false;
-		}
-
-		public Map<String, String> getHeaders() {
-			return HEADERS;
-		}
+public class ERTGcp implements HttpFunction {
+	@Override
+	public void service(final HttpRequest httpRequest, final HttpResponse httpResponse) throws Exception {
+		ExchangeRateTool ert = new ExchangeRateTool();
+		ert.run(GCP_TAG);
 	}
 }

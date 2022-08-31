@@ -53,21 +53,81 @@ package com.hedera.exchange.database;
  */
 
 import com.hedera.exchange.ERTUtils;
+import com.hedera.exchange.Environment;
+import com.hedera.exchange.exchanges.Exchange;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public class AWSDBParams {
-	public String getEndpoint() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("ENDPOINT") + getDatabaseName();
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import static com.hedera.exchange.ExchangeRateTool.env;
+
+public final class DBParams {
+	private static final Logger LOGGER = LogManager.getLogger(DBParams.class);
+
+	public DBParams() {
+		throw new UnsupportedOperationException("Utility Class");
 	}
 
-	public String getUsername() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("USERNAME");
+	public static String getEndpoint() {
+		if (env == Environment.AWS) {
+			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("ENDPOINT") + getDatabaseName();
+		}
+		else {
+			LOGGER.error(Exchange.EXCHANGE_FILTER, "should not be possible");
+			return System.getenv("ENDPOINT") + getDatabaseName();
+		}
 	}
 
-	public String getPassword() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("PASSWORD");
+	public static String getUsername() {
+		if (env == Environment.AWS) {
+			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("USERNAME");
+		}
+		else {
+			return System.getenv("USERNAME");
+		}
 	}
 
-	public String getDatabaseName() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("DATABASE");
+	public static String getPassword() {
+		if (env == Environment.AWS) {
+			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("PASSWORD");
+		}
+		else {
+			return System.getenv("PASSWORD");
+		}
+	}
+
+	public static String getDatabaseName() {
+		if (env == Environment.AWS) {
+			return ERTUtils.getDecryptedEnvironmentVariableFromAWS("DATABASE");
+		}
+		else {
+			return System.getenv("DATABASE");
+		}
+	}
+
+	public static Connection getConnection() throws SQLException {
+		if (env == Environment.AWS) {
+			return DriverManager.getConnection(getEndpoint(), getUsername(), getPassword());
+		} else {
+			DataSource pool = getGcpDataSource();
+			return pool.getConnection();
+		}
+	}
+
+	public static DataSource getGcpDataSource() {
+		HikariConfig config = new HikariConfig();
+		config.setJdbcUrl(String.format("jdbc:postgresql:///%s", getDatabaseName()));
+		config.setUsername(getUsername());
+		config.setPassword(getPassword());
+		config.addDataSourceProperty("socketFactory", "com.google.cloud.sql.postgres.SocketFactory");
+		config.addDataSourceProperty("cloudSqlInstance", System.getenv("INSTANCE_CONNECTION_NAME"));
+		config.addDataSourceProperty("ipTypes", "PUBLIC,PRIVATE");
+		return new HikariDataSource(config);
 	}
 }

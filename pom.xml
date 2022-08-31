@@ -40,18 +40,18 @@
 
     <properties>
         <hamcrest-all.version>1.3</hamcrest-all.version>
-        <mockito.version>3.12.4</mockito.version>
-        <junit.version>5.7.2</junit.version>
-        <junit.platform.version>1.8.0-RC1</junit.platform.version>
-        <junit.vintage.version>5.8.0-RC1</junit.vintage.version>
-        <jmockit.version>1.48</jmockit.version>
+        <mockito.version>4.5.1</mockito.version>
+        <junit.version>5.8.2</junit.version>
+        <junit.platform.version>1.8.2</junit.platform.version>
+        <junit.vintage.version>5.8.2</junit.vintage.version>
+        <jmockit.version>1.49</jmockit.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <log4j.version>2.17.1</log4j.version>
-        <amazonaws-s3.version>1.12.73</amazonaws-s3.version>
+        <log4j.version>2.17.2</log4j.version>
+        <amazonaws-s3.version>1.12.237</amazonaws-s3.version>
         <amazonaws-lambda.version>1.2.1</amazonaws-lambda.version>
-        <amazonaws-log4j.version>1.2.0</amazonaws-log4j.version>
-        <amazonaws-sns.version>1.12.73</amazonaws-sns.version>
-        <hedera-java-sdk.version>2.14.0-beta.1</hedera-java-sdk.version>
+        <amazonaws-log4j.version>1.5.1</amazonaws-log4j.version>
+        <amazonaws-sns.version>1.12.237</amazonaws-sns.version>
+        <hedera-java-sdk.version>2.17.3</hedera-java-sdk.version>
     </properties>
 
 
@@ -71,7 +71,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.12.6.1</version>
+            <version>2.13.3</version>
         </dependency>
         <dependency>
             <groupId>org.jmockit</groupId>
@@ -93,7 +93,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
-            <version>3.5</version>
+            <version>3.6.1</version>
         </dependency>
 
         <dependency>
@@ -152,13 +152,16 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/com.hedera.hashgraph/sdk -->
         <dependency>
             <groupId>com.hedera.hashgraph</groupId>
-            <artifactId>sdk-jdk7</artifactId>
-            <version>${hedera-java-sdk.version}</version>
+            <artifactId>sdk-full</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+        <!-- netty transport (for server or desktop applications) -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+            <version>1.46.0</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -183,34 +186,48 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.3.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-spanner -->
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-spanner</artifactId>
-            <version>1.33.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-storage</artifactId>
-            <version>1.88.0</version>
+            <version>2.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-            <version>7.4.0</version>
+            <version>8.5.11</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.67</version>
+            <version>1.70</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.3.3</version>
+            <version>42.3.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-storage</artifactId>
+            <version>2.8.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-pubsub</artifactId>
+            <version>1.119.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud.functions</groupId>
+            <artifactId>functions-framework-api</artifactId>
+            <version>1.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud.sql</groupId>
+            <artifactId>postgres-socket-factory</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.0.1</version>
         </dependency>
     </dependencies>
 
@@ -238,7 +255,23 @@
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
+            <plugin>
+                <!--
+				  Google Cloud Functions Framework Maven plugin
 
+				  This plugin allows you to run Cloud Functions Java code
+				  locally. Use the following terminal command to run a
+				  given function locally:
+
+				  mvn function:run -Drun.functionTarget=your.package.yourFunction
+				-->
+                <groupId>com.google.cloud.functions</groupId>
+                <artifactId>function-maven-plugin</artifactId>
+                <version>0.10.0</version>
+                <configuration>
+                    <functionTarget>com.hedera.exchange.ERTGcp</functionTarget>
+                </configuration>
+            </plugin>
             <plugin>
                 <!-- To re-generate the LICENSE.txt and copyright headers, execute the Maven goals
                 "license:update-project-license" and "license:update-file-header". -->
@@ -297,7 +330,30 @@
                     </argLine>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <outputFile>${project.build.directory}/deployment/${project.build.finalName}.jar</outputFile>
+                            <transformers>
+                                <!-- This may be needed if you need to shade a signed JAR -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <resource>.SF</resource>
+                                    <resource>.DSA</resource>
+                                    <resource>.RSA</resource>
+                                </transformer>
+                                <!-- This is needed if you have dependencies that use Service Loader. Most Google Cloud client libraries does. -->
+                                <transformer implementation=
+                                                     "org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
