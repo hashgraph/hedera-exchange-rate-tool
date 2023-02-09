@@ -118,7 +118,7 @@ public class QueryHelper implements ExchangeDB {
 				"with nextExpiration time :{}", expirationTime);
 		try (final Connection conn = DBParams.getConnection();
 			 final PreparedStatement prepStatement = conn.prepareStatement(
-					 "SELECT expirationTime, exchangeRateFile FROM midnight_rate where expirationTime = ?")){
+					 "SELECT expiration_time, exchange_rate_file FROM midnight_rate where expiration_time = ?")){
 			prepStatement.setLong(1, expirationTime);
 			final ResultSet result = prepStatement.executeQuery();
 			if (result.next()) {
@@ -158,7 +158,7 @@ public class QueryHelper implements ExchangeDB {
 				addressBook);
 		try (final Connection conn = DBParams.getConnection();
 			 final PreparedStatement statement = conn.prepareStatement(
-					 "INSERT INTO address_book (expirationTime,addressBook,networkName) VALUES(?,?::JSON,?)")) {
+					 "INSERT INTO address_book (expiration_time, address_book, network_name) VALUES(?,?::JSON,?)")) {
 			statement.setLong(1, expirationTime);
 			statement.setObject(2, addressBook);
 			statement.setString(3,networkName);
@@ -187,7 +187,7 @@ public class QueryHelper implements ExchangeDB {
 				"with nextExpiration time :{}", expirationTime);
 		try (final Connection conn = DBParams.getConnection();
 			 final PreparedStatement prepStatement = conn.prepareStatement(
-			 "SELECT expirationTime, exchangeRateFile FROM exchange_rate where expirationTime = ?")){
+			 "SELECT expiration_time, exchange_rate_file FROM exchange_rate where expiration_time = ?")){
 			prepStatement.setLong(1, expirationTime);
 			final ResultSet result = prepStatement.executeQuery();
 			if (result.next()) {
@@ -206,7 +206,7 @@ public class QueryHelper implements ExchangeDB {
 				"with nextExpiration time :{}", expirationTime);
 		try (final Connection conn = DBParams.getConnection();
 			 final PreparedStatement prepStatement = conn.prepareStatement(
-					 "SELECT expirationTime, queriedrates FROM queried_rate where expirationTime = ?")){
+					 "SELECT expiration_time, queried_rates FROM queried_rates where expiration_time = ?")){
 			prepStatement.setLong(1, expirationTime);
 			final ResultSet result = prepStatement.executeQuery();
 			if (result.next()) {
@@ -255,7 +255,7 @@ public class QueryHelper implements ExchangeDB {
 				exchangeRate.toJson());
 		try (final Connection conn = DBParams.getConnection();
 			 final PreparedStatement statement = conn.prepareStatement(
-					 "INSERT INTO exchange_rate (expirationTime,exchangeRateFile) VALUES(?,?::JSON)")) {
+					 "INSERT INTO exchange_rate (expiration_time, exchange_rate_file) VALUES(?,?::JSON)")) {
 			statement.setLong(1, exchangeRate.getNextExpirationTimeInSeconds());
 			statement.setObject(2, exchangeRate.toJson());
 			statement.executeUpdate();
@@ -268,7 +268,7 @@ public class QueryHelper implements ExchangeDB {
 				exchangeRate.toJson());
 		try (final Connection conn = DBParams.getConnection();
 			 final PreparedStatement statement = conn.prepareStatement(
-					 "INSERT INTO midnight_rate (expirationTime,exchangeRateFile) VALUES(?,?::JSON)")) {
+					 "INSERT INTO midnight_rate (expiration_time, exchange_rate_file) VALUES(?,?::JSON)")) {
 			statement.setLong(1, exchangeRate.getNextExpirationTimeInSeconds());
 			statement.setObject(2, exchangeRate.toJson());
 			statement.executeUpdate();
@@ -281,7 +281,7 @@ public class QueryHelper implements ExchangeDB {
 				expirationTime, queriedRate);
 		try (final Connection conn = DBParams.getConnection();
 			 final PreparedStatement statement = conn.prepareStatement(
-					 "INSERT INTO queried_rate (expirationTime,queriedrates) VALUES(?,?::JSON)")) {
+					 "INSERT INTO queried_rates (expiration_time, queried_rates) VALUES(?,?::JSON)")) {
 			statement.setLong(1, expirationTime);
 			statement.setObject(2, queriedRate);
 			statement.executeUpdate();
