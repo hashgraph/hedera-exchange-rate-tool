@@ -1,0 +1,31 @@
+{
+	"exchanges": {
+		"bitrex": "https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=USD-HBAR",
+		"liquid": "https://api.liquid.com/products/741",
+		"coinbase": "https://api.coinbase.com/v2/exchange-rates?currency=HBAR",
+		"okcoin": "https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker",
+		"binance": "https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD",
+		"gate": "https://api.gateio.ws/api/v4/spot/tickers?currency_pair=HBAR_USDT",
+		"bitmart": "https://api-cloud.bitmart.com/contract/v1/tickers?contract_symbol=HBARUSDT",
+		"bittrue": "https://openapi.bitrue.com/api/v1/ticker/24hr?symbol=HBARUSDT",
+		"hitbit": "https://api.hitbtc.com/api/3/public/ticker/HBARUSDT",
+		"huobi" : "https://api.huobi.pro/market/detail?symbol=hbarusdt"
+	},
+	"defaultCentEquiv" : 360000,
+	"defaultHbarEquiv": 30000,
+	"frequencyInSeconds" : 3600,
+	"floorCentsPerHbar": 0,
+	"fileId": "0.0.112",
+	"maxTransactionFee": 10000000,
+	"exchangeRateAllowedPercentage": "25",
+	"operatorId": "0.0.57",
+	"Networks": {
+		"publicTestNet": {
+			"0.0.3": "0.testnet.hedera.com:50211",
+			"0.0.4": "1.testnet.hedera.com:50211"
+	    }
+    },
+	"payerAccount": "0.0.57",
+    "region": "us-central1",
+	"validationDelayInMilliseconds": 10000
+}
