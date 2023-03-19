@@ -2,7 +2,8 @@ CREATE TABLE "address_book"
 (
     id             SERIAL NOT NULL,
     expirationTime BIGINT,
-    exchangeRateFile JSON
+    exchangeRateFile JSON,
+    networkname VARCHAR
 );
 
 CREATE INDEX ON address_book (expirationTime);
