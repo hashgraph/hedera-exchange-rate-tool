@@ -1,3 +1,12 @@
+CREATE TABLE "address_book"
+(
+    id             SERIAL NOT NULL,
+    expirationTime BIGINT,
+    exchangeRateFile JSON
+);
+
+CREATE INDEX ON address_book (expirationTime);
+
 CREATE TABLE "exchange_rate"
 (
     id             SERIAL NOT NULL,
