@@ -2,7 +2,7 @@ CREATE TABLE "address_book"
 (
     id             SERIAL NOT NULL,
     expirationTime BIGINT,
-    exchangeRateFile JSON,
+    addressbook JSON,
     networkname VARCHAR
 );
 
