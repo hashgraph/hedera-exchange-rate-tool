@@ -91,7 +91,7 @@ public class QueryHelper implements ExchangeDB {
 
 	private static final String MIDNIGHT_EXCHANGE_QUERY = "SELECT e1.expirationtime, e1.exchangerate_file FROM midnight_rate AS e1 INNER JOIN (SELECT MAX(expirationtime) expirationtime FROM midnight_rate) AS e2 ON e1.expirationtime = e2.expirationtime LIMIT 1";
 
-	private static final String LATEST_QUERIED_QUERY = "SELECT e1.expirationtime, e1.queriedrates FROM queried_rates AS e1 INNER JOIN (SELECT MAX(expirationtime) expirationtime FROM queried_rates) AS e2 ON e1.expirationtime = e2.expirationtime LIMIT 1";
+	private static final String LATEST_QUERIED_QUERY = "SELECT e1.expirationtime, e1.queriedrates FROM queried_rate AS e1 INNER JOIN (SELECT MAX(expirationtime) expirationtime FROM queried_rate) AS e2 ON e1.expirationtime = e2.expirationtime LIMIT 1";
 
 	public QueryHelper() {
 		this.migrate();
