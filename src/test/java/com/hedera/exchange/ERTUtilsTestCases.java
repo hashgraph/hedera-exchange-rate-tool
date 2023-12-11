@@ -52,7 +52,6 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
@@ -122,7 +121,7 @@ class ERTUtilsTestCases {
 		//setup
 		final Map<String, String> exchangeAPIs = new HashMap<>() {{
 			put("bitmart", "https://api-cloud.bitmart.com/contract/v1/tickers?contract_symbol=HBARUSDT");
-			put("okcoin", "https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker");
+			put("coinbase", "https://api.pro.coinbase.com/products/HBAR-USD/stats");
 		}};
 
 		//when
