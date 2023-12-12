@@ -31,35 +31,23 @@ import java.util.Map;
  * @author Anirudh, Cesar
  */
 public class Coinbase extends ExchangeCoin {
+    @JsonProperty(value="last", access = JsonProperty.Access.WRITE_ONLY)
+    private Double lastPrice;
 
-    @JsonProperty(value = "data", access = JsonProperty.Access.WRITE_ONLY)
-    private Data data;
+    @JsonProperty(value="volume", access = JsonProperty.Access.WRITE_ONLY)
+    private Double volume;
 
     @Override
     public Double getHBarValue() {
-        if (this.data == null || this.data.rates == null || !this.data.rates.containsKey("HBAR")) {
-            return null;
-        }
-
-        return Double.valueOf(this.data.rates.get("HBAR"));
+        return lastPrice;
     }
 
     @Override
     public Double getVolume() {
-        return 0.0;
-    }
+        if (volume == null || volume <= 1.0) {
+            return 0.0;
+        }
 
-    @JsonIgnore
-    String getCurrency() {
-        return this.data.currency;
-    }
-
-    private static class Data {
-
-        @JsonProperty("currency")
-        private String currency;
-
-        @JsonProperty("rates")
-        private Map<String, String> rates;
+        return volume;
     }
 }

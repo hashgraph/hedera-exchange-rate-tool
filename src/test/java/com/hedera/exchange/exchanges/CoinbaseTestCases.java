@@ -68,16 +68,15 @@ public class CoinbaseTestCases {
 
     @Test
     public void retrieveCoinbaseDataTest() throws IOException {
-        final String result = "{\"data\":{\"currency\":\"USD\", \"rates\":{\"HBAR\":\"0.0098\"}}}";
+        final String result = "{\"open\":\"0.07439\",\"high\":\"0.07634\",\"low\":\"0.06684\",\"last\":\"0.0689\",\"volume\":\"140858358.9\",\"volume_30day\":\"1943970658.5\"}";
         final InputStream json = new ByteArrayInputStream(result.getBytes());
         final HttpURLConnection connection = mock(HttpURLConnection.class);
         when(connection.getInputStream()).thenReturn(json);
 
         final CoinFactory factory = new CoinFactory(connection);
-        final Coinbase coinbase = factory.load("https://api.coinbase.com/v2/exchange-rates" , Coinbase.class);
+        final Coinbase coinbase = factory.load("https://api.pro.coinbase.com/products/HBAR-USD/stats" , Coinbase.class);
 
-        assertEquals("USD", coinbase.getCurrency() );
-        assertEquals(0.0098, coinbase.getHBarValue());
-        assertEquals(0.0, coinbase.getVolume());
+        assertEquals(0.0689, coinbase.getHBarValue());
+        assertEquals(140858358.9, coinbase.getVolume());
     }
 }
