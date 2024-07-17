@@ -1,11 +1,9 @@
 {
 	"exchanges": {
-		"bitrex": "https://api.bittrex.com/api/v1.1/public/getticker?market=USD-HBAR",
-		"liquid": "https://api.liquid.com/products/557",
 		"upbit": "https://api.upbit.com/v1/ticker?markets=USD-HBAR",
 		"coinbase": "https://api.pro.coinbase.com/products/HBAR-USD/stats",
 	    "amazon": "https://www.amazon.com",
-		"okcoin": "https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker"
+		"binance": "https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD"
 	},
   	"defaultCentEquiv" : 12,
   	"defaultHbarEquiv": 1,

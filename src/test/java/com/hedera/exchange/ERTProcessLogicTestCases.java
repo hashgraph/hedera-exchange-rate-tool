@@ -53,10 +53,8 @@ package com.hedera.exchange;
  */
 
 import com.hedera.exchange.exchanges.Exchange;
-import com.hedera.exchange.exchanges.Bitrex;
 import com.hedera.exchange.exchanges.Binance;
 import com.hedera.exchange.exchanges.Coinbase;
-import com.hedera.exchange.exchanges.Liquid;
 import com.hedera.exchange.exchanges.OkCoin;
 import com.hedera.exchange.exchanges.PayBito;
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
@@ -170,18 +168,18 @@ public class ERTProcessLogicTestCases {
             final long currentCentEquiv,
             final long expectedHBarEquiv,
             final long expectedCentEquiv,
-            final double bitrexValue) throws Exception {
-        List<Exchange> justBitrexExchange = this.setOnlyBitrex(bitrexValue);
-        final String exchangesInJson = bitrexValue == 0.0 ? "[]" : String.format("[{\"volume\":1000.0," +
-                "\"Query\":\"https://api.bittrex.com/api/v1.1/public/getticker?market=USD-HBAR\"," +
-                "\"HBAR\":%.1f}]", bitrexValue);
+            final double binanceValue) throws Exception {
+        List<Exchange> justBinanceExchange = this.setBinanceOnly(binanceValue);
+        final String exchangesInJson = binanceValue == 0.0 ? "[]" : String.format("[{\"volume\":1000.0," +
+                "\"Query\":\"https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker\"}]", binanceValue);
+
         final long currentExpirationInSeconds = ERTUtils.getCurrentExpirationTime();
         final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
         final Rate expectedRate = new Rate(expectedHBarEquiv, expectedCentEquiv, currentExpirationInSeconds + 3_600);
 
         final ERTParams params = ERTParams.readConfig(configPath);
         final ERTProcessLogic ertProcess = new ERTProcessLogic(params.getDefaultHbarEquiv(),
-                justBitrexExchange,
+                justBinanceExchange,
                 params.getBound(),
                 params.getFloor(),
                 new ExchangeRate(currentRate, currentRate),
@@ -266,31 +264,21 @@ public class ERTProcessLogicTestCases {
     }
 
 
-    private List<Exchange> setOnlyBitrex(final double value) {
-
-        Bitrex mockBitrex = mock(Bitrex.class);
-        when(mockBitrex.getHBarValue()).thenReturn(value);
-        when(mockBitrex.getVolume()).thenReturn(1000.0);
+    private List<Exchange> setBinanceOnly(final double value) {
+        Binance mockOkCoin = mock(Binance.class);
+        when(mockOkCoin.getHBarValue()).thenReturn(value);
+        when(mockOkCoin.getVolume()).thenReturn(1000.0);
 
         List<Exchange> exchanges = new ArrayList<>();
-        exchanges.add(mockBitrex);
+        exchanges.add(mockOkCoin);
 
         return exchanges;
     }
 
     private List<Exchange> setExchanges() {
-
-        Bitrex mockBitrex = mock(Bitrex.class);
-        when(mockBitrex.getHBarValue()).thenReturn(0.0954162);
-        when(mockBitrex.getVolume()).thenReturn(1000.0);
-
         Coinbase mockCoinbase = mock(Coinbase.class);
         when(mockCoinbase.getHBarValue()).thenReturn(0.098);
         when(mockCoinbase.getVolume()).thenReturn(1000.0);
-
-        Liquid mockLiquid = mock(Liquid.class);
-        when(mockLiquid.getHBarValue()).thenReturn(0.093);
-        when(mockLiquid.getVolume()).thenReturn(1000.0);
 
         OkCoin mockOkCoin = mock(OkCoin.class);
         when(mockOkCoin.getHBarValue()).thenReturn(0.093);
@@ -307,8 +295,6 @@ public class ERTProcessLogicTestCases {
         List<Exchange> exchanges = new ArrayList<>();
         exchanges.add(mockBinance);
         exchanges.add(mockCoinbase);
-        exchanges.add(mockBitrex);
-        exchanges.add(mockLiquid);
         exchanges.add(mockOkCoin);
         exchanges.add(mockPayBito);
 
@@ -317,18 +303,9 @@ public class ERTProcessLogicTestCases {
     }
 
     private List<Exchange> setFloorExchanges() {
-
-        Bitrex mockBitrex = mock(Bitrex.class);
-        when(mockBitrex.getHBarValue()).thenReturn(0.0354162);
-        when(mockBitrex.getVolume()).thenReturn(1000.0);
-
         Coinbase mockCoinbase = mock(Coinbase.class);
         when(mockCoinbase.getHBarValue()).thenReturn(0.038);
         when(mockCoinbase.getVolume()).thenReturn(1000.0);
-
-        Liquid mockLiquid = mock(Liquid.class);
-        when(mockLiquid.getHBarValue()).thenReturn(0.033);
-        when(mockLiquid.getVolume()).thenReturn(1000.0);
 
         OkCoin mockOkCoin = mock(OkCoin.class);
         when(mockOkCoin.getHBarValue()).thenReturn(0.033);
@@ -345,8 +322,6 @@ public class ERTProcessLogicTestCases {
         List<Exchange> exchanges = new ArrayList<>();
         exchanges.add(mockBinance);
         exchanges.add(mockCoinbase);
-        exchanges.add(mockBitrex);
-        exchanges.add(mockLiquid);
         exchanges.add(mockOkCoin);
         exchanges.add(mockPayBito);
 

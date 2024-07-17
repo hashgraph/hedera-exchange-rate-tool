@@ -60,13 +60,11 @@ import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Binance;
 import com.hedera.exchange.exchanges.BitMart;
 import com.hedera.exchange.exchanges.BitTrue;
-import com.hedera.exchange.exchanges.Bitrex;
 import com.hedera.exchange.exchanges.Gate;
 import com.hedera.exchange.exchanges.HitBit;
 import com.hedera.exchange.exchanges.Huobi;
 import com.hedera.exchange.exchanges.PayBito;
 import com.hedera.exchange.exchanges.UpBit;
-import com.hedera.exchange.exchanges.Liquid;
 import com.hedera.exchange.exchanges.OkCoin;
 import com.hedera.exchange.exchanges.Coinbase;
 import com.hedera.exchange.exchanges.CoinFactory;
@@ -106,8 +104,6 @@ public final class ERTUtils {
 	private static final int MILLI_SECS_IN_ONE_SEC = 1_000;
 
 	static {
-		EXCHANGES.put("bitrex", Bitrex.class);
-		EXCHANGES.put("liquid", Liquid.class);
 		EXCHANGES.put("coinbase", Coinbase.class);
 		EXCHANGES.put("upbit", UpBit.class);
 		EXCHANGES.put("okcoin", OkCoin.class);
