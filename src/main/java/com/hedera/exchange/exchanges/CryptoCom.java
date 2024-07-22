@@ -42,43 +42,12 @@ public class CryptoCom extends ExchangeCoin {
         return volume == null || volume <= 1.0 ? 0.0 : volume;
     }
 
-    public String getInstrumentid() {
-        return this.result.data.get(0).instrumentName;
-    }
-
     private static class TickerData {
-        @JsonProperty("i")
-        private String instrumentName;
-
-        @JsonProperty("h")
-        private Double highPrice;
-
-        @JsonProperty("l")
-        private Double lowPrice;
-
         @JsonProperty("a")
         private Double askPrice;
 
         @JsonProperty("v")
         private Double volume;
-
-        @JsonProperty("vv")
-        private Double volumeInUsd;
-
-        @JsonProperty("c")
-        private Double change;
-
-        @JsonProperty("b")
-        private Double bidPrice;
-
-        @JsonProperty("k")
-        private String kPrice;
-
-        @JsonProperty("oi")
-        private Double openInterest;
-
-        @JsonProperty("t")
-        private long timestamp;
     }
 
     private static class TickerResult {
