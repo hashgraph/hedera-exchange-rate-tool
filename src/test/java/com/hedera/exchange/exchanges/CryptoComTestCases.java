@@ -64,7 +64,7 @@ import static org.mockito.Mockito.when;
 
 public class CryptoComTestCases {
     @Test
-    public void retrieveBinanceDataTest() throws Exception {
+    public void retrieveCryptoComTest() throws Exception {
         final String urlString = "https://api.crypto.com/v2/public/get-ticker?instrument_name=HBAR_USD";
         final String result = "{\"id\":-1,\"method\":\"public/get-tickers\",\"code\":0,\"result\":{\"data\":[{\"i\":\"HBAR_USD\",\"h\":\"0.075391\",\"l\":\"0.070275\",\"a\":\"0.073635\",\"v\":\"5057086\",\"vv\":\"371915.84\",\"c\":\"-0.0155\",\"b\":\"0.073633\",\"k\":\"0.073643\",\"oi\":\"0\",\"t\":1721624086825}]}}";
         final InputStream json = new ByteArrayInputStream(result.getBytes());

@@ -64,7 +64,7 @@ import static org.mockito.Mockito.when;
 
 public class BitstampTestCases {
     @Test
-    public void retrieveBinanceDataTest() throws Exception {
+    public void retrieveBitstampDataTest() throws Exception {
         final String urlString = "https://www.bitstamp.net/api/v2/ticker/hbarusd";
         final String result = "{\"timestamp\": \"1721662343\", \"open\": \"0.07490\", \"high\": \"0.07518\", \"low\": \"0.07064\", \"last\": \"0.07155\", \"volume\": \"1661056.81046603\", \"vwap\": \"0.07291\", \"bid\": \"0.07166\", \"ask\": \"0.07174\", \"side\": \"1\", \"open_24\": \"0.07356\", \"percent_change_24\": \"-2.73\"}";
 
