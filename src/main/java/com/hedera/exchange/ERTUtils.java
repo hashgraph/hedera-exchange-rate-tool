@@ -67,7 +67,6 @@ import com.hedera.exchange.exchanges.HitBit;
 import com.hedera.exchange.exchanges.Huobi;
 import com.hedera.exchange.exchanges.PayBito;
 import com.hedera.exchange.exchanges.UpBit;
-import com.hedera.exchange.exchanges.OkCoin;
 import com.hedera.exchange.exchanges.Coinbase;
 import com.hedera.exchange.exchanges.CoinFactory;
 import com.hedera.exchange.exchanges.ExchangeCoin;
@@ -108,7 +107,6 @@ public final class ERTUtils {
 	static {
 		EXCHANGES.put("coinbase", Coinbase.class);
 		EXCHANGES.put("upbit", UpBit.class);
-		EXCHANGES.put("okcoin", OkCoin.class);
 		EXCHANGES.put("binance", Binance.class);
 		EXCHANGES.put("paybito", PayBito.class);
 		EXCHANGES.put("bitmart", BitMart.class);

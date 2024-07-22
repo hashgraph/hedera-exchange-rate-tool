@@ -30,7 +30,7 @@ Account 0.057 on the corresponding network doesn’t have enough balance to do t
 The exchange rate computed is off the specified delta from the precious midnight rate on the nodes.
 
 *	CALCULATED_MEDIAN_OUT_OF_BOUND
-The median calculated from the retrieved exchange rates from various exchanges like bittrex, binance, okcoin ... 
+The median calculated from the retrieved exchange rates from various exchanges like binance, coinbase, crypto.com, bitstamp ... 
 is out of bound from the midnight rate.
 
 *	FAILED_TO_GET_LATEST_ADDRESS_BOOK

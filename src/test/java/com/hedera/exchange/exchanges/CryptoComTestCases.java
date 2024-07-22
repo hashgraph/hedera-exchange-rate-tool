@@ -59,42 +59,29 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class OkCoinTestCases {
+public class CryptoComTestCases {
     @Test
-    public void retrieveOkCoinDataTest() throws IOException {
-        final String result = "{\"product_id\":\"HBAR-USD\", \"instrument_id\":\"HBAR-USD\", \"last\": 0.008754," +
-                "\"quote_volume_24h\":\"26136.3535\"}";
+    public void retrieveCryptoComDataTest() throws IOException {
+        final String urlString = "https://api.crypto.com/v2/public/get-ticker?instrument_name=HBAR_USD";
+        final String result = "{\"id\":-1,\"method\":\"public/get-tickers\",\"code\":0," +
+                "\"result\":{\"data\":[{\"i\":\"HBAR_USD\",\"h\":\"0.075391\",\"l\":\"0.070275\",\"a\":\"0.073635\"," +
+                "\"v\":\"5057086\",\"vv\":\"371915.84\",\"c\":\"-0.0155\",\"b\":\"0.073633\",\"k\":\"0.073643\",\"oi\":" +
+                "\"0\",\"t\":1721624086825}]}}";
         final InputStream json = new ByteArrayInputStream(result.getBytes());
         final HttpURLConnection connection = mock(HttpURLConnection.class);
         when(connection.getInputStream()).thenReturn(json);
 
-        final CoinFactory factory =  new CoinFactory(connection);
-        final OkCoin okcoin = factory.load("https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker",
-                OkCoin.class);
+        final CoinFactory factory = new CoinFactory(connection);
 
-        assertEquals(0.008754, okcoin.getHBarValue());
-        assertEquals("HBAR-USD", okcoin.getInstrumentid());
-        assertEquals("HBAR-USD", okcoin.getProductid());
-    }
+        final CryptoCom cryptoCom = factory.load(urlString, CryptoCom.class);
 
-    @Test
-    public void fetchOkCoinWithNullResultTest() throws IOException {
-        final String result = "{\"product_id\":null, \"instrument_id\":\"HBAR-USD\", \"last\": null}";
-        final InputStream json = new ByteArrayInputStream(result.getBytes());
-        final HttpURLConnection connection = mock(HttpURLConnection.class);
-        when(connection.getInputStream()).thenReturn(json);
-
-        final CoinFactory factory =  new CoinFactory(connection);
-        final OkCoin okcoin = factory.load("https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker",
-                OkCoin.class);
-
-        assertEquals("HBAR-USD", okcoin.getInstrumentid());
-        assertNull(okcoin.getHBarValue());
-        assertNull(okcoin.getProductid());
+        assertNotNull(cryptoCom);
+        assertEquals(0.24737, cryptoCom.getHBarValue());
+        assertEquals(11275149.882476, cryptoCom.getVolume());
     }
 }
