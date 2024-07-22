@@ -29,3 +29,5 @@ This tool also provides 2 APIs.
   * Coinbase
   * Binance
   * Bitmart
+  * Bitstamp
+  * Crypto.com

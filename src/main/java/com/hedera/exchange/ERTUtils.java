@@ -60,6 +60,8 @@ import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Binance;
 import com.hedera.exchange.exchanges.BitMart;
 import com.hedera.exchange.exchanges.BitTrue;
+import com.hedera.exchange.exchanges.Bitstamp;
+import com.hedera.exchange.exchanges.CryptoCom;
 import com.hedera.exchange.exchanges.Gate;
 import com.hedera.exchange.exchanges.HitBit;
 import com.hedera.exchange.exchanges.Huobi;
@@ -114,6 +116,8 @@ public final class ERTUtils {
 		EXCHANGES.put("hitbit", HitBit.class);
 		EXCHANGES.put("bittrue", BitTrue.class);
 		EXCHANGES.put("huobi", Huobi.class);
+		EXCHANGES.put("bitstamp", Bitstamp.class);
+		EXCHANGES.put("crypto.com", CryptoCom.class);
 	}
 
 	private ERTUtils() {

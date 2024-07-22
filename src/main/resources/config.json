@@ -1,5 +1,7 @@
 {
 	"exchanges": {
+		"bitstamp": "https://www.bitstamp.net/api/v2/ticker/hbarusd",
+		"crypto.com": "https://api.crypto.com/v2/public/get-ticker?instrument_name=HBAR_USD",
 		"upbit": "https://api.upbit.com/v1/ticker?markets=USD-HBAR",
 		"coinbase": "https://api.pro.coinbase.com/products/HBAR-USD/stats",
 		"okcoin": "https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker",
