@@ -42,5 +42,4 @@ public class Bitstamp extends ExchangeCoin {
     public Double getVolume() {
         return volume == null || volume <= 1.0 ? 0.0 : this.volume;
     }
-
 }

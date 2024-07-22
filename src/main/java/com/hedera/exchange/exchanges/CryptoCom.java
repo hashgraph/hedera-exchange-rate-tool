@@ -22,25 +22,67 @@ package com.hedera.exchange.exchanges;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 /**
  * Implements a Crypto.com Exchange Response
  */
 public class CryptoCom extends ExchangeCoin {
-
-    @JsonProperty(value="l", access = JsonProperty.Access.WRITE_ONLY)
-    private Double last;
-
-    @JsonProperty(value="v", access = JsonProperty.Access.WRITE_ONLY)
-    private Double volume;
+    @JsonProperty(value="result", access = JsonProperty.Access.WRITE_ONLY)
+    private TickerResult result;
 
     @Override
     public Double getHBarValue() {
-        return this.last;
+        return this.result.data.get(0).askPrice;
     }
 
     @Override
     public Double getVolume() {
-        return volume == null || volume <= 1.0 ? 0.0 : this.volume;
+        final  var volume = this.result.data.get(0).volume;
+        return volume == null || volume <= 1.0 ? 0.0 : volume;
     }
 
+    public String getInstrumentid() {
+        return this.result.data.get(0).instrumentName;
+    }
+
+    private static class TickerData {
+        @JsonProperty("i")
+        private String instrumentName;
+
+        @JsonProperty("h")
+        private Double highPrice;
+
+        @JsonProperty("l")
+        private Double lowPrice;
+
+        @JsonProperty("a")
+        private Double askPrice;
+
+        @JsonProperty("v")
+        private Double volume;
+
+        @JsonProperty("vv")
+        private Double volumeInUsd;
+
+        @JsonProperty("c")
+        private Double change;
+
+        @JsonProperty("b")
+        private Double bidPrice;
+
+        @JsonProperty("k")
+        private String kPrice;
+
+        @JsonProperty("oi")
+        private Double openInterest;
+
+        @JsonProperty("t")
+        private long timestamp;
+    }
+
+    private static class TickerResult {
+        @JsonProperty("data")
+        private List<TickerData> data;
+    }
 }
