@@ -1,7 +1,9 @@
 {
   "exchanges": {
     "coinbase": "https://api.pro.coinbase.com/products/HBAR-USD/stats",
-    "binance": "https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD"
+    "binance": "https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD",
+    "bitstamp": "https://www.bitstamp.net/api/v2/ticker/hbarusd",
+    "crypto.com": "https://api.crypto.com/v2/public/get-ticker?instrument_name=HBAR_USD"
   },
   "defaultCentEquiv" : 25920000,
   "defaultHbarEquiv": 30000,

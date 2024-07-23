@@ -55,7 +55,6 @@ package com.hedera.exchange;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.exchange.exchanges.Binance;
 import com.hedera.exchange.exchanges.Coinbase;
-import com.hedera.exchange.exchanges.OkCoin;
 import com.hedera.exchange.exchanges.PayBito;
 import com.hedera.hashgraph.sdk.proto.ExchangeRateSet;
 import org.junit.jupiter.api.AfterEach;
@@ -171,7 +170,7 @@ public class ERTProcessLogicTestCases {
             final double binanceValue) throws Exception {
         List<Exchange> justBinanceExchange = this.setBinanceOnly(binanceValue);
         final String exchangesInJson = binanceValue == 0.0 ? "[]" : String.format("[{\"volume\":1000.0," +
-                "\"Query\":\"https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker\"}]", binanceValue);
+                "\"Query\":\"https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD\"}]", binanceValue);
 
         final long currentExpirationInSeconds = ERTUtils.getCurrentExpirationTime();
         final Rate currentRate = new Rate(currentHBarEquiv, currentCentEquiv, currentExpirationInSeconds);
@@ -265,12 +264,12 @@ public class ERTProcessLogicTestCases {
 
 
     private List<Exchange> setBinanceOnly(final double value) {
-        Binance mockOkCoin = mock(Binance.class);
-        when(mockOkCoin.getHBarValue()).thenReturn(value);
-        when(mockOkCoin.getVolume()).thenReturn(1000.0);
+        Binance mockBinance = mock(Binance.class);
+        when(mockBinance.getHBarValue()).thenReturn(value);
+        when(mockBinance.getVolume()).thenReturn(1000.0);
 
         List<Exchange> exchanges = new ArrayList<>();
-        exchanges.add(mockOkCoin);
+        exchanges.add(mockBinance);
 
         return exchanges;
     }
@@ -279,10 +278,6 @@ public class ERTProcessLogicTestCases {
         Coinbase mockCoinbase = mock(Coinbase.class);
         when(mockCoinbase.getHBarValue()).thenReturn(0.098);
         when(mockCoinbase.getVolume()).thenReturn(1000.0);
-
-        OkCoin mockOkCoin = mock(OkCoin.class);
-        when(mockOkCoin.getHBarValue()).thenReturn(0.093);
-        when(mockOkCoin.getVolume()).thenReturn(1000.0);
 
         Binance mockBinance = mock(Binance.class);
         when(mockBinance.getHBarValue()).thenReturn(0.095);
@@ -295,7 +290,6 @@ public class ERTProcessLogicTestCases {
         List<Exchange> exchanges = new ArrayList<>();
         exchanges.add(mockBinance);
         exchanges.add(mockCoinbase);
-        exchanges.add(mockOkCoin);
         exchanges.add(mockPayBito);
 
         return exchanges;
@@ -306,10 +300,6 @@ public class ERTProcessLogicTestCases {
         Coinbase mockCoinbase = mock(Coinbase.class);
         when(mockCoinbase.getHBarValue()).thenReturn(0.038);
         when(mockCoinbase.getVolume()).thenReturn(1000.0);
-
-        OkCoin mockOkCoin = mock(OkCoin.class);
-        when(mockOkCoin.getHBarValue()).thenReturn(0.033);
-        when(mockOkCoin.getVolume()).thenReturn(1000.0);
 
         Binance mockBinance = mock(Binance.class);
         when(mockBinance.getHBarValue()).thenReturn(0.035);
@@ -322,7 +312,6 @@ public class ERTProcessLogicTestCases {
         List<Exchange> exchanges = new ArrayList<>();
         exchanges.add(mockBinance);
         exchanges.add(mockCoinbase);
-        exchanges.add(mockOkCoin);
         exchanges.add(mockPayBito);
 
         return exchanges;

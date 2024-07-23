@@ -9,9 +9,9 @@ package com.hedera.exchange.exchanges;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,39 +23,23 @@ package com.hedera.exchange.exchanges;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Represents a OkCoin Exchange response.
- *
- * @author Anirudh, Cesar
+ * Implements a Bitstamp Exchange Response
  */
-public final class OkCoin extends ExchangeCoin {
-
-    @JsonProperty(value="product_id", access = JsonProperty.Access.WRITE_ONLY)
-    private String productid;
-
-    @JsonProperty(value="instrument_id", access = JsonProperty.Access.WRITE_ONLY)
-    private String instrumentid;
+public class Bitstamp extends ExchangeCoin {
 
     @JsonProperty(value="last", access = JsonProperty.Access.WRITE_ONLY)
-    private Double rate;
+    private Double last;
 
-    @JsonProperty(value="quote_volume_24h", access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(value="volume", access = JsonProperty.Access.WRITE_ONLY)
     private Double volume;
 
     @Override
     public Double getHBarValue() {
-        return rate;
+        return this.last;
     }
 
     @Override
     public Double getVolume() {
         return volume == null || volume <= 1.0 ? 0.0 : this.volume;
-    }
-
-    public String getProductid() {
-        return productid;
-    }
-
-    public String getInstrumentid() {
-        return instrumentid;
     }
 }

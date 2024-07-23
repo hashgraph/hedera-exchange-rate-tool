@@ -1,8 +1,9 @@
 {
 	"exchanges": {
+		"bitstamp": "https://www.bitstamp.net/api/v2/ticker/hbarusd",
+		"crypto.com": "https://api.crypto.com/v2/public/get-ticker?instrument_name=HBAR_USD",
 		"upbit": "https://api.upbit.com/v1/ticker?markets=USD-HBAR",
 		"coinbase": "https://api.pro.coinbase.com/products/HBAR-USD/stats",
-		"okcoin": "https://www.okcoin.com/api/spot/v3/instruments/HBAR-USD/ticker",
 		"binance": "https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD",
 	  	"paybito": "https://stream.paybito.com:8443/SocketStream/api/get24hTicker?counter=HBAR&base=USD",
 		"gate": "https://api.gateio.ws/api/v4/spot/tickers?currency_pair=HBAR_USDT",
