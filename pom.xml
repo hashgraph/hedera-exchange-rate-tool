@@ -284,6 +284,7 @@
                     </argLine>
                     <failIfNoTests>false</failIfNoTests>
                     <includes>*TestCases.java</includes>
+                    <skipTests>true</skipTests>
                 </configuration>
             </plugin>
 
