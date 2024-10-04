@@ -150,16 +150,15 @@ public class HederaNetworkCommunicator {
 
         try {
             validateUpdate(client, exchangeRateFileId, exchangeRateAsBytes);
+            final AccountBalance newBalance = new AccountBalanceQuery()
+                    .setAccountId(operatorId)
+                    .execute(client);
+
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the Exchange Rate file: {}",
+                    newBalance.hbars.toString());
         } catch (Exception ex) {
             LOGGER.warn(Exchange.EXCHANGE_FILTER, "Error validating the file update. {}", ex.getMessage());
         }
-
-        final AccountBalance newBalance = new AccountBalanceQuery()
-                .setAccountId(operatorId)
-                .execute(client);
-
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the Exchange Rate file: {}",
-                newBalance.hbars.toString());
 
         return newAddressBook;
     }
