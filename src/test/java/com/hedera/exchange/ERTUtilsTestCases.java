@@ -120,7 +120,7 @@ class ERTUtilsTestCases {
 	void generateExchangesTest() {
 		//setup
 		final Map<String, String> exchangeAPIs = new HashMap<>() {{
-			put("bitmart", "https://api-cloud.bitmart.com/contract/v1/tickers?contract_symbol=HBARUSDT");
+			put("bitmart", "https://api-cloud-v2.bitmart.com/contract/public/details?symbol=HBARUSDT");
 			put("coinbase", "https://api.pro.coinbase.com/products/HBAR-USD/stats");
 		}};
 
