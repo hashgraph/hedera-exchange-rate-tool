@@ -7,7 +7,7 @@
 		"binance": "https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD",
 	  	"paybito": "https://stream.paybito.com:8443/SocketStream/api/get24hTicker?counter=HBAR&base=USD",
 		"gate": "https://api.gateio.ws/api/v4/spot/tickers?currency_pair=HBAR_USDT",
-		"bitmart": "https://api-cloud.bitmart.com/contract/v1/tickers?contract_symbol=HBARUSDT",
+		"bitmart": "https://api-cloud-v2.bitmart.com/contract/public/details?symbol=HBARUSDT",
 		"bittrue": "https://openapi.bitrue.com/api/v1/ticker/24hr?symbol=HBARUSDT",
 		"hitbit": "https://api.hitbtc.com/api/3/public/ticker/HBARUSDT",
 	  	"huobi" : "https://api.huobi.pro/market/detail?symbol=hbarusdt"

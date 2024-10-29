@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Exchange-Rate-Tool.iml" filepath="$PROJECT_DIR$/.idea/Exchange-Rate-Tool.iml" />
-      <module fileurl="file://$PROJECT_DIR$/hedera-exchange-rate-tool.iml" filepath="$PROJECT_DIR$/hedera-exchange-rate-tool.iml" />
     </modules>
   </component>
 </project>

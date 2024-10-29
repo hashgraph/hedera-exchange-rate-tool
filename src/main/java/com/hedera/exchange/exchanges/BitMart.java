@@ -59,11 +59,11 @@ public class BitMart extends ExchangeCoin {
 	}
 
 	private static class BitMartTickerData{
-		@JsonProperty("tickers")
-		private TickerData[] data;
+		@JsonProperty("symbols")
+		private SymbolData[] data;
 	}
 
-	private static class TickerData {
+	private static class SymbolData {
 		@JsonProperty("last_price")
 		private Double last;
 
