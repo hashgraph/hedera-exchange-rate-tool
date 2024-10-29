@@ -46,8 +46,8 @@ public class BitMartTestCases {
         final BitMart bitmart = factory.load(urlString, BitMart.class);
 
         assertNotNull(bitmart);
-        assertEquals("OK", bitmart.getMessage());
-        assertEquals(0.24737, bitmart.getHBarValue());
-        assertEquals(11275149.882476, bitmart.getVolume());
+        assertEquals("Ok", bitmart.getMessage());
+        assertEquals(0.05038, bitmart.getHBarValue());
+        assertEquals(146012288, bitmart.getVolume());
     }
 }
