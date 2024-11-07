@@ -141,8 +141,8 @@ public final class ERTUtils {
 		final AWSKMS client = AWSKMSClientBuilder.defaultClient();
 
 		final DecryptRequest request = new DecryptRequest()
-				.withCiphertextBlob(ByteBuffer.wrap(encryptedKey))
-				.withEncryptionContext(encryptionContext);
+				.withCiphertextBlob(ByteBuffer.wrap(encryptedKey));
+//				.withEncryptionContext(encryptionContext);
 
 		final ByteBuffer plainTextKey = client.decrypt(request).getPlaintext();
 		return new String(plainTextKey.array(), StandardCharsets.UTF_8);
