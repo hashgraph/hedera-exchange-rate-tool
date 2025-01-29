@@ -85,7 +85,7 @@ public final class ERTNotificationHelper {
 			final String SNS_ARN = getDecryptedEnvironmentVariableFromAWS("SNS_ARN");
 			SNS_CLIENT.publish(SNS_ARN, message, subject);
 			SNS_CLIENT.shutdown();
-		} catch (AmazonSNSException ex) {
+		} catch (Exception ex) {
 			LOGGER.error(Exchange.EXCHANGE_FILTER, "subject length : {} \n message length : {}",
 					subject.length(), message.length());
 			LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to submit  {} : {} \n {}", subject, message, ex);
