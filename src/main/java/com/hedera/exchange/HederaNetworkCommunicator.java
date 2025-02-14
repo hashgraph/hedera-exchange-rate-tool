@@ -105,10 +105,11 @@ public class HederaNetworkCommunicator {
     /**
      * Method to send a File update transaction to hedera network and fetch the latest addressBook from the network.
      *
-     * @param exchangeRate         The Exchange rate File to send to the network.
-     * @param midnightExchangeRate The midnight exchange rate for the network.
-     * @param client               hedera client for sending file update transaction.
+     * @param exchangeRate                  The Exchange rate File to send to the network.
+     * @param midnightExchangeRate          The midnight exchange rate for the network.
+     * @param client                        hedera client for sending file update transaction.
      * @param ertParams
+     * @param ertAddressBookFromPreviousRun
      * @return Latest AddressBook from the Hedera Network.
      * @throws TimeoutException        Timeout exception for the file update transaction.
      * @throws PrecheckStatusException precheck failed exception file update transaction.
@@ -120,7 +121,8 @@ public class HederaNetworkCommunicator {
             final ExchangeRate exchangeRate,
             final ExchangeRate midnightExchangeRate,
             final Client client,
-            final ERTParams ertParams)
+            final ERTParams ertParams,
+            final ERTAddressBook ertAddressBookFromPreviousRun)
             throws TimeoutException, PrecheckStatusException, IOException, ReceiptStatusException, InterruptedException {
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
         final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
@@ -141,8 +143,13 @@ public class HederaNetworkCommunicator {
 
         LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before updating the Exchange Rate file: {}",
                 currentBalance.hbars.toString());
-
-        ERTAddressBook newAddressBook = fetchAddressBook(client);
+        ERTAddressBook newAddressBook;
+        try {
+            newAddressBook = fetchAddressBook(client);
+        } catch (Exception ex) {
+            LOGGER.error(Exchange.EXCHANGE_FILTER, "Error fetching the address book. Using old addressBook {}", ex.getMessage());
+            newAddressBook = ertAddressBookFromPreviousRun;
+        }
 
         updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo, ertParams.getRegion());
 
