@@ -52,21 +52,35 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import com.amazonaws.services.kms.AWSKMS;
+import com.amazonaws.services.kms.AWSKMSClientBuilder;
+import com.amazonaws.services.kms.model.DecryptRequest;
+import com.amazonaws.services.kms.model.DecryptResult;
+import com.amazonaws.services.kms.model.InvalidCiphertextException;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ERTUtilsTestCases {
 
@@ -114,6 +128,38 @@ class ERTUtilsTestCases {
 		final String lambdaFunctionName = "exchange-rate-tool-lambda-integration";
 		assertEquals(expectedValue, ERTUtils.getDecryptedValueFromAWS(encryptedValue, lambdaFunctionName),
 				"AWS lambda Decryption not working as expected.");
+	}
+
+	@Test
+	void getDecryptedValueFromAWSWithoutEncryptionContextTest() {
+		final AWSKMS kmsClient = mock(AWSKMS.class);
+		when(kmsClient.decrypt(any(DecryptRequest.class))).thenReturn(new DecryptResult()
+				.withPlaintext(ByteBuffer.wrap("decrypted".getBytes(StandardCharsets.UTF_8))));
+
+		try (MockedStatic<AWSKMSClientBuilder> kmsClientBuilder = mockStatic(AWSKMSClientBuilder.class)) {
+			kmsClientBuilder.when(AWSKMSClientBuilder::defaultClient).thenReturn(kmsClient);
+			assertEquals("decrypted", ERTUtils.getDecryptedValueFromAWS("AQID", "exchange-rate-tool-lambda-testnet"));
+		}
+		verify(kmsClient, times(1)).decrypt(any(DecryptRequest.class));
+	}
+
+	@Test
+	void getDecryptedValueFromAWSWithEncryptionContextTest() {
+		final String lambdaFunctionName = "exchange-rate-tool-lambda-testnet";
+		final AWSKMS kmsClient = mock(AWSKMS.class);
+		when(kmsClient.decrypt(any(DecryptRequest.class))).thenAnswer(invocation -> {
+			final DecryptRequest request = invocation.getArgument(0);
+			if (!lambdaFunctionName.equals(request.getEncryptionContext().get("LambdaFunctionName"))) {
+				throw new InvalidCiphertextException("encryption context mismatch");
+			}
+			return new DecryptResult().withPlaintext(ByteBuffer.wrap("decrypted".getBytes(StandardCharsets.UTF_8)));
+		});
+
+		try (MockedStatic<AWSKMSClientBuilder> kmsClientBuilder = mockStatic(AWSKMSClientBuilder.class)) {
+			kmsClientBuilder.when(AWSKMSClientBuilder::defaultClient).thenReturn(kmsClient);
+			assertEquals("decrypted", ERTUtils.getDecryptedValueFromAWS("AQID", lambdaFunctionName));
+		}
+		verify(kmsClient, times(2)).decrypt(any(DecryptRequest.class));
 	}
 
 	@Test

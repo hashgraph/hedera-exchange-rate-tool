@@ -112,7 +112,8 @@ public class ExchangeRateTool {
             final var subject = "FAILED : ERT Run Failed on " + LAMBDA_FUNCTION_NAME;
             final var message = ex.getMessage() + "\n";
             LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
-            ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex), ertParams.getRegion());
+            ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex),
+                    ertParams == null ? null : ertParams.getRegion());
         }
     }
 

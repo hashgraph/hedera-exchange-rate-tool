@@ -55,8 +55,6 @@ package com.hedera.exchange;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.hedera.exchange.exchanges.Exchange;
-import com.hedera.hashgraph.sdk.AccountBalance;
-import com.hedera.hashgraph.sdk.AccountBalanceQuery;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.Client;
 import com.hedera.hashgraph.sdk.FileContentsQuery;
@@ -125,7 +123,6 @@ public class HederaNetworkCommunicator {
             final ERTAddressBook ertAddressBookFromPreviousRun)
             throws TimeoutException, PrecheckStatusException, IOException, ReceiptStatusException, InterruptedException {
         final byte[] exchangeRateAsBytes = exchangeRate.toExchangeRateSet().toByteArray();
-        final AccountId operatorId = AccountId.fromString(ertParams.getOperatorId());
 
         final String memo = String.format("currentRate : %.4f, nextRate : %.4f, midnight-currentRate : %.4f midnight" +
                         "-nextRate : %.4f",
@@ -137,12 +134,6 @@ public class HederaNetworkCommunicator {
 
         final FileId exchangeRateFileId = FileId.fromString(ertParams.getFileId());
 
-        final AccountBalance currentBalance = new AccountBalanceQuery()
-                .setAccountId(operatorId)
-                .execute(client);
-
-        LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance before updating the Exchange Rate file: {}",
-                currentBalance.hbars.toString());
         ERTAddressBook newAddressBook;
         try {
             newAddressBook = fetchAddressBook(client);
@@ -157,12 +148,6 @@ public class HederaNetworkCommunicator {
 
         try {
             validateUpdate(client, exchangeRateFileId, exchangeRateAsBytes);
-            final AccountBalance newBalance = new AccountBalanceQuery()
-                    .setAccountId(operatorId)
-                    .execute(client);
-
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "Balance after updating the Exchange Rate file: {}",
-                    newBalance.hbars.toString());
         } catch (Exception ex) {
             LOGGER.warn(Exchange.EXCHANGE_FILTER, "Error validating the file update. {}", ex.getMessage());
         }

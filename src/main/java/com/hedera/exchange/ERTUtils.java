@@ -55,6 +55,7 @@ package com.hedera.exchange;
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClientBuilder;
 import com.amazonaws.services.kms.model.DecryptRequest;
+import com.amazonaws.services.kms.model.InvalidCiphertextException;
 import com.amazonaws.util.Base64;
 import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Binance;
@@ -130,6 +131,9 @@ public final class ERTUtils {
 	 */
 	public static String getDecryptedEnvironmentVariableFromAWS(final String environmentVariable) {
 		final String environmentValue = System.getenv(environmentVariable);
+		if (environmentValue == null) {
+			throw new IllegalStateException("Environment variable " + environmentVariable + " is not set");
+		}
 		return getDecryptedValueFromAWS(environmentValue, LAMBDA_FUNCTION_NAME);
 	}
 
@@ -144,7 +148,15 @@ public final class ERTUtils {
 				.withCiphertextBlob(ByteBuffer.wrap(encryptedKey))
 				.withEncryptionContext(encryptionContext);
 
-		final ByteBuffer plainTextKey = client.decrypt(request).getPlaintext();
+		ByteBuffer plainTextKey;
+		try {
+			plainTextKey = client.decrypt(request).getPlaintext();
+		} catch (InvalidCiphertextException ex) {
+			// The Lambda console's encryption helpers bind the ciphertext to the function name
+			plainTextKey = client.decrypt(new DecryptRequest()
+					.withCiphertextBlob(ByteBuffer.wrap(encryptedKey))
+					.withEncryptionContext(encryptionContext)).getPlaintext();
+		}
 		return new String(plainTextKey.array(), StandardCharsets.UTF_8);
 	}
 

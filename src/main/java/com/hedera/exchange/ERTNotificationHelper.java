@@ -88,7 +88,7 @@ public final class ERTNotificationHelper {
 		} catch (Exception ex) {
 			LOGGER.error(Exchange.EXCHANGE_FILTER, "subject length : {} \n message length : {}",
 					subject.length(), message.length());
-			LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to submit  {} : {} \n {}", subject, message, ex);
+			LOGGER.error(Exchange.EXCHANGE_FILTER, "Failed to submit  {} : {}", subject, message, ex);
 		}
 	}
 
