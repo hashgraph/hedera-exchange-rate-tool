@@ -56,13 +56,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 
 public class RateTestCases {
 
@@ -113,13 +110,6 @@ public class RateTestCases {
 
 	@Test
 	public void isSmallChangeCheck() throws JsonProcessingException {
-		String testARN = "arn:aws:sns:us-east-2:525755363515:ERT-PreProd";
-
-		MockedStatic<ERTUtils> mockedExchangeRateUtils = Mockito.mockStatic(ERTUtils.class);
-		mockedExchangeRateUtils.when(
-				() -> ERTUtils.getDecryptedEnvironmentVariableFromAWS(any())).thenReturn(testARN);
-		MockedStatic<ERTNotificationHelper> mockedNotificationHelper = Mockito.mockStatic(ERTNotificationHelper.class);
-
 
 		int bound = 27;
 		Rate midnightRate = new Rate(30000, 120000, 1568592000);
@@ -134,8 +124,6 @@ public class RateTestCases {
 		Rate clippedRate = midnightRate.clipRate(nextRate, bound);
 
 		assertTrue(midnightRate.isSmallChange(bound, clippedRate));
-		mockedExchangeRateUtils.close();
-		mockedNotificationHelper.close();
 	}
 
 	@ParameterizedTest
