@@ -68,15 +68,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * This class implements the ExchangeDB interface using AWS RDS
+ * This class implements the ExchangeDB interface using PostgreSQL
  * which species what APIs that we need to fetch/push data into the Database.
  *
  * If you foresee doing more of this mapping, I would recommend moving to JPA/Hibernate.
  *
  */
-public class ExchangeRateAWSRD implements ExchangeDB {
+public class ExchangeRatePostgresDB implements ExchangeDB {
 
-	private static final Logger LOGGER = LogManager.getLogger(ExchangeRateAWSRD.class);
+	private static final Logger LOGGER = LogManager.getLogger(ExchangeRatePostgresDB.class);
 
 	private static final String LATEST_EXCHANGE_QUERY = "SELECT e1.expirationTime, e1.exchangeRateFile FROM exchange_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM exchange_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
@@ -86,9 +86,9 @@ public class ExchangeRateAWSRD implements ExchangeDB {
 
 	private static final String LATEST_QUERIED_QUERY = "SELECT e1.expirationTime, e1.queriedrates FROM queried_rate AS e1 INNER JOIN (SELECT MAX(expirationTime) expirationTime FROM queried_rate) AS e2 ON e1.expirationTime = e2.expirationTime LIMIT 1";
 
-	private final AWSDBParams params;
+	private final DBParams params;
 
-	public ExchangeRateAWSRD(final AWSDBParams params) {
+	public ExchangeRatePostgresDB(final DBParams params) {
 		this.params = params;
 		this.migrate();
 	}
