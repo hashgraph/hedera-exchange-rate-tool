@@ -52,10 +52,6 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.amazonaws.services.kms.AWSKMS;
-import com.amazonaws.services.kms.AWSKMSClientBuilder;
-import com.amazonaws.services.kms.model.DecryptRequest;
-import com.amazonaws.util.Base64;
 import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Binance;
 import com.hedera.exchange.exchanges.BitMart;
@@ -79,19 +75,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.hedera.exchange.ExchangeRateTool.LAMBDA_FUNCTION_NAME;
 
 /**
  * This class implements helper functions of ERT
- *  1. To get the decrypted environment variables set in AWS
+ *  1. To read environment variables
  *  2. To calculate median of the exchange rates fetched
  *  3. To calculate running weights
  *
@@ -120,32 +113,6 @@ public final class ERTUtils {
 
 	private ERTUtils() {
 		throw new UnsupportedOperationException("Utility class");
-	}
-
-	/**
-	 * Get the decrypted Environment variable set in AWS
-	 * for example: the DB endpoint, username, password to access the Database, config file path etc..
-	 * @param environmentVariable - Encrypted variable
-	 * @return decrypted Environment Variable.
-	 */
-	public static String getDecryptedEnvironmentVariableFromAWS(final String environmentVariable) {
-		final String environmentValue = System.getenv(environmentVariable);
-		return getDecryptedValueFromAWS(environmentValue, LAMBDA_FUNCTION_NAME);
-	}
-
-	static String getDecryptedValueFromAWS(final String value, final String lambdaFunctionName) {
-		Map<String, String> encryptionContext = new HashMap<>();
-		encryptionContext.put("LambdaFunctionName", lambdaFunctionName);
-		final byte[] encryptedKey = Base64.decode(value);
-
-		final AWSKMS client = AWSKMSClientBuilder.defaultClient();
-
-		final DecryptRequest request = new DecryptRequest()
-				.withCiphertextBlob(ByteBuffer.wrap(encryptedKey))
-				.withEncryptionContext(encryptionContext);
-
-		final ByteBuffer plainTextKey = client.decrypt(request).getPlaintext();
-		return new String(plainTextKey.array(), StandardCharsets.UTF_8);
 	}
 
 	/**

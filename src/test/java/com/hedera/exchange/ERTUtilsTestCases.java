@@ -55,7 +55,6 @@ package com.hedera.exchange;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -102,18 +101,6 @@ class ERTUtilsTestCases {
 				"Not the Ip address for node 11");
 		assertEquals(15, nodesForClient.get("35.228.11.53:50211").num,
 				"Not the Ip address for node 15");
-	}
-
-	@Test
-	@Disabled
-	/* This test doesnt work in CI. Needs an AWS SDK client to run.*/
-	void getDecryptedEnvironmentVariableFromAWSTest() {
-		final String expectedValue = "https://s3.amazonaws.com/exchange.rate.config.integration/config.json";
-		final String encryptedValue = "AQICAHi3BYYdRzjj1ZR5ij/3mN6+GWqEbw7NTAG0fm7nzYo3MwHyBlKsmA+1lepLUe" +
-				"+0rgeFAAAApzCBpAYJKoZIhvcNAQcGoIGWMIGTAgEAMIGNBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDLHJjkIANloMVIhCdgIBEIBg9HnXBKnxE3c4H5/17ilQR0G6DqZKH6dzBnhkUAjYbg1sBuStjVA8rQwBUtiSKO7b5ehQh+OxnrJxVbHAZNylSH71fr7OICMI3iA2qkIM8gtWNG1htphGhkDLCRcaw5Xh";
-		final String lambdaFunctionName = "exchange-rate-tool-lambda-integration";
-		assertEquals(expectedValue, ERTUtils.getDecryptedValueFromAWS(encryptedValue, lambdaFunctionName),
-				"AWS lambda Decryption not working as expected.");
 	}
 
 	@Test

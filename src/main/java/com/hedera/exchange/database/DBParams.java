@@ -52,22 +52,20 @@ package com.hedera.exchange.database;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.hedera.exchange.ERTUtils;
-
-public class AWSDBParams {
+public class DBParams {
 	public String getEndpoint() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("ENDPOINT") + getDatabaseName();
+		return System.getenv("ENDPOINT") + getDatabaseName();
 	}
 
 	public String getUsername() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("USERNAME");
+		return System.getenv("USERNAME");
 	}
 
 	public String getPassword() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("PASSWORD");
+		return System.getenv("PASSWORD");
 	}
 
 	public String getDatabaseName() {
-		return ERTUtils.getDecryptedEnvironmentVariableFromAWS("DATABASE");
+		return System.getenv("DATABASE");
 	}
 }
