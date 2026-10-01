@@ -4,7 +4,7 @@
 
 # Exchange Rate Tool
 
-This tool fetches the HBAR - USD exchange rate from all the exchanges that allow HBAR trading and calculates their weighted median [Weight is the volume of HABR - USD trading occurred on that exchange in the last 24 hours].
+This tool fetches the HBAR - USD exchange rate from all the exchanges that allow HBAR trading and calculates their weighted median [Weight is the volume of HBAR - USD trading occurred on that exchange in the last 24 hours].
 Once the Median is calculated we perform a smoothing operation to keep the rate in bound from the rate at previous midnight.
 This Smoothed Median is then pushed to the Hedera Network[can push to multiple Hedera Networks in a single run] as the rate that is to be used for the next hour as the base for fee calculations for all transactions.
 
