@@ -42,7 +42,7 @@ import java.util.Map;
 
 /**
  * Serves the exchange rate read APIs over HTTP:
- *   GET /latest   latest exchange rate file
+ *   GET /latest   latest exchange rate file (also served as /pricing)
  *   GET /history  data from the last n runs (query parameter no_of_records, default 5)
  */
 public class ExchangeRateApiServer {
@@ -72,6 +72,8 @@ public class ExchangeRateApiServer {
 		final int port = HttpServers.port();
 		final HttpServer server = HttpServers.create(port);
 		route(server, "/latest", params -> ExchangeRateAPI.getLatest(exchangeDb));
+		// The path existing clients call (it was the API Gateway route in front of the Lambda).
+		route(server, "/pricing", params -> ExchangeRateAPI.getLatest(exchangeDb));
 		route(server, "/history", params -> historyApi.getHistory(exchangeDb, params.get("no_of_records")));
 		server.start();
 		LOGGER.info(Exchange.EXCHANGE_FILTER, "Exchange rate API listening on port {}", port);
