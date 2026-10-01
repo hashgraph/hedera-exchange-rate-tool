@@ -52,8 +52,6 @@ package com.hedera.exchange.api;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -61,77 +59,45 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hedera.exchange.ExchangeRate;
 import com.hedera.exchange.Rate;
-import com.hedera.exchange.database.AWSDBParams;
 import com.hedera.exchange.database.ExchangeDB;
-import com.hedera.exchange.database.ExchangeRateAWSRD;
 import com.hedera.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * This class implements an API which returns the data from the last 'n'[defaulted to 5] successful runs of ERT
  *
  * @author anighanta
  */
-public class ExchangeRateHistoryAPI implements RequestStreamHandler {
+public class ExchangeRateHistoryAPI {
 
-    private static Map<String, String> HEADERS = new HashMap<>();
     private static final Logger LOGGER = LogManager.getLogger(ExchangeRateHistoryAPI.class);
-    private static int NO_OF_RECORDS = 5;
+    private static final int DEFAULT_NO_OF_RECORDS = 5;
     private final static long BOUND = 25;
     private final static long SECONDS_IN_HOUR = 3_600;
     private final static long SECONDS_IN_DAY = 86_400;
     private final static long HBAR_EQUIV = 30_000;
-    private static DateFormat UTC_DATETIME_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    private static final DateTimeFormatter UTC_DATETIME_FORMAT =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneOffset.UTC);
 
-    static {
-        HEADERS.put("Access-Control-Allow-Origin", "*");
-    }
-
-    @Override
-    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-
-        JSONParser requestParser = new JSONParser();
-        BufferedReader requestReader = new BufferedReader(new InputStreamReader(inputStream));
-        JSONObject responseJson = new JSONObject();
-        responseJson.put("headers", HEADERS);
-        int no_of_records = NO_OF_RECORDS;
-        UTC_DATETIME_FORMAT.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
-
+    /**
+     * @param noOfRecordsParam value of the no_of_records query parameter, or null to use the default
+     */
+    public ApiResponse getHistory(final ExchangeDB exchangeDb, final String noOfRecordsParam) {
         try{
+            final int noOfRecords = noOfRecordsParam != null ?
+                    Integer.parseInt(noOfRecordsParam) : DEFAULT_NO_OF_RECORDS;
 
-            JSONObject requestEvent = (JSONObject) requestParser.parse(requestReader);
-
-            if (requestEvent.get("queryStringParameters") != null) {
-                JSONObject queryStringParameters = (JSONObject) requestEvent.get("queryStringParameters");
-                if (queryStringParameters.get("no_of_records") != null) {
-                    no_of_records = Integer.parseInt((String) queryStringParameters.get("no_of_records"));
-                }
-            }
-
-            final ExchangeDB exchangeDb = new ExchangeRateAWSRD(new AWSDBParams());
-            LOGGER.info(Exchange.EXCHANGE_FILTER, "params received : {}", no_of_records);
-            NO_OF_RECORDS = no_of_records;
+            LOGGER.info(Exchange.EXCHANGE_FILTER, "params received : {}", noOfRecords);
             ExchangeRate midnightRate = exchangeDb.getLatestMidnightExchangeRate();
             long currMidnightTime = midnightRate.getNextExpirationTimeInSeconds();
             LOGGER.info(Exchange.EXCHANGE_FILTER, "current Midnight time : {}", currMidnightTime);
@@ -157,7 +123,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
 
             long expirationTime = latestExpirationTime;
 
-            for (int i = 1; i < NO_OF_RECORDS; i++) {
+            for (int i = 1; i < noOfRecords; i++) {
                 expirationTime -= SECONDS_IN_HOUR;
                 //pull the appropriate midnight rate
                 if (expirationTime <= currMidnightTime) {
@@ -189,17 +155,11 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
             result = result.replaceAll("\\],\\[", ",");
             result = result.substring(0, result.length() - 1);
 
-            responseJson.put("statusCode", 200);
-            responseJson.put("body", result);
+            return new ApiResponse(200, result);
         } catch (Exception e){
             LOGGER.error(Exchange.EXCHANGE_FILTER, e.getMessage());
-            responseJson.put("statusCode", 400);
-            responseJson.put("body", e.getMessage());
+            return new ApiResponse(400, e.getMessage());
         }
-
-        OutputStreamWriter responseWriter = new OutputStreamWriter(outputStream, "UTF-8");
-        responseWriter.write(responseJson.toString());
-        responseWriter.close();
     }
 
     private static double calculateMedian(ExchangeRate exchangeRate){
@@ -213,8 +173,7 @@ public class ExchangeRateHistoryAPI implements RequestStreamHandler {
 
     private static String toDate(long expirationTime){
         LOGGER.info(Exchange.EXCHANGE_FILTER, "converting epoc to utc date time format");
-        Date date = new Date(expirationTime*1000);
-        return UTC_DATETIME_FORMAT.format(date);
+        return UTC_DATETIME_FORMAT.format(Instant.ofEpochSecond(expirationTime));
     }
 
     public boolean isSmoothed(Rate midnightRate, double foundMedian) throws JsonProcessingException {
