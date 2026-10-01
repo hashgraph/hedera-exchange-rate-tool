@@ -189,8 +189,7 @@
                 <configuration>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <transformers>
-                        <!-- Merge META-INF/services files. Without this only one copy of each is kept, which
-                             drops e.g. Flyway's PostgreSQL plugin and gRPC's channel/resolver providers. -->
+                        <!-- Without merging, only one META-INF/services file survives (drops Flyway's PostgreSQL plugin, gRPC providers). -->
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                         <!-- log4j-core and others ship version-specific classes under META-INF/versions. -->
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
@@ -199,10 +198,7 @@
                             </manifestEntries>
                         </transformer>
                     </transformers>
-                    <!-- Some dependencies (e.g. bcprov-jdk15on) are signed; merging their
-                         classes into this uber-jar invalidates those signatures and the JVM
-                         refuses to load the jar. Signature files are meaningless after
-                         shading, so strip them. -->
+                    <!-- Signed dependencies (e.g. bcprov) are invalid once shaded and the JVM rejects the jar. -->
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>
