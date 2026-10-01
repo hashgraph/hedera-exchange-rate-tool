@@ -35,7 +35,7 @@ Kubernetes manifests are kept outside this repository.
 
 This tool also provides 2 APIs.
 
-1. ExchangeRateAPI (`GET /latest`, also served as `GET /pricing` for existing clients) - This gives the latest exchange rate that this tool has pushed to the Hedera Network.
+1. ExchangeRateAPI (`GET /latest`, also served as `GET /pricing` for existing clients) - This gives the latest exchange rate that this tool has pushed to the Hedera Network. Each deployment returns the rate stored in its own database, so a mainnet deployment serves mainnet data and a testnet deployment serves testnet data.
 2. ExchnageRateHistoryAPI (`GET /history?no_of_records=N`, default 5) - This gives the data from the previous runs which includes
     * All the data from exchanges that it fetched.
     * The median it calculated.
