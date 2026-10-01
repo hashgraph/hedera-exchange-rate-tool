@@ -1,10 +1,7 @@
 # syntax=docker/dockerfile:1
 #
-# One image for both ERT processes; pick one with the container args:
-#   com.hedera.exchange.server.ExchangeRateApiServer   (default) GET /latest, GET /history
-#   com.hedera.exchange.server.ExchangeRateToolService hourly exchange rate update job
-#
-#   docker buildx build --platform linux/amd64 -t hedera-exchange-rate-tool:local --load .
+# Container args pick the process: com.hedera.exchange.server.ExchangeRateApiServer (default) or ...ExchangeRateToolService.
+# docker buildx build --platform linux/amd64 -f Containerfile -t hedera-exchange-rate-tool:local --load .
 
 # Bytecode is platform independent, so compile natively on the build host even when targeting another arch.
 FROM --platform=$BUILDPLATFORM maven:3.9-eclipse-temurin-25 AS build
