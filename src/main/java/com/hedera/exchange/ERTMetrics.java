@@ -27,7 +27,8 @@ import io.prometheus.metrics.core.metrics.Gauge;
 
 /**
  * Prometheus metrics for the ERT job. Alert on these from the metrics backend.
- * Reason labels match the alert types in docs/Triage_ERT_Alerts.md where applicable.
+ * The reason labels of ert_update_errors_total are Hedera status names, plus ERROR_BUILDING_HEDERA_CLIENT and
+ * RETRYABLE_ERROR.
  */
 public final class ERTMetrics {
 
