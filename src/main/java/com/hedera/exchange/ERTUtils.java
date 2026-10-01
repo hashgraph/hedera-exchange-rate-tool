@@ -84,9 +84,8 @@ import java.util.Map;
 
 /**
  * This class implements helper functions of ERT
- *  1. To read environment variables
- *  2. To calculate median of the exchange rates fetched
- *  3. To calculate running weights
+ *  1. To calculate median of the exchange rates fetched
+ *  2. To calculate running weights
  *
  * @author Anirudh, Cesar
  */
