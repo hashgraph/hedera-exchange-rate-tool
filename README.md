@@ -1,4 +1,3 @@
-[![CircleCI](https://circleci.com/gh/swirlds/Exchange-Rate-Tool/tree/master.svg?style=shield&circle-token=6836ac760f65328da0f419c11c155ed2c19fedae)](https://circleci.com/gh/swirlds/Exchange-Rate-Tool/tree/master)
 [![codecov]()]()
 
 
@@ -13,12 +12,31 @@ Instance 1 pushes rates to Mainnet
 Instance 2 pushes rates to Stable Testnet
 Instance 3 pushes rates to Preview Testnet, Staging-lg, Staging-sm, Integration and Performance Testing
 
-We periodically [hourly] run this tool using AWS lambda.
+The tool runs as a container on Kubernetes (see `Containerfile`). One image provides two processes:
+
+* `com.hedera.exchange.server.ExchangeRateToolService` - runs the tool hourly. Must run as a single replica.
+* `com.hedera.exchange.server.ExchangeRateApiServer` - serves the APIs below.
+
+Both expose Prometheus metrics on `/metrics` and a health check on `/healthz`, on port 8080.
+
+```
+docker buildx build --platform linux/amd64 -f Containerfile -t hedera-exchange-rate-tool:local --load .
+```
+
+Configuration is read from environment variables and one config file:
+
+* `ENDPOINT` (JDBC URL ending in `/`), `DATABASE`, `USERNAME`, `PASSWORD` - the PostgreSQL database (both processes).
+* `CONFIG_PATH` - path to the config JSON (job only), e.g. a mounted ConfigMap.
+* `OPERATOR_KEY_<network name>` - Hedera operator private key for every network under `Networks` in the config (job only).
+* `ERT_RUN_OFFSET_SECONDS` (default 30) - seconds past the hour the job runs. The job must run as a single replica.
+* `PORT` (default 8080).
+
+Kubernetes manifests are kept outside this repository.
 
 This tool also provides 2 APIs.
 
-1. ExchangeRateAPI - This gives the latest exchange rate that this tool has pushed to the Hedera Network.
-2. ExchnageRateHistoryAPI - This gives the data from the previous runs which includes
+1. ExchangeRateAPI (`GET /latest`) - This gives the latest exchange rate that this tool has pushed to the Hedera Network.
+2. ExchnageRateHistoryAPI (`GET /history?no_of_records=N`, default 5) - This gives the data from the previous runs which includes
     * All the data from exchanges that it fetched.
     * The median it calculated.
     * If that median is smoothed.
