@@ -39,11 +39,7 @@ final class DatabaseConnection {
 		throw new UnsupportedOperationException("Utility class");
 	}
 
-	/**
-	 * Waits for the database instead of exiting, so a DB that starts after this pod doesn't cause crash loops.
-	 * Connecting also applies any pending schema migrations. Only connection failures are retried; anything else
-	 * (bad configuration, missing driver) fails fast.
-	 */
+	/** Waits for the database (and applies migrations); only connection failures are retried, so misconfiguration fails fast. */
 	static ExchangeDB connectWithRetry() throws InterruptedException {
 		while (true) {
 			try {

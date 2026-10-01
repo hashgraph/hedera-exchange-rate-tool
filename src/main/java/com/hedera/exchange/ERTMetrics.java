@@ -25,11 +25,7 @@ package com.hedera.exchange;
 import io.prometheus.metrics.core.metrics.Counter;
 import io.prometheus.metrics.core.metrics.Gauge;
 
-/**
- * Prometheus metrics for the ERT job. Alert on these from the metrics backend.
- * The reason labels of ert_update_errors_total are Hedera status names, plus ERROR_BUILDING_HEDERA_CLIENT and
- * RETRYABLE_ERROR.
- */
+/** Prometheus metrics; the reason of ert_update_errors_total is a Hedera status, ERROR_BUILDING_HEDERA_CLIENT or RETRYABLE_ERROR. */
 public final class ERTMetrics {
 
 	public static final Counter RUNS = Counter.builder()

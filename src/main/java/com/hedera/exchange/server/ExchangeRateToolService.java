@@ -33,14 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Long-running ERT process: runs ExchangeRateTool every frequencyInSeconds (from the config), aligned to the
- * clock, and exposes /metrics between runs so they can be scraped.
- *
- * Runs start ERT_RUN_OFFSET_SECONDS (default 30) after each boundary, e.g. hh:00:30 for an hourly frequency. The
- * offset keeps a run from landing a few milliseconds before the hour, which would compute the previous hour's
- * expiration times. Must run as a single replica: two instances would both submit every update.
- */
+/** Runs the tool every period, ERT_RUN_OFFSET_SECONDS past the boundary so expiry times are for the new hour. One replica only. */
 public class ExchangeRateToolService {
 
 	private static final Logger LOGGER = LogManager.getLogger(ExchangeRateToolService.class);
@@ -76,17 +69,12 @@ public class ExchangeRateToolService {
 		service.schedule(nextRunAfter(System.currentTimeMillis() / 1000, frequencySeconds, offsetSeconds));
 	}
 
-	/** The first run time (epoch seconds) strictly after now. */
 	static long nextRunAfter(final long nowEpochSeconds, final long frequencySeconds, final long offsetSeconds) {
 		return Math.floorDiv(nowEpochSeconds - offsetSeconds, frequencySeconds) * frequencySeconds
 				+ offsetSeconds + frequencySeconds;
 	}
 
-	/**
-	 * The run after {@code previousRun}. Derived from the previous scheduled time rather than the clock, so a timer
-	 * firing slightly early can't schedule a second run in the same period. If runs fell behind (e.g. the node was
-	 * suspended), skip ahead to the next future run instead of running the missed ones back to back.
-	 */
+	/** Derived from the previous run, not the clock, so an early timer can't double-run; missed runs are skipped. */
 	static long runAfter(final long previousRun, final long nowEpochSeconds, final long frequencySeconds,
 			final long offsetSeconds) {
 		final long next = previousRun + frequencySeconds;
