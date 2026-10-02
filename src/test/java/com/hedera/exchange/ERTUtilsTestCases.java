@@ -55,17 +55,23 @@ package com.hedera.exchange;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ERTUtilsTestCases {
 
@@ -104,20 +110,38 @@ class ERTUtilsTestCases {
 	}
 
 	@Test
-	void generateExchangesTest() {
-		//setup
-		final Map<String, String> exchangeAPIs = new HashMap<>() {{
-			put("bitmart", "https://api-cloud-v2.bitmart.com/contract/public/details?symbol=HBARUSDT");
-			put("coinbase", "https://api.pro.coinbase.com/products/HBAR-USD/stats");
-		}};
+	void generateExchangesTest() throws IOException {
+		final AtomicInteger unsupportedCalls = new AtomicInteger();
+		final HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+		server.createContext("/coinbase", exchange -> respond(exchange, "{\"last\":\"0.1\",\"volume\":\"1000000\"}"));
+		server.createContext("/removed", exchange -> {
+			unsupportedCalls.incrementAndGet();
+			respond(exchange, "{}");
+		});
+		server.start();
+		try {
+			final String base = "http://127.0.0.1:" + server.getAddress().getPort();
+			final Map<String, String> exchangeAPIs = new LinkedHashMap<>();
+			exchangeAPIs.put("coinbase", base + "/coinbase");
+			exchangeAPIs.put("unknown-exchange", base + "/removed");
 
-		//when
-		final List<Exchange> exchanges = ERTUtils.generateExchanges(exchangeAPIs);
+			final List<Exchange> exchanges = ERTUtils.generateExchanges(exchangeAPIs);
 
-		//then
-		assertEquals(2, exchanges.size(), "Couldn't generate all exchanges");
-		assertNotNull(exchanges.get(0).getHBarValue(), "Exchange not generated correctly");
-		assertNotNull(exchanges.get(1).getHBarValue(), "Exchange not generated correctly");
+			assertEquals(1, exchanges.size(), "Only the supported exchange should be generated");
+			assertEquals(0.1, exchanges.get(0).getHBarValue(), "Exchange not generated correctly");
+			assertEquals(0, unsupportedCalls.get(), "An unsupported exchange must not be called");
+		} finally {
+			server.stop(0);
+		}
+	}
+
+	private static void respond(final HttpExchange exchange, final String body) throws IOException {
+		final byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+		exchange.sendResponseHeaders(200, bytes.length);
+		try (OutputStream os = exchange.getResponseBody()) {
+			os.write(bytes);
+		}
+		exchange.close();
 	}
 
 	@Test

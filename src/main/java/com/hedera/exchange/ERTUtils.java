@@ -124,6 +124,10 @@ public final class ERTUtils {
 		for (final Map.Entry<String, String> api : exchangeAPIs.entrySet()) {
 
 			final Class<? extends ExchangeCoin> exchangeClass = EXCHANGES.get(api.getKey());
+			if (exchangeClass == null) {
+				LOGGER.warn(Exchange.EXCHANGE_FILTER, "Unknown exchange {} in the config, skipping it", api.getKey());
+				continue;
+			}
 
 			final String endpoint = api.getValue();
 			final Exchange actualExchange = factory.load(endpoint, exchangeClass);
