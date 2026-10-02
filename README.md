@@ -46,6 +46,5 @@ This tool also provides 2 APIs.
  Exchanges that we are currently pulling latest HBAR-USD exchange rate from:
   * Coinbase
   * Binance
-  * Bitmart
   * Bitstamp
   * Crypto.com
