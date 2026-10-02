@@ -54,7 +54,6 @@ package com.hedera.exchange;
 
 import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Binance;
-import com.hedera.exchange.exchanges.BitMart;
 import com.hedera.exchange.exchanges.BitTrue;
 import com.hedera.exchange.exchanges.Bitstamp;
 import com.hedera.exchange.exchanges.CryptoCom;
@@ -101,7 +100,6 @@ public final class ERTUtils {
 		EXCHANGES.put("upbit", UpBit.class);
 		EXCHANGES.put("binance", Binance.class);
 		EXCHANGES.put("paybito", PayBito.class);
-		EXCHANGES.put("bitmart", BitMart.class);
 		EXCHANGES.put("gate", Gate.class);
 		EXCHANGES.put("hitbit", HitBit.class);
 		EXCHANGES.put("bittrue", BitTrue.class);
