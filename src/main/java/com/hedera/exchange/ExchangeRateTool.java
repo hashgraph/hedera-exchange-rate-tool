@@ -60,7 +60,6 @@ import com.hedera.hashgraph.sdk.Hbar;
 import com.hedera.hashgraph.sdk.PrecheckStatusException;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.ReceiptStatusException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -87,8 +86,6 @@ public class ExchangeRateTool {
 
     static final int DEFAULT_RETRIES = 4;
 
-    static final String LAMBDA_FUNCTION_NAME = System.getenv("AWS_LAMBDA_FUNCTION_NAME");
-
     private ERTParams ertParams;
     private ExchangeDB exchangeDB;
 
@@ -102,18 +99,16 @@ public class ExchangeRateTool {
      * mentioned in DEFAULT_RETRIES.
      * @param args
      */
-    protected void run(final String ... args) {
+    public void run(final String ... args) {
         LOGGER.debug(Exchange.EXCHANGE_FILTER, "Starting ExchangeRateTool");
         try {
             ertParams = ERTParams.readConfig(args);
             exchangeDB = ertParams.getExchangeDB();
             execute();
+            ERTMetrics.RUNS.labelValues("success").inc();
         } catch (Exception ex) {
-            final var subject = "FAILED : ERT Run Failed on " + LAMBDA_FUNCTION_NAME;
-            final var message = ex.getMessage() + "\n";
-            LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
-            ERTNotificationHelper.publishMessage(subject, message + ExceptionUtils.getStackTrace(ex),
-                    ertParams == null ? null : ertParams.getRegion());
+            LOGGER.error(Exchange.EXCHANGE_FILTER, "FAILED : ERT Run Failed", ex);
+            ERTMetrics.RUNS.labelValues("failure").inc();
         }
     }
 
@@ -148,8 +143,7 @@ public class ExchangeRateTool {
                 ertParams.getFloor(),
                 midnightExchangeRate,
                 currentRate,
-                frequencyInSeconds,
-                ertParams.getRegion());
+                frequencyInSeconds);
 
         final ExchangeRate exchangeRate = proc.call();
 
@@ -170,11 +164,12 @@ public class ExchangeRateTool {
 
                 exchangeDB.pushQueriedRate(exchangeRate.getNextExpirationTimeInSeconds(), proc.getExchangeJson());
                 LOGGER.info(Exchange.EXCHANGE_FILTER, "The Exchange Rates were successfully updated");
+                ERTMetrics.NETWORK_UPDATES.labelValues(networkName, "success").inc();
+                ERTMetrics.LAST_SUCCESSFUL_UPDATE.labelValues(networkName).set(System.currentTimeMillis() / 1000.0);
             } else {
-                final var errMessage = String.format("FAILED : The Exchange Rates were not successfully updated on %s",
+                LOGGER.error(Exchange.EXCHANGE_FILTER, "FAILED : The Exchange Rates were not successfully updated on {}",
                         networkName);
-                ERTNotificationHelper.publishMessage(errMessage, errMessage, ertParams.getRegion());
-                LOGGER.error(Exchange.EXCHANGE_FILTER, errMessage);
+                ERTMetrics.NETWORK_UPDATES.labelValues(networkName, "failure").inc();
             }
         }
     }
@@ -210,9 +205,9 @@ public class ExchangeRateTool {
 
             if (hederaClient == null) {
                 LOGGER.error(Exchange.EXCHANGE_FILTER, "Error while building a Hedera Client");
-                final var subject = String.format("ERROR : Couldn't Build a Hedera Client on %s", networkName);
-                ERTNotificationHelper.publishMessage(subject, "Retrying..", ertParams.getRegion());
-                throw new IllegalStateException(subject);
+                ERTMetrics.UPDATE_ERRORS.labelValues(networkName, "ERROR_BUILDING_HEDERA_CLIENT").inc();
+                throw new IllegalStateException(
+                        String.format("ERROR : Couldn't Build a Hedera Client on %s", networkName));
             }
 
             final int maxRetries = DEFAULT_RETRIES;
@@ -240,23 +235,20 @@ public class ExchangeRateTool {
                 catch (ReceiptStatusException|PrecheckStatusException rex) {
                     // Only retry if its not ReceiptStatusException as it is already handled in
                     // HederaNetworkCommunicator.updateExchangeRateFileTxn
-                    final String subject = String.format("FAILED : The Exchange Rates were not successfully updated on %s", networkName);
-                    final String message = String.format("Failed on network %s. with error : %s", networkName, rex);
                     LOGGER.error(Exchange.EXCHANGE_FILTER,
                             "Failed to update the network with the calculated rates within 4 retries.", rex);
-                    ERTNotificationHelper.publishMessage(subject, message, ertParams.getRegion());
+                    final var status = rex instanceof ReceiptStatusException ?
+                            ((ReceiptStatusException) rex).receipt.status :
+                            ((PrecheckStatusException) rex).status;
+                    ERTMetrics.UPDATE_ERRORS.labelValues(networkName, status.toString()).inc();
                     return FAILED;
                 }
                 catch (Exception ex) {
                     currentTries++;
-                    final String subject = String.format("ERROR : On network %s", networkName);
-                    final String message = String.format("Failed to execute at try %d/%d on network %s. Retrying. %s",
-                            currentTries,
-                            maxRetries,
-                            networkName,
-                            ex);
-                    LOGGER.error(Exchange.EXCHANGE_FILTER, subject, ex);
-                    ERTNotificationHelper.publishMessage(subject, message, ertParams.getRegion());
+                    LOGGER.error(Exchange.EXCHANGE_FILTER, String.format(
+                            "Failed to execute at try %d/%d on network %s. Retrying.",
+                            currentTries, maxRetries, networkName), ex);
+                    ERTMetrics.UPDATE_ERRORS.labelValues(networkName, "RETRYABLE_ERROR").inc();
                 }
             }
         }

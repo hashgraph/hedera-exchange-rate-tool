@@ -1,32 +1,31 @@
 {
-	"exchanges": {
-		"coinbase": "https://api.pro.coinbase.com/products/HBAR-USD/stats",
-		"binance": "https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD",
-		"bitstamp": "https://www.bitstamp.net/api/v2/ticker/hbarusd",
-		"crypto.com": "https://api.crypto.com/v2/public/get-ticker?instrument_name=HBAR_USD"
-	},
-  	"defaultCentEquiv" : 360000,
-  	"defaultHbarEquiv": 30000,
-	"frequencyInSeconds" : 3600,
-	"floorCentsPerHbar": 4,
-  	"maxTransactionFee": 10000000,
-  	"exchangeRateAllowedPercentage": "25",
-	"privateKeyPath": "path",
-	"Nodes": {
-	  "0.0.4": "1.testnet.hedera.com:71322",
-	  "0.0.5": "1.testnet.hedera.com:71322"
-	},
-	"Networks": {
-		"publicTestNet": {
-			"0.0.3": "0.testnet.hedera.com:50211",
-			"0.0.4": "1.testnet.hedera.com:50211"
-		},
-		"performanceNet": {
-			"0.0.3": "35.196.144.134:50211"
-		}
-	},
-	"payerAccount": "0.0.57",
-	"fileId": "0.0.112",
-  	"validationDelayInMilliseconds": 15000,
-  	"region": "us-east-1"
+  "exchanges": {
+    "coinbase": "https://api.pro.coinbase.com/products/HBAR-USD/stats",
+    "binance": "https://api.binance.us/api/v3/ticker/24hr?symbol=HBARUSD",
+    "bitstamp": "https://www.bitstamp.net/api/v2/ticker/hbarusd",
+    "crypto.com": "https://api.crypto.com/v2/public/get-ticker?instrument_name=HBAR_USD"
+  },
+  "defaultCentEquiv": 360000,
+  "defaultHbarEquiv": 30000,
+  "frequencyInSeconds": 3600,
+  "floorCentsPerHbar": 4,
+  "maxTransactionFee": 10000000,
+  "exchangeRateAllowedPercentage": "25",
+  "privateKeyPath": "path",
+  "Nodes": {
+    "0.0.4": "1.testnet.hedera.com:71322",
+    "0.0.5": "1.testnet.hedera.com:71322"
+  },
+  "Networks": {
+    "publicTestNet": {
+      "0.0.3": "0.testnet.hedera.com:50211",
+      "0.0.4": "1.testnet.hedera.com:50211"
+    },
+    "performanceNet": {
+      "0.0.3": "35.196.144.134:50211"
+    }
+  },
+  "payerAccount": "0.0.57",
+  "fileId": "0.0.112",
+  "validationDelayInMilliseconds": 15000
 }

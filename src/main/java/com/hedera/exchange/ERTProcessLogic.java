@@ -86,7 +86,6 @@ public class ERTProcessLogic {
     private Rate currentExchangeRate;
     private final long hbarEquiv;
     private final long frequencyInSeconds;
-    private final String region;
 
     public ERTProcessLogic(final long hbarEquiv,
             final List<Exchange> exchanges,
@@ -94,8 +93,7 @@ public class ERTProcessLogic {
             final long floor,
             final ExchangeRate midnightExchangeRate,
             final Rate currentExchangeRate,
-            final long frequencyInSeconds,
-            final String region) {
+            final long frequencyInSeconds) {
         this.hbarEquiv = hbarEquiv;
         this.exchanges = exchanges;
         this.bound = bound;
@@ -103,7 +101,6 @@ public class ERTProcessLogic {
         this.midnightExchangeRate = midnightExchangeRate;
         this.currentExchangeRate = currentExchangeRate;
         this.frequencyInSeconds = frequencyInSeconds;
-        this.region = region;
     }
 
     /**
@@ -129,6 +126,7 @@ public class ERTProcessLogic {
             LOGGER.debug(Exchange.EXCHANGE_FILTER, "Median calculated : {}", medianExRate);
 
             if(medianExRate == null){
+                ERTMetrics.NO_MEDIAN_COMPUTED.inc();
                 LOGGER.warn(Exchange.EXCHANGE_FILTER, "No median computed. Using current rate as next rate: {}",
                         this.currentExchangeRate.toJson());
                 final Rate nextRate = new Rate(this.currentExchangeRate.getHBarEquiv(),
@@ -146,7 +144,7 @@ public class ERTProcessLogic {
                     String message = String.format("WARNING : Calculated median %s is Invalid with Midnight Rate as %s",
                             nextRate.toJson(), midnightExchangeRate.getNextRate().toJson());
                     LOGGER.warn(message);
-                    ERTNotificationHelper.publishMessage("WARNING : Calculated Median is Invalid", message, region);
+                    ERTMetrics.MEDIAN_OUT_OF_BOUND.inc();
 
                     LOGGER.debug(Exchange.EXCHANGE_FILTER, "last midnight value present. Validating the nextRate with {}",
                             midnightExchangeRate.getNextRate().toJson());

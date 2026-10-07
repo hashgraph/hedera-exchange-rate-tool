@@ -52,35 +52,26 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.amazonaws.services.kms.AWSKMS;
-import com.amazonaws.services.kms.AWSKMSClientBuilder;
-import com.amazonaws.services.kms.model.DecryptRequest;
-import com.amazonaws.services.kms.model.DecryptResult;
-import com.amazonaws.services.kms.model.InvalidCiphertextException;
 import com.hedera.exchange.exchanges.Exchange;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
-import org.junit.jupiter.api.Disabled;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class ERTUtilsTestCases {
 
@@ -119,64 +110,38 @@ class ERTUtilsTestCases {
 	}
 
 	@Test
-	@Disabled
-	/* This test doesnt work in CI. Needs an AWS SDK client to run.*/
-	void getDecryptedEnvironmentVariableFromAWSTest() {
-		final String expectedValue = "https://s3.amazonaws.com/exchange.rate.config.integration/config.json";
-		final String encryptedValue = "AQICAHi3BYYdRzjj1ZR5ij/3mN6+GWqEbw7NTAG0fm7nzYo3MwHyBlKsmA+1lepLUe" +
-				"+0rgeFAAAApzCBpAYJKoZIhvcNAQcGoIGWMIGTAgEAMIGNBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDLHJjkIANloMVIhCdgIBEIBg9HnXBKnxE3c4H5/17ilQR0G6DqZKH6dzBnhkUAjYbg1sBuStjVA8rQwBUtiSKO7b5ehQh+OxnrJxVbHAZNylSH71fr7OICMI3iA2qkIM8gtWNG1htphGhkDLCRcaw5Xh";
-		final String lambdaFunctionName = "exchange-rate-tool-lambda-integration";
-		assertEquals(expectedValue, ERTUtils.getDecryptedValueFromAWS(encryptedValue, lambdaFunctionName),
-				"AWS lambda Decryption not working as expected.");
-	}
-
-	@Test
-	void getDecryptedValueFromAWSWithoutEncryptionContextTest() {
-		final AWSKMS kmsClient = mock(AWSKMS.class);
-		when(kmsClient.decrypt(any(DecryptRequest.class))).thenReturn(new DecryptResult()
-				.withPlaintext(ByteBuffer.wrap("decrypted".getBytes(StandardCharsets.UTF_8))));
-
-		try (MockedStatic<AWSKMSClientBuilder> kmsClientBuilder = mockStatic(AWSKMSClientBuilder.class)) {
-			kmsClientBuilder.when(AWSKMSClientBuilder::defaultClient).thenReturn(kmsClient);
-			assertEquals("decrypted", ERTUtils.getDecryptedValueFromAWS("AQID", "exchange-rate-tool-lambda-testnet"));
-		}
-		verify(kmsClient, times(1)).decrypt(any(DecryptRequest.class));
-	}
-
-	@Test
-	void getDecryptedValueFromAWSWithEncryptionContextTest() {
-		final String lambdaFunctionName = "exchange-rate-tool-lambda-testnet";
-		final AWSKMS kmsClient = mock(AWSKMS.class);
-		when(kmsClient.decrypt(any(DecryptRequest.class))).thenAnswer(invocation -> {
-			final DecryptRequest request = invocation.getArgument(0);
-			if (!lambdaFunctionName.equals(request.getEncryptionContext().get("LambdaFunctionName"))) {
-				throw new InvalidCiphertextException("encryption context mismatch");
-			}
-			return new DecryptResult().withPlaintext(ByteBuffer.wrap("decrypted".getBytes(StandardCharsets.UTF_8)));
+	void generateExchangesTest() throws IOException {
+		final AtomicInteger unsupportedCalls = new AtomicInteger();
+		final HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+		server.createContext("/coinbase", exchange -> respond(exchange, "{\"last\":\"0.1\",\"volume\":\"1000000\"}"));
+		server.createContext("/removed", exchange -> {
+			unsupportedCalls.incrementAndGet();
+			respond(exchange, "{}");
 		});
+		server.start();
+		try {
+			final String base = "http://127.0.0.1:" + server.getAddress().getPort();
+			final Map<String, String> exchangeAPIs = new LinkedHashMap<>();
+			exchangeAPIs.put("coinbase", base + "/coinbase");
+			exchangeAPIs.put("unknown-exchange", base + "/removed");
 
-		try (MockedStatic<AWSKMSClientBuilder> kmsClientBuilder = mockStatic(AWSKMSClientBuilder.class)) {
-			kmsClientBuilder.when(AWSKMSClientBuilder::defaultClient).thenReturn(kmsClient);
-			assertEquals("decrypted", ERTUtils.getDecryptedValueFromAWS("AQID", lambdaFunctionName));
+			final List<Exchange> exchanges = ERTUtils.generateExchanges(exchangeAPIs);
+
+			assertEquals(1, exchanges.size(), "Only the supported exchange should be generated");
+			assertEquals(0.1, exchanges.get(0).getHBarValue(), "Exchange not generated correctly");
+			assertEquals(0, unsupportedCalls.get(), "An unsupported exchange must not be called");
+		} finally {
+			server.stop(0);
 		}
-		verify(kmsClient, times(2)).decrypt(any(DecryptRequest.class));
 	}
 
-	@Test
-	void generateExchangesTest() {
-		//setup
-		final Map<String, String> exchangeAPIs = new HashMap<>() {{
-			put("bitmart", "https://api-cloud-v2.bitmart.com/contract/public/details?symbol=HBARUSDT");
-			put("coinbase", "https://api.pro.coinbase.com/products/HBAR-USD/stats");
-		}};
-
-		//when
-		final List<Exchange> exchanges = ERTUtils.generateExchanges(exchangeAPIs);
-
-		//then
-		assertEquals(2, exchanges.size(), "Couldn't generate all exchanges");
-		assertNotNull(exchanges.get(0).getHBarValue(), "Exchange not generated correctly");
-		assertNotNull(exchanges.get(1).getHBarValue(), "Exchange not generated correctly");
+	private static void respond(final HttpExchange exchange, final String body) throws IOException {
+		final byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+		exchange.sendResponseHeaders(200, bytes.length);
+		try (OutputStream os = exchange.getResponseBody()) {
+			os.write(bytes);
+		}
+		exchange.close();
 	}
 
 	@Test

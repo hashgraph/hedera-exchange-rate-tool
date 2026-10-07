@@ -1,0 +1,7 @@
+.git
+.worktrees
+target
+.idea
+*.iml
+manifests
+docs

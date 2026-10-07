@@ -52,35 +52,25 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.BlobId;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
 import com.hedera.hashgraph.sdk.AccountId;
-import com.hedera.exchange.database.AWSDBParams;
+import com.hedera.exchange.database.DBParams;
 import com.hedera.exchange.database.ExchangeDB;
-import com.hedera.exchange.database.ExchangeRateAWSRD;
+import com.hedera.exchange.database.ExchangeRatePostgresDB;
 import com.hedera.exchange.exchanges.Exchange;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This class reads the parameters from the config file and provides get methods to fetch the configuration parameters.
@@ -133,151 +123,21 @@ public class ERTParams {
     @JsonProperty("validationDelayInMilliseconds")
     private int validationDelayInMilliseconds;
 
-    @JsonProperty("region")
-    private String region;
-
     /**
-     * Return a ERTParams class populated with the configuration parameters read from the config file.
-     * The reading method depends on the argument/config file path passed in the call.
-     *
-     *  Possible config file paths:
-     *  Amazon s3
-     *  Google cloud storage
-     *  local path
+     * Return a ERTParams class populated with the configuration parameters read from a local config file:
+     * the path given as the first argument, or else the CONFIG_PATH environment variable.
      *
      * @param args
      * @return ERTParams object
-     * @throws IOException
      */
-    public static ERTParams readConfig(final String[]  args) throws IOException {
-        if (args == null || args.length == 0) {
-            return readDefaultConfig();
+    public static ERTParams readConfig(final String[] args) {
+        final String configurationPath = args != null && args.length > 0 && args[0] != null && !args[0].isBlank() ?
+                args[0] : System.getenv("CONFIG_PATH");
+        if (configurationPath == null || configurationPath.isBlank()) {
+            throw new IllegalArgumentException(
+                    "No config file given: pass its path as the first argument or set CONFIG_PATH");
         }
-
-        final String configurationPath = args[0];
-        if (configurationPath == null || configurationPath.trim().length() < 1) {
-            return readDefaultConfig();
-        }
-
-        LOGGER.debug("Using configuration file: {}", configurationPath);
-
-        if (configurationPath.contains("s3.amazonaws.com/")) {
-            return readConfigFromAWSS3(configurationPath);
-        }
-
-        if (configurationPath.contains("storage.cloud.google.com/")) {
-            return readConfigFromGCP(configurationPath);
-        }
-
-        if (configurationPath.contains("TO_DECIDE:AWS_NodeAddressFormat")){
-            return readDefaultConfig(configurationPath);
-        }
-
         return readConfig(configurationPath);
-    }
-
-    /**
-     * Reads the AWS instance address from the arguments and replaces the node address in the
-     * default configuration
-     * @param awsInstanceAddress
-     * @return ERTParams object
-     */
-    private static ERTParams readDefaultConfig(String awsInstanceAddress) throws IOException {
-        final String defaultConfigUri = ERTUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
-        ERTParams ertParams = readConfigFromAWSS3(defaultConfigUri);
-
-        Set<String> nodeNames = ertParams.nodes.keySet();
-        for(String nodeName : nodeNames){
-            ertParams.nodes.put(nodeName, awsInstanceAddress);
-        }
-        return ertParams;
-    }
-
-    /**
-     * Read default config from amazon s3 if no config file path is provided.
-     * @return ERTParams object
-     * @throws IOException
-     */
-    private static ERTParams readDefaultConfig() throws IOException {
-        final String defaultConfigUri = ERTUtils.getDecryptedEnvironmentVariableFromAWS("DEFAULT_CONFIG_URI");
-        return readConfigFromAWSS3(defaultConfigUri);
-    }
-
-    /**
-     * Read Config file from the Amazon S3 bucket
-     * @param endpoint
-     *          url for the config file in the amazon s3 bucket.
-     * @return ERTParams object
-     * @throws IllegalArgumentException
-     *          Throws IllegalArgumentException if the endpoint provided is not found.
-     * @throws IOException
-     *          Throws IOException failed to read the config file.
-     */
-    private static ERTParams readConfigFromAWSS3(final String endpoint) throws IllegalArgumentException, IOException{
-        LOGGER.debug("Reading configuration file from AWS S3: {}", endpoint);
-        final String[] s3Params = endpoint.split("/");
-        if (s3Params.length < 3) {
-            throw new IllegalArgumentException("Not enough parameters to read from S3: " + endpoint);
-        }
-
-        final String key = s3Params[s3Params.length - 1];
-        final String bucketName = s3Params[s3Params.length - 2];
-        return readConfigFromAWSS3(bucketName, key);
-    }
-
-    /**
-     * Helper method to read config file from the s3 bucket once you have the url to the file in the s3 bucket.
-     * @param bucketName
-     *          The S3 bucket to read config file from
-     * @param key
-     *          Name of the config file
-     * @return ERTParams object
-     * @throws IOException
-     *          Throws IOException when failed to parse the config file.
-     */
-    private static ERTParams readConfigFromAWSS3(final String bucketName, final String key) throws IOException {
-        LOGGER.debug(Exchange.EXCHANGE_FILTER, "Reading configuration from S3 bucket: {} and key {}", bucketName, key);
-        final AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();
-
-        try (final S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, key))) {
-            return OBJECT_MAPPER.readValue(fullObject.getObjectContent(), ERTParams.class);
-        }
-    }
-
-    /**
-     * Read config file from Google cloud storage
-     * @param endPoint - url for the config file in Google Cloud Storage
-     * @return ERTParams object
-     * @throws IOException
-     */
-    private static ERTParams readConfigFromGCP(final String endPoint) throws IOException {
-        final String[] gcsParams = endPoint.split("/");
-        if (gcsParams.length < 3) {
-            throw new IllegalArgumentException("Not enough parameters to read from Google Cloud Storage: " + endPoint);
-        }
-
-        final String fileNameWithParameters = gcsParams[gcsParams.length - 1];
-        final String fileName = fileNameWithParameters.split("\\?")[0];
-        final String bucketName = gcsParams[gcsParams.length - 2];
-        return readConfigFromGCP(bucketName, fileName);
-    }
-
-    /**
-     * Helper method to read config file from the Google Cloud storage
-     * @param bucketName
-     *          The GCP bucket to read config file from
-     * @param srcFileName
-     *          Name of the config file
-     * @return ERTParams object
-     * @throws IOException
-     *          Throws IOException when failed to parse the config file.
-     */
-    private static ERTParams readConfigFromGCP(final String bucketName, final String srcFileName) throws IOException {
-        final Storage storage = StorageOptions.getDefaultInstance().getService();
-        final Blob blob = storage.get(BlobId.of(bucketName, srcFileName));
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        blob.downloadTo(outputStream);
-        return OBJECT_MAPPER.readValue(outputStream.toByteArray(), ERTParams.class);
     }
 
     /**
@@ -404,7 +264,7 @@ public class ERTParams {
 
     @JsonIgnore
     public String getOperatorKey(String networkName) {
-        return ERTUtils.getDecryptedEnvironmentVariableFromAWS("OPERATOR_KEY_" + networkName);
+        return System.getenv("OPERATOR_KEY_" + networkName);
     }
 
     /**
@@ -425,17 +285,9 @@ public class ERTParams {
 
     /**
      * Get the Database class to read and write the Exchange Rate Files.
-     * @return ExchangeRateDb object as we are configured with AWS POSTGRESQL for now.
+     * @return ExchangeRateDb object backed by PostgreSQL.
      */
     public ExchangeDB getExchangeDB() {
-        return new ExchangeRateAWSRD(new AWSDBParams());
-    }
-
-    /**
-     * Get the region in which this lambda is configured to be deployed in
-     * @return
-     */
-    public String getRegion() {
-        return this.region;
+        return new ExchangeRatePostgresDB(new DBParams());
     }
 }

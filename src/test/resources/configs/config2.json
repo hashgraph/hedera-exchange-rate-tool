@@ -5,9 +5,9 @@
     "bitstamp": "https://www.bitstamp.net/api/v2/ticker/hbarusd",
     "crypto.com": "https://api.crypto.com/v2/public/get-ticker?instrument_name=HBAR_USD"
   },
-  "defaultCentEquiv" : 25920000,
+  "defaultCentEquiv": 25920000,
   "defaultHbarEquiv": 30000,
-  "frequencyInSeconds" : 3600,
+  "frequencyInSeconds": 3600,
   "floorCentsPerHbar": 4,
   "maxTransactionFee": 10000000,
   "exchangeRateAllowedPercentage": "25",
@@ -16,6 +16,5 @@
     "0.0.5": "1.testnet.hedera.com:71322"
   },
   "payerAccount": "0.0.57",
-  "validationDelayInMilliseconds": 15000,
-  "region": "us-east-2"
+  "validationDelayInMilliseconds": 15000
 }

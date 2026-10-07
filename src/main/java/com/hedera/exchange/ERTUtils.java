@@ -52,14 +52,8 @@ package com.hedera.exchange;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.amazonaws.services.kms.AWSKMS;
-import com.amazonaws.services.kms.AWSKMSClientBuilder;
-import com.amazonaws.services.kms.model.DecryptRequest;
-import com.amazonaws.services.kms.model.InvalidCiphertextException;
-import com.amazonaws.util.Base64;
 import com.google.protobuf.ByteString;
 import com.hedera.exchange.exchanges.Binance;
-import com.hedera.exchange.exchanges.BitMart;
 import com.hedera.exchange.exchanges.BitTrue;
 import com.hedera.exchange.exchanges.Bitstamp;
 import com.hedera.exchange.exchanges.CryptoCom;
@@ -80,21 +74,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.hedera.exchange.ExchangeRateTool.LAMBDA_FUNCTION_NAME;
 
 /**
  * This class implements helper functions of ERT
- *  1. To get the decrypted environment variables set in AWS
- *  2. To calculate median of the exchange rates fetched
- *  3. To calculate running weights
+ *  1. To calculate median of the exchange rates fetched
+ *  2. To calculate running weights
  *
  * @author Anirudh, Cesar
  */
@@ -110,7 +100,6 @@ public final class ERTUtils {
 		EXCHANGES.put("upbit", UpBit.class);
 		EXCHANGES.put("binance", Binance.class);
 		EXCHANGES.put("paybito", PayBito.class);
-		EXCHANGES.put("bitmart", BitMart.class);
 		EXCHANGES.put("gate", Gate.class);
 		EXCHANGES.put("hitbit", HitBit.class);
 		EXCHANGES.put("bittrue", BitTrue.class);
@@ -121,43 +110,6 @@ public final class ERTUtils {
 
 	private ERTUtils() {
 		throw new UnsupportedOperationException("Utility class");
-	}
-
-	/**
-	 * Get the decrypted Environment variable set in AWS
-	 * for example: the DB endpoint, username, password to access the Database, config file path etc..
-	 * @param environmentVariable - Encrypted variable
-	 * @return decrypted Environment Variable.
-	 */
-	public static String getDecryptedEnvironmentVariableFromAWS(final String environmentVariable) {
-		final String environmentValue = System.getenv(environmentVariable);
-		if (environmentValue == null) {
-			throw new IllegalStateException("Environment variable " + environmentVariable + " is not set");
-		}
-		return getDecryptedValueFromAWS(environmentValue, LAMBDA_FUNCTION_NAME);
-	}
-
-	static String getDecryptedValueFromAWS(final String value, final String lambdaFunctionName) {
-		Map<String, String> encryptionContext = new HashMap<>();
-		encryptionContext.put("LambdaFunctionName", lambdaFunctionName);
-		final byte[] encryptedKey = Base64.decode(value);
-
-		final AWSKMS client = AWSKMSClientBuilder.defaultClient();
-
-		final DecryptRequest request = new DecryptRequest()
-				.withCiphertextBlob(ByteBuffer.wrap(encryptedKey))
-				.withEncryptionContext(encryptionContext);
-
-		ByteBuffer plainTextKey;
-		try {
-			plainTextKey = client.decrypt(request).getPlaintext();
-		} catch (InvalidCiphertextException ex) {
-			// The Lambda console's encryption helpers bind the ciphertext to the function name
-			plainTextKey = client.decrypt(new DecryptRequest()
-					.withCiphertextBlob(ByteBuffer.wrap(encryptedKey))
-					.withEncryptionContext(encryptionContext)).getPlaintext();
-		}
-		return new String(plainTextKey.array(), StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -172,6 +124,10 @@ public final class ERTUtils {
 		for (final Map.Entry<String, String> api : exchangeAPIs.entrySet()) {
 
 			final Class<? extends ExchangeCoin> exchangeClass = EXCHANGES.get(api.getKey());
+			if (exchangeClass == null) {
+				LOGGER.warn(Exchange.EXCHANGE_FILTER, "Unknown exchange {} in the config, skipping it", api.getKey());
+				continue;
+			}
 
 			final String endpoint = api.getValue();
 			final Exchange actualExchange = factory.load(endpoint, exchangeClass);

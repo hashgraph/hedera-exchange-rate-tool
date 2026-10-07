@@ -67,7 +67,6 @@ import com.hedera.hashgraph.sdk.ReceiptStatusException;
 import com.hedera.hashgraph.sdk.TransactionReceipt;
 import com.hedera.hashgraph.sdk.TransactionResponse;
 import com.hedera.hashgraph.sdk.proto.NodeAddressBook;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -142,7 +141,7 @@ public class HederaNetworkCommunicator {
             newAddressBook = ertAddressBookFromPreviousRun;
         }
 
-        updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo, ertParams.getRegion());
+        updateExchangeRateFileTxn(exchangeRate, exchangeRateFileId, exchangeRateAsBytes, client, memo);
 
         waitForChangesToTakeEffect(ertParams.getValidationDelayInMilliseconds());
 
@@ -173,8 +172,7 @@ public class HederaNetworkCommunicator {
             final FileId exchangeRateFileId,
             final byte[] exchangeRateAsBytes,
             final Client client,
-            final String memo,
-            final String region)
+            final String memo)
             throws TimeoutException, PrecheckStatusException, IOException, ReceiptStatusException {
         int retryCount = 1;
         TransactionReceipt transactionReceipt;
@@ -218,9 +216,8 @@ public class HederaNetworkCommunicator {
                     String rateInNetwork = activeRateFromReceipt.toString();
 
                     LOGGER.info(Exchange.EXCHANGE_FILTER, "Exchange Rates from receipt {}", rateInNetwork);
-                    retryMessage = String.format("ERROR : %s \n proposed rate : %s \n Rates on Network %s",
+                    LOGGER.error(Exchange.EXCHANGE_FILTER, "{} \n proposed rate : {} \n Rates on Network {}",
                             retryMessage, proposedRate, rateInNetwork);
-                    ERTNotificationHelper.publishMessage(subject, retryMessage, region);
 
                     Rate activeRate = new Rate(activeRateFromReceipt.hbars,
                             activeRateFromReceipt.cents,
@@ -232,16 +229,17 @@ public class HederaNetworkCommunicator {
                     if (retryCount++ == DEFAULT_RETRIES) {
                         throw ex;
                     }
+                    ERTMetrics.UPDATE_ERRORS.labelValues(networkName, status.toString()).inc();
                 } else {
                     throw ex;
                 }
             } catch (PrecheckStatusException ex) {
                 var subject = String.format("ERROR : %s : PreCheckStatusException : %s", networkName, ex.status);
                 LOGGER.error(Exchange.EXCHANGE_FILTER, subject);
-                ERTNotificationHelper.publishMessage(subject, ExceptionUtils.getStackTrace(ex), region);
                 if (retryCount++ == DEFAULT_RETRIES) {
                     throw ex;
                 }
+                ERTMetrics.UPDATE_ERRORS.labelValues(networkName, ex.status.toString()).inc();
             }
         }
     }

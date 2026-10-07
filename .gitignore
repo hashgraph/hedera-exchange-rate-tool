@@ -140,3 +140,6 @@ hs_err_pid*
 *.pem
 
 
+
+# Local deployment manifests and per-environment configs (contain internal network addresses and credentials)
+manifests/
